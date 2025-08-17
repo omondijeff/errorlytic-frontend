@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, Car, ArrowLeft } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { login, error } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +30,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 flex items-center justify-center px-4">
+    <div className="min-h-screen pt-16 flex items-center justify-center px-4" style={{ 
+      background: 'linear-gradient(135deg, var(--bg-primary), var(--bg-secondary))'
+    }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -37,17 +41,29 @@ const Login: React.FC = () => {
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 text-dark-400 hover:text-white transition-colors mb-4">
+          <Link to="/" className="inline-flex items-center space-x-2 mb-4" style={{ 
+            color: 'var(--text-tertiary)'
+          }}>
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
           </Link>
           
-          <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Car className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 mx-auto mb-6" style={{ 
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img 
+              src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
+              alt="DeQuote Logo" 
+              className="w-16 h-16 object-contain"
+            />
           </div>
           
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-dark-300">Sign in to your DeQuote account</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Welcome Back to VAG Culture Hub</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Sign in to access exclusive VAG diagnostics and community features</p>
         </div>
 
         {/* Login Form */}
@@ -60,7 +76,7 @@ const Login: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 Email Address
               </label>
               <input
@@ -76,7 +92,7 @@ const Login: React.FC = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 Password
               </label>
               <div className="relative">
@@ -92,7 +108,8 @@ const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
+                  style={{ color: 'var(--text-tertiary)' }}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -101,50 +118,49 @@ const Login: React.FC = () => {
 
             {/* Error Display */}
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm"
-              >
+              <div className="p-4 rounded-lg" style={{ 
+                background: 'rgba(220, 38, 38, 0.1)',
+                border: '1px solid rgba(220, 38, 38, 0.3)',
+                color: 'var(--accent-primary)'
+              }}>
                 {error}
-              </motion.div>
+              </div>
             )}
 
             {/* Submit Button */}
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="glass-button w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              whileHover={!isLoading ? { scale: 1.02 } : {}}
-              whileTap={!isLoading ? { scale: 0.98 } : {}}
+              className="glass-button w-full"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Signing In...</span>
-                </div>
-              ) : (
-                'Sign In'
-              )}
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </motion.button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full" style={{ borderTop: '1px solid var(--border-primary)' }} />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4" style={{ color: 'var(--text-tertiary)' }}>or</span>
+              </div>
+            </div>
+
+            {/* Links */}
+            <div className="text-center space-y-2">
+              <p style={{ color: 'var(--text-secondary)' }}>
+                Don't have an account?{' '}
+                <Link to="/register" className="font-medium" style={{ color: 'var(--accent-primary)' }}>
+                  Sign up here
+                </Link>
+              </p>
+              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                <a href="#" className="hover:underline">Forgot your password?</a>
+              </p>
+            </div>
           </form>
-
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-white/10" />
-            <span className="px-4 text-sm text-dark-400">or</span>
-            <div className="flex-1 border-t border-white/10" />
-          </div>
-
-          {/* Register Link */}
-          <div className="text-center">
-            <p className="text-dark-300">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                Sign up here
-              </Link>
-            </p>
-          </div>
         </motion.div>
 
         {/* Footer */}

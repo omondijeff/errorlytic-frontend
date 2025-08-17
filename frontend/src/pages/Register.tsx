@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, Car, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ const Register: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { register, error } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +93,9 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen pt-16 flex items-center justify-center px-4 py-8" style={{ 
+      background: 'linear-gradient(135deg, var(--bg-primary), var(--bg-secondary))'
+    }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -100,17 +104,29 @@ const Register: React.FC = () => {
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 text-dark-400 hover:text-white transition-colors mb-4">
+          <Link to="/" className="inline-flex items-center space-x-2 mb-4" style={{ 
+            color: 'var(--text-tertiary)'
+          }}>
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
           </Link>
           
-          <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Car className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 mx-auto mb-6" style={{ 
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img 
+              src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
+              alt="DeQuote Logo" 
+              className="w-16 h-16 object-contain"
+            />
           </div>
           
-          <h1 className="text-3xl font-bold text-white mb-2">Create Your Account</h1>
-          <p className="text-dark-300">Join DeQuote and start managing VAG car quotations</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Join VAG Culture Hub</h1>
+          <p style={{ color: 'var(--text-secondary)' }}>Become part of Kenya's exclusive VAG car community</p>
         </div>
 
         {/* Registration Form */}
@@ -124,7 +140,7 @@ const Register: React.FC = () => {
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-white mb-2">
+                <label htmlFor="firstName" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                   First Name *
                 </label>
                 <input
@@ -138,12 +154,12 @@ const Register: React.FC = () => {
                   required
                 />
                 {errors.firstName && (
-                  <p className="text-red-400 text-sm mt-1">{errors.firstName}</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.firstName}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-white mb-2">
+                <label htmlFor="lastName" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                   Last Name *
                 </label>
                 <input
@@ -157,14 +173,14 @@ const Register: React.FC = () => {
                   required
                 />
                 {errors.lastName && (
-                  <p className="text-red-400 text-sm mt-1">{errors.lastName}</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.lastName}</p>
                 )}
               </div>
             </div>
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
+              <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                 Email Address *
               </label>
               <input
@@ -178,55 +194,54 @@ const Register: React.FC = () => {
                 required
               />
               {errors.email && (
-                <p className="text-red-400 text-sm mt-1">{errors.email}</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.email}</p>
               )}
             </div>
 
-            {/* Company and Phone Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-white mb-2">
-                  Company/Garage Name *
-                </label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleChange}
-                  className={`input-field w-full ${errors.company ? 'border-red-500' : ''}`}
-                  placeholder="Enter company name"
-                  required
-                />
-                {errors.company && (
-                  <p className="text-red-400 text-sm mt-1">{errors.company}</p>
-                )}
-              </div>
+            {/* Company Field */}
+            <div>
+              <label htmlFor="company" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+                Company Name *
+              </label>
+              <input
+                type="text"
+                id="company"
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
+                className={`input-field w-full ${errors.company ? 'border-red-500' : ''}`}
+                placeholder="Enter company name"
+                required
+              />
+              {errors.company && (
+                <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.company}</p>
+              )}
+            </div>
 
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-white mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className={`input-field w-full ${errors.phone ? 'border-red-500' : ''}`}
-                  placeholder="+254700000000"
-                  required
-                />
-                {errors.phone && (
-                  <p className="text-red-400 text-sm mt-1">{errors.phone}</p>
-                )}
-              </div>
+            {/* Phone Field */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className={`input-field w-full ${errors.phone ? 'border-red-500' : ''}`}
+                placeholder="Enter phone number"
+                required
+              />
+              {errors.phone && (
+                <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.phone}</p>
+              )}
             </div>
 
             {/* Password Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+                <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                   Password *
                 </label>
                 <div className="relative">
@@ -237,24 +252,25 @@ const Register: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className={`input-field w-full pr-12 ${errors.password ? 'border-red-500' : ''}`}
-                    placeholder="Create a password"
+                    placeholder="Enter password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
+                    style={{ color: 'var(--text-tertiary)' }}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-red-400 text-sm mt-1">{errors.password}</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.password}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
                   Confirm Password *
                 </label>
                 <div className="relative">
@@ -265,87 +281,70 @@ const Register: React.FC = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     className={`input-field w-full pr-12 ${errors.confirmPassword ? 'border-red-500' : ''}`}
-                    placeholder="Confirm your password"
+                    placeholder="Confirm password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
+                    style={{ color: 'var(--text-tertiary)' }}
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--accent-primary)' }}>{errors.confirmPassword}</p>
                 )}
               </div>
             </div>
 
             {/* Error Display */}
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm"
-              >
+              <div className="p-4 rounded-lg" style={{ 
+                background: 'rgba(220, 38, 38, 0.1)',
+                border: '1px solid rgba(220, 38, 38, 0.3)',
+                color: 'var(--accent-primary)'
+              }}>
                 {error}
-              </motion.div>
+              </div>
             )}
 
             {/* Submit Button */}
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="glass-button w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              whileHover={!isLoading ? { scale: 1.02 } : {}}
-              whileTap={!isLoading ? { scale: 0.98 } : {}}
+              className="glass-button w-full"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Creating Account...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Create Account</span>
-                </div>
-              )}
+              {isLoading ? 'Creating Account...' : 'Create Account'}
             </motion.button>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full" style={{ borderTop: '1px solid var(--border-primary)' }} />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4" style={{ color: 'var(--text-tertiary)' }}>or</span>
+              </div>
+            </div>
+
+            {/* Links */}
+            <div className="text-center space-y-2">
+              <p style={{ color: 'var(--text-secondary)' }}>
+                Already have an account?{' '}
+                <Link to="/login" className="font-medium" style={{ color: 'var(--accent-primary)' }}>
+                  Sign in here
+                </Link>
+              </p>
+              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                By creating an account, you agree to our Terms of Service and Privacy Policy.
+              </p>
+            </div>
           </form>
-
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-white/10" />
-            <span className="px-4 text-sm text-dark-400">or</span>
-            <div className="flex-1 border-t border-white/10" />
-          </div>
-
-          {/* Login Link */}
-          <div className="text-center">
-            <p className="text-dark-300">
-              Already have an account?{' '}
-              <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                Sign in here
-              </Link>
-            </p>
-          </div>
         </motion.div>
-
-        {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-dark-400">
-            By creating an account, you agree to our{' '}
-            <a href="#" className="text-primary-400 hover:text-primary-300 transition-colors">
-              Terms of Service
-            </a>{' '}
-            and{' '}
-            <a href="#" className="text-primary-400 hover:text-primary-300 transition-colors">
-              Privacy Policy
-            </a>
-          </p>
-        </div>
       </motion.div>
     </div>
   );

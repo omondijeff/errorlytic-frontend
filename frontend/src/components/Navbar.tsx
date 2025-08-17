@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
-  Car, 
   FileText, 
   AlertTriangle, 
   User, 
@@ -12,11 +12,14 @@ import {
   X,
   Home,
   Plus,
-  BarChart3
+  BarChart3,
+  Users
 } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -28,6 +31,7 @@ const Navbar: React.FC = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
+    { path: '/community', label: 'Community', icon: Users, protected: true },
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3, protected: true },
     { path: '/quotations', label: 'Quotations', icon: FileText, protected: true },
     { path: '/quotations/create', label: 'New Quote', icon: Plus, protected: true },
@@ -37,21 +41,38 @@ const Navbar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-900/80 backdrop-blur-md border-b border-white/10">
+    <nav className="fixed top-0 left-0 right-0 z-50" style={{ 
+      background: 'var(--bg-secondary)', 
+      borderBottom: '1px solid var(--border-primary)',
+      backdropFilter: 'blur(20px)'
+    }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <motion.div
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.6 }}
-              className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center justify-center"
             >
-              <Car className="w-6 h-6 text-white" />
+              <img 
+                src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
+                alt="DeQuote Logo" 
+                className="h-10 w-auto"
+              />
             </motion.div>
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold gradient-text">DeQuote</h1>
-              <p className="text-xs text-dark-400">VAG Car Quotation System</p>
+              <h1 className="text-xl font-bold gradient-text">VAG Culture Hub</h1>
+              <div className="flex items-center space-x-2">
+                <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Exclusive VAG Diagnostics</p>
+                <span className="px-2 py-1 text-xs font-medium rounded-full" style={{ 
+                  background: 'rgba(220, 38, 38, 0.1)',
+                  color: 'var(--accent-primary)',
+                  border: '1px solid rgba(220, 38, 38, 0.3)'
+                }}>
+                  Members Only
+                </span>
+              </div>
             </div>
           </Link>
 
@@ -78,13 +99,16 @@ const Navbar: React.FC = () => {
 
           {/* User Menu / Auth Buttons */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {user ? (
               <div className="flex items-center space-x-4">
                 <div className="hidden sm:flex items-center space-x-2 text-sm">
                   <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-dark-300">{user.firstName}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{user.firstName}</span>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -110,7 +134,11 @@ const Navbar: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-dark-300 hover:text-white hover:bg-white/10 transition-colors"
+              className="md:hidden p-2 rounded-lg transition-colors"
+              style={{ 
+                color: 'var(--text-tertiary)',
+                background: 'transparent'
+              }}
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -123,7 +151,11 @@ const Navbar: React.FC = () => {
         initial={false}
         animate={{ height: isMobileMenuOpen ? 'auto' : 0 }}
         transition={{ duration: 0.3 }}
-        className="md:hidden overflow-hidden bg-dark-800/50 border-t border-white/10"
+        className="md:hidden overflow-hidden"
+        style={{ 
+          background: 'var(--bg-tertiary)',
+          borderTop: '1px solid var(--border-primary)'
+        }}
       >
         <div className="px-4 py-4 space-y-3">
           {navItems.map((item) => {
@@ -137,9 +169,13 @@ const Navbar: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive(item.path)
-                    ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                    : 'text-dark-300 hover:text-white hover:bg-white/10'
+                    ? 'border border-primary-500/30'
+                    : ''
                 }`}
+                style={{
+                  background: isActive(item.path) ? 'rgba(220, 38, 38, 0.1)' : 'transparent',
+                  color: isActive(item.path) ? 'var(--accent-primary)' : 'var(--text-tertiary)'
+                }}
               >
                 <Icon className="w-5 h-5" />
                 <span>{item.label}</span>

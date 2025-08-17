@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   Car, 
   FileText, 
@@ -16,51 +17,52 @@ import {
 
 const Home: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
 
   const features = [
     {
       icon: Car,
-      title: 'VAG Car Diagnostics',
-      description: 'Specialized system for Volkswagen, Audi, Porsche, Skoda, Seat, and Fiat vehicles',
+      title: 'VAG Culture Diagnostics',
+      description: 'Exclusive diagnostic tools for Volkswagen, Audi, Porsche, Skoda, Seat, and Fiat vehicles',
       color: 'from-primary-500 to-primary-700'
     },
     {
       icon: FileText,
-      title: 'Smart Quotations',
-      description: 'AI-powered repair estimates in Kenya Shillings with detailed cost breakdowns',
+      title: 'Community Quotations',
+      description: 'AI-powered repair estimates in Kenya Shillings with community-verified accuracy',
       color: 'from-red-500 to-red-700'
     },
     {
       icon: AlertTriangle,
-      title: 'Error Code Database',
-      description: 'Comprehensive VAG error code library with AI explanations and repair guidance',
+      title: 'VAG Culture Error Database',
+      description: 'Exclusive access to our comprehensive VAG error code library with AI explanations',
       color: 'from-orange-500 to-orange-700'
     },
     {
       icon: Zap,
       title: 'VCDS Report Processing',
-      description: 'Upload and analyze VCDS diagnostic reports for accurate error detection',
+      description: 'Upload and analyze VCDS diagnostic reports with community insights',
       color: 'from-yellow-500 to-yellow-700'
     },
     {
       icon: Shield,
-      title: 'Secure & Reliable',
-      description: 'Enterprise-grade security with JWT authentication and encrypted data',
+      title: 'Members-Only Security',
+      description: 'Exclusive access with enterprise-grade security for VAG Culture members',
       color: 'from-green-500 to-green-700'
     },
     {
       icon: Users,
-      title: 'Team Collaboration',
-      description: 'Multi-user system for mechanics, garages, and service centers',
+      title: 'VAG Culture Community',
+      description: 'Connect with fellow VAG enthusiasts, mechanics, and garage owners',
       color: 'from-blue-500 to-blue-700'
     }
   ];
 
   const stats = [
-    { label: 'VAG Models', value: '6+', icon: Car },
-    { label: 'Error Codes', value: '1000+', icon: AlertTriangle },
-    { label: 'Users', value: '50+', icon: Users },
-    { label: 'Quotations', value: '100+', icon: FileText }
+    { label: 'VAG Models', value: '6+', icon: Car, color: 'from-blue-500 to-blue-700' },
+    { label: 'Error Codes', value: '1000+', icon: AlertTriangle, color: 'from-orange-500 to-orange-700' },
+    { label: 'Users', value: '50+', icon: Users, color: 'from-green-500 to-green-700' },
+    { label: 'Quotations', value: '100+', icon: FileText, color: 'from-purple-500 to-purple-700' }
   ];
 
   return (
@@ -68,8 +70,12 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(220,38,38,0.1),transparent_50%)]" />
+        <div className="absolute inset-0" style={{ 
+          background: 'linear-gradient(135deg, var(--bg-primary), var(--bg-secondary))'
+        }}>
+          <div className="absolute inset-0" style={{ 
+            background: 'radial-gradient(circle at 50% 50%, rgba(220,38,38,0.1), transparent 50%)' 
+          }} />
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
@@ -79,29 +85,45 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
+            {/* Logo */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="mb-8 flex justify-center"
+            >
+              <img 
+                src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
+                alt="DeQuote Logo" 
+                className="h-24 w-auto drop-shadow-2xl"
+              />
+            </motion.div>
+            
             <motion.h1 
               className="text-5xl md:text-7xl font-bold mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <span className="gradient-text">DeQuote</span>
+              <span className="gradient-text">VAG Culture Hub</span>
               <br />
-              <span className="text-white">VAG Car Quotation</span>
+              <span style={{ color: 'var(--text-primary)' }}>Exclusive VAG Diagnostics</span>
             </motion.h1>
             
             <motion.p 
-              className="text-xl md:text-2xl text-dark-300 mb-8 max-w-3xl mx-auto"
+              className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
+              style={{ color: 'var(--text-secondary)' }}
             >
-              Advanced diagnostic quotation system for Volkswagen Group vehicles. 
-              Get AI-powered repair estimates in Kenya Shillings with professional accuracy.
+              Welcome to the exclusive VAG Culture community platform. 
+              Get AI-powered repair estimates, access our comprehensive error code database, 
+              and connect with fellow VAG enthusiasts in Kenya.
             </motion.p>
 
             <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center"
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -114,14 +136,31 @@ const Home: React.FC = () => {
               ) : (
                 <>
                   <Link to="/register" className="glass-button text-lg px-8 py-4">
-                    Get Started Free
+                    Join VAG Culture Hub
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Link>
                   <Link to="/login" className="glass-button-secondary text-lg px-8 py-4">
-                    Sign In
+                    Member Sign In
                   </Link>
                 </>
               )}
+            </motion.div>
+
+            {/* Community Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-full"
+              style={{ 
+                background: 'rgba(220, 38, 38, 0.1)',
+                border: '1px solid rgba(220, 38, 38, 0.3)'
+              }}
+            >
+              <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-primary)' }}></span>
+              <span className="text-sm font-medium" style={{ color: 'var(--accent-primary)' }}>
+                Exclusive to VAG Culture Members
+              </span>
             </motion.div>
           </motion.div>
         </div>
@@ -154,17 +193,16 @@ const Home: React.FC = () => {
               return (
                 <motion.div
                   key={stat.label}
-                  className="text-center"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+                  className="glass-card p-8 text-center"
                 >
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
                     <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                  <div className="text-dark-400">{stat.label}</div>
+                  <div className="text-3xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{stat.value}</div>
+                  <div style={{ color: 'var(--text-tertiary)' }}>{stat.label}</div>
                 </motion.div>
               );
             })}
@@ -182,53 +220,58 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Why Choose <span className="gradient-text">DeQuote</span>?
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
+              Powerful Features for VAG Professionals
             </h2>
-            <p className="text-xl text-dark-300 max-w-3xl mx-auto">
-              Professional-grade tools designed specifically for VAG vehicle diagnostics and quotation management
+            <p className="text-xl max-w-3xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+              Everything you need to manage car quotations, diagnose issues, and provide professional estimates.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <motion.div
                   key={feature.title}
-                  className="glass-card p-8 card-hover"
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
+                  className="glass-card p-8 card-hover"
                 >
                   <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6`}>
                     <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-4">{feature.title}</h3>
-                  <p className="text-dark-300 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>{feature.title}</h3>
+                  <p style={{ color: 'var(--text-secondary)' }} className="leading-relaxed">{feature.description}</p>
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-dark-900 to-dark-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-20" style={{ background: 'var(--bg-secondary)' }}>
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to Transform Your <span className="gradient-text">VAG Diagnostics</span>?
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
+              Ready to Join the VAG Culture Community?
             </h2>
-            <p className="text-xl text-dark-300 mb-8">
-              Join mechanics and garages across Kenya who trust DeQuote for accurate, 
-              professional car repair quotations.
+            <p className="text-xl mb-8" style={{ color: 'var(--text-secondary)' }}>
+              Become part of Kenya's premier VAG car community. Access exclusive tools, 
+              connect with fellow enthusiasts, and elevate your VAG diagnostics game.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
