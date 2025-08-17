@@ -18,6 +18,9 @@ const uploadRoutes = require("./routes/upload");
 const { errorHandler } = require("./middleware/errorHandler");
 const { authMiddleware } = require("./middleware/auth");
 
+// TODO: Uncomment when OpenAI API key is configured
+// const openaiService = require("./services/openaiService");
+
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/dequote_vag", {
@@ -27,14 +30,39 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Security middleware
-app.use(helmet());
+// Manual CORS headers middleware - must come before helmet
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://frontend:80",
+    "http://frontend:3001",
+  ];
+  const origin = req.headers.origin;
 
-// CORS configuration
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
+// Security middleware with less restrictive CORS settings
 app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false,
   })
 );
 

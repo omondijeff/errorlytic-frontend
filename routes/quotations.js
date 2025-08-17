@@ -2,7 +2,8 @@ const express = require("express");
 const { body, validationResult, query } = require("express-validator");
 const Quotation = require("../models/Quotation");
 const ErrorCode = require("../models/ErrorCode");
-const { generateAIExplanation } = require("../services/openaiService");
+// TODO: Uncomment when OpenAI API key is configured
+// const { generateAIExplanation } = require("../services/openaiService");
 
 const router = express.Router();
 

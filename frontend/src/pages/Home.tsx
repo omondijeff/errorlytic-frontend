@@ -70,7 +70,6 @@ const Home: React.FC = () => {
         {/* Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-800">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(220,38,38,0.1),transparent_50%)]" />
-          </div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
