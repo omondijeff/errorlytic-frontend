@@ -1,9 +1,12 @@
 const fs = require("fs").promises;
 const path = require("path");
+const pdfParse = require("pdf-parse");
+const xml2js = require("xml2js");
 
 /**
- * VCDS Parser Service
- * Extracts error codes and diagnostic information from VCDS report files
+ * VCDS/OBD Parser Service
+ * Extracts error codes and diagnostic information from VCDS/OBD report files
+ * Supports TXT, XML, and PDF formats
  */
 class VCDSParserService {
   constructor() {
@@ -530,14 +533,33 @@ class VCDSParserService {
   }
 
   /**
-   * Parse VCDS report file and extract error codes
-   * @param {string} filePath - Path to the uploaded VCDS file
+   * Parse VCDS/OBD report file and extract error codes
+   * @param {string} filePath - Path to the uploaded file
+   * @param {string} fileType - File type (txt, xml, pdf)
    * @returns {Object} Parsed results with error codes and diagnostic info
    */
-  async parseVCDSReport(filePath) {
+  async parseVCDSReport(filePath, fileType = "txt") {
     try {
-      // Read the file content
-      const fileContent = await fs.readFile(filePath, "utf8");
+      let fileContent;
+
+      // Read file content based on type
+      switch (fileType.toLowerCase()) {
+        case "txt":
+          fileContent = await fs.readFile(filePath, "utf8");
+          break;
+        case "pdf":
+          const pdfBuffer = await fs.readFile(filePath);
+          const pdfData = await pdfParse(pdfBuffer);
+          fileContent = pdfData.text;
+          break;
+        case "xml":
+          const xmlBuffer = await fs.readFile(filePath, "utf8");
+          const xmlData = await this.parseXML(xmlBuffer);
+          fileContent = this.extractTextFromXML(xmlData);
+          break;
+        default:
+          throw new Error(`Unsupported file type: ${fileType}`);
+      }
 
       // Extract error codes
       const errorCodes = this.extractErrorCodes(fileContent);
@@ -548,20 +570,149 @@ class VCDSParserService {
       // Extract diagnostic information
       const diagnosticInfo = this.extractDiagnosticInfo(fileContent);
 
+      // Generate analysis summary
+      const analysisSummary = this.generateAnalysisSummary(
+        errorCodes,
+        vehicleInfo,
+        diagnosticInfo
+      );
+
       return {
         success: true,
         errorCodes,
         vehicleInfo,
         diagnosticInfo,
+        analysisSummary,
         rawContent: fileContent.substring(0, 1000), // First 1000 chars for reference
+        fileType,
+        parsedAt: new Date().toISOString(),
       };
     } catch (error) {
       console.error("Error parsing VCDS report:", error);
       return {
         success: false,
         error: error.message,
+        fileType,
+        parsedAt: new Date().toISOString(),
       };
     }
+  }
+
+  /**
+   * Parse XML content
+   * @param {string} xmlContent - XML content as string
+   * @returns {Object} Parsed XML object
+   */
+  async parseXML(xmlContent) {
+    try {
+      const parser = new xml2js.Parser({
+        explicitArray: false,
+        mergeAttrs: true,
+        explicitRoot: false,
+      });
+      return await parser.parseStringPromise(xmlContent);
+    } catch (error) {
+      console.error("Error parsing XML:", error);
+      throw new Error(`XML parsing failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Extract text content from parsed XML
+   * @param {Object} xmlData - Parsed XML object
+   * @returns {string} Extracted text content
+   */
+  extractTextFromXML(xmlData) {
+    let text = "";
+
+    const extractTextRecursive = (obj) => {
+      if (typeof obj === "string") {
+        text += obj + "\n";
+      } else if (typeof obj === "object" && obj !== null) {
+        Object.values(obj).forEach((value) => {
+          extractTextRecursive(value);
+        });
+      }
+    };
+
+    extractTextRecursive(xmlData);
+    return text;
+  }
+
+  /**
+   * Generate analysis summary
+   * @param {Array} errorCodes - Array of error codes
+   * @param {Object} vehicleInfo - Vehicle information
+   * @param {Object} diagnosticInfo - Diagnostic information
+   * @returns {Object} Analysis summary
+   */
+  generateAnalysisSummary(errorCodes, vehicleInfo, diagnosticInfo) {
+    const summary = {
+      totalErrors: errorCodes.length,
+      criticalErrors: errorCodes.filter((code) => code.severity === "high")
+        .length,
+      mediumErrors: errorCodes.filter((code) => code.severity === "medium")
+        .length,
+      lowErrors: errorCodes.filter((code) => code.severity === "low").length,
+      categories: {},
+      estimatedTotalCost: 0,
+      priority: "low",
+      recommendations: [],
+    };
+
+    // Categorize errors
+    errorCodes.forEach((error) => {
+      const category = error.category || "Unknown";
+      if (!summary.categories[category]) {
+        summary.categories[category] = {
+          count: 0,
+          errors: [],
+          estimatedCost: 0,
+        };
+      }
+      summary.categories[category].count++;
+      summary.categories[category].errors.push(error.code);
+      summary.categories[category].estimatedCost += error.estimatedCost || 0;
+    });
+
+    // Calculate total estimated cost
+    summary.estimatedTotalCost = errorCodes.reduce((total, error) => {
+      return total + (error.estimatedCost || 0);
+    }, 0);
+
+    // Determine priority
+    if (summary.criticalErrors > 0) {
+      summary.priority = "high";
+    } else if (summary.mediumErrors > 2) {
+      summary.priority = "medium";
+    }
+
+    // Generate recommendations
+    if (summary.criticalErrors > 0) {
+      summary.recommendations.push(
+        "Immediate attention required - critical errors detected"
+      );
+    }
+    if (
+      summary.categories["Engine"] &&
+      summary.categories["Engine"].count > 0
+    ) {
+      summary.recommendations.push("Engine diagnostics recommended");
+    }
+    if (
+      summary.categories["Transmission"] &&
+      summary.categories["Transmission"].count > 0
+    ) {
+      summary.recommendations.push("Transmission inspection recommended");
+    }
+    if (
+      summary.categories["Safety Systems"] &&
+      summary.categories["Safety Systems"].count > 0
+    ) {
+      summary.recommendations.push("Safety system inspection required");
+    }
+
+    return summary;
   }
 
   /**
@@ -587,8 +738,8 @@ class VCDSParserService {
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        // Look for the pattern: "17158 - Description" or "25472 - Description"
-        const errorMatch = line.match(/^(\d{5})\s*-\s*([^\n\r]+)$/);
+        // Look for the pattern: "17158 - Description" or "25472 - Description" or "0295 - Description"
+        const errorMatch = line.match(/^(\d{4,5})\s*-\s*([^\n\r]+)$/);
 
         if (errorMatch) {
           const code = errorMatch[1];
@@ -609,7 +760,7 @@ class VCDSParserService {
       }
     }
 
-    // Also look for OBD-II codes (P, C, B, U codes) but only in context
+    // Also look for OBD-II codes (P, C, B, U codes) in the content
     const obdPatterns = {
       pCode: /P\d{4}/gi,
       cCode: /C\d{4}/gi,
@@ -637,6 +788,27 @@ class VCDSParserService {
       }
     });
 
+    // Also look for standalone error codes in lines (for test cases)
+    const lines = content.split("\n");
+    lines.forEach((line) => {
+      // Look for patterns like "P0300 - Random/Multiple Cylinder Misfire Detected"
+      const obdMatch = line.match(/^(P|C|B|U)(\d{4})\s*-\s*([^\n\r]+)$/i);
+      if (obdMatch) {
+        const code = obdMatch[1] + obdMatch[2];
+        const description = obdMatch[3].trim();
+
+        if (!extractedCodes.has(code)) {
+          extractedCodes.add(code);
+
+          const errorDetails = this.getErrorDetails(code, content);
+          if (errorDetails) {
+            errorDetails.description = description;
+            errorCodes.push(errorDetails);
+          }
+        }
+      }
+    });
+
     return errorCodes;
   }
 
@@ -649,7 +821,10 @@ class VCDSParserService {
   getErrorDetails(code, content) {
     // Check if we have known information for this code
     if (this.knownErrorCodes[code]) {
-      return this.knownErrorCodes[code];
+      return {
+        code: code,
+        ...this.knownErrorCodes[code],
+      };
     }
 
     // Try to extract description from content
@@ -661,7 +836,7 @@ class VCDSParserService {
     const estimatedCost = this.estimateCost(category, severity);
 
     return {
-      code,
+      code: code,
       description: description || `Error Code ${code}`,
       severity,
       category,

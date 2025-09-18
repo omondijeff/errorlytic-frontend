@@ -13,13 +13,16 @@ const authRoutes = require("./routes/auth");
 const quotationRoutes = require("./routes/quotations");
 const errorCodeRoutes = require("./routes/errorCodes");
 const uploadRoutes = require("./routes/upload");
+const analysisRoutes = require("./routes/analysis");
 
 // Import middleware
 const { errorHandler } = require("./middleware/errorHandler");
 const { authMiddleware } = require("./middleware/auth");
 
-// OpenAI service for AI-powered error code explanations
+// Import services
 const openaiService = require("./services/openaiService");
+const minioService = require("./services/minioService");
+const redisService = require("./services/redisService");
 
 // Connect to MongoDB
 mongoose
@@ -91,7 +94,14 @@ app.get("/health", (req, res) => {
   });
 });
 
-// API routes
+// API routes - VAGnosis v1 API
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/quotations", authMiddleware, quotationRoutes);
+app.use("/api/v1/error-codes", errorCodeRoutes);
+app.use("/api/v1/upload", authMiddleware, uploadRoutes);
+app.use("/api/v1/analysis", authMiddleware, analysisRoutes);
+
+// Legacy API routes (for backward compatibility)
 app.use("/api/auth", authRoutes);
 app.use("/api/quotations", authMiddleware, quotationRoutes);
 app.use("/api/error-codes", errorCodeRoutes);
@@ -100,14 +110,34 @@ app.use("/api/upload", authMiddleware, uploadRoutes);
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
-    message: "VAG Car Quotation Estimate System API",
+    message: "VAGnosis SaaS API - Automotive Diagnostic Platform",
     version: "1.0.0",
+    description:
+      "Multi-tenant SaaS platform for VAG vehicle diagnostics with AI-powered analysis",
     endpoints: {
-      auth: "/api/auth",
-      quotations: "/api/quotations",
-      errorCodes: "/api/error-codes",
-      upload: "/api/upload",
+      v1: {
+        auth: "/api/v1/auth",
+        quotations: "/api/v1/quotations",
+        errorCodes: "/api/v1/error-codes",
+        upload: "/api/v1/upload",
+        analysis: "/api/v1/analysis",
+      },
+      legacy: {
+        auth: "/api/auth",
+        quotations: "/api/quotations",
+        errorCodes: "/api/error-codes",
+        upload: "/api/upload",
+      },
     },
+    features: [
+      "Multi-tenant organization support",
+      "RBAC with 6 user roles",
+      "Multi-currency support (KES, UGX, TZS, USD)",
+      "S3-compatible file storage",
+      "AI-powered DTC analysis",
+      "Real-time caching with Redis",
+      "Comprehensive audit logging",
+    ],
   });
 });
 

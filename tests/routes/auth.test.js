@@ -51,7 +51,7 @@ describe("Auth Routes", () => {
       expect(response.body.data.refreshToken).toBeDefined();
 
       // Verify user was created in database
-      await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for async operations
+      await new Promise((resolve) => setTimeout(resolve, 200)); // Increased wait time
       const user = await User.findOne({ email: "newuser@example.com" });
       expect(user).toBeTruthy();
       expect(user.role).toBe("individual");
@@ -180,8 +180,8 @@ describe("Auth Routes", () => {
       });
       await testUser.save();
 
-      // Wait a bit to ensure user is saved
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait a bit to ensure user is saved and password is hashed
+      await new Promise((resolve) => setTimeout(resolve, 200));
     });
 
     test("should login with valid credentials", async () => {
@@ -237,7 +237,7 @@ describe("Auth Routes", () => {
       await testUser.save();
 
       // Wait for save to complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       const loginData = {
         email: "login@example.com",

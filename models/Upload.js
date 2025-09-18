@@ -71,6 +71,10 @@ const uploadSchema = new mongoose.Schema(
       rawContent: String,
       parseErrors: [String],
     },
+    analysisId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Analysis",
+    },
     isActive: {
       type: Boolean,
       default: true,

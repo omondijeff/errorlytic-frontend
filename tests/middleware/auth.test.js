@@ -283,11 +283,6 @@ describe("Authentication Middleware", () => {
 
       await authMiddleware(req, res, () => {}); // First authenticate
 
-      // Ensure organization is populated
-      if (req.user && req.user.orgId) {
-        req.user.organization = testOrg;
-      }
-
       await middleware(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(403);

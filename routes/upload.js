@@ -1,47 +1,37 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs").promises;
 const { body, validationResult } = require("express-validator");
-const Quotation = require("../models/Quotation");
+const { authMiddleware, requireRole } = require("../middleware/auth");
+const Upload = require("../models/Upload");
+const Analysis = require("../models/Analysis");
+const Vehicle = require("../models/Vehicle");
+const Metering = require("../models/Metering");
+const AuditLog = require("../models/AuditLog");
+const minioService = require("../services/minioService");
+const redisService = require("../services/redisService");
 const vcdsParserService = require("../services/vcdsParserService");
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const uploadDir = process.env.UPLOAD_PATH || "./uploads";
+// Configure multer for memory storage (we'll upload directly to MinIO)
+const storage = multer.memoryStorage();
 
-    try {
-      await fs.mkdir(uploadDir, { recursive: true });
-      cb(null, uploadDir);
-    } catch (error) {
-      cb(error);
-    }
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, `vcds-${uniqueSuffix}${ext}`);
-  },
-});
-
-// File filter for VCDS reports
+// File filter for VCDS/OBD reports
 const fileFilter = (req, file, cb) => {
-  // Allow common VCDS report formats
   const allowedMimeTypes = [
     "text/plain", // .txt files
     "text/csv", // .csv files
     "application/pdf", // .pdf files
+    "application/xml", // .xml files
+    "text/xml", // .xml files
     "application/vnd.ms-excel", // .xls files
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx files
-    "application/json", // .json files
   ];
 
-  const allowedExtensions = [".txt", ".csv", ".pdf", ".xls", ".xlsx", ".json"];
-  const fileExt = path.extname(file.originalname).toLowerCase();
+  const allowedExtensions = [".txt", ".csv", ".pdf", ".xml", ".xls", ".xlsx"];
+  const fileExt = file.originalname
+    .toLowerCase()
+    .substring(file.originalname.lastIndexOf("."));
 
   if (
     allowedMimeTypes.includes(file.mimetype) ||
@@ -50,7 +40,7 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
   } else {
     cb(
-      new Error("Invalid file type. Only VCDS report formats are allowed."),
+      new Error("Invalid file type. Only VCDS/OBD report formats are allowed."),
       false
     );
   }
@@ -66,16 +56,19 @@ const upload = multer({
   },
 });
 
-// @route   POST /api/upload/vcds-report
-// @desc    Upload VCDS report for a quotation
+// @route   POST /api/v1/upload
+// @desc    Upload VCDS/OBD report file
 // @access  Private
 router.post(
-  "/vcds-report",
+  "/",
+  authMiddleware,
   [
-    body("quotationId")
-      .isMongoId()
-      .withMessage("Valid quotation ID is required"),
-    upload.single("vcdsReport"),
+    body("vehicleId").optional().isMongoId().withMessage("Invalid vehicle ID"),
+    body("source")
+      .optional()
+      .isIn(["VCDS", "OBD", "Other"])
+      .withMessage("Invalid source"),
+    upload.single("file"),
   ],
   async (req, res) => {
     try {
@@ -83,443 +76,469 @@ router.post(
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
-          success: false,
+          type: "validation_error",
+          title: "Validation Failed",
           errors: errors.array(),
         });
       }
 
       if (!req.file) {
         return res.status(400).json({
-          success: false,
-          error: "No file uploaded",
+          type: "missing_file",
+          title: "No File Uploaded",
+          detail: "Please select a file to upload",
         });
       }
 
-      const { quotationId } = req.body;
+      const { vehicleId, source = "Other" } = req.body;
+      const userId = req.user._id;
+      const orgId = req.user.orgId;
 
-      // Verify quotation exists and belongs to user
-      const quotation = await Quotation.findOne({
-        _id: quotationId,
-        user: req.user._id,
-        isActive: true,
-      });
-
-      if (!quotation) {
-        // Delete uploaded file if quotation not found
-        await fs.unlink(req.file.path);
-
-        return res.status(404).json({
-          success: false,
-          error: "Quotation not found",
+      // Verify vehicle belongs to user/organization if provided
+      if (vehicleId) {
+        const vehicle = await Vehicle.findOne({
+          _id: vehicleId,
+          $or: [{ ownerUserId: userId }, { orgId: orgId }],
         });
-      }
 
-      // Check if quotation already has a VCDS report
-      if (quotation.vcdsReport) {
-        // Delete old file
-        try {
-          await fs.unlink(quotation.vcdsReport.filePath);
-        } catch (error) {
-          console.warn("Could not delete old VCDS report file:", error);
+        if (!vehicle) {
+          return res.status(404).json({
+            type: "vehicle_not_found",
+            title: "Vehicle Not Found",
+            detail:
+              "The specified vehicle does not exist or you don't have access to it",
+          });
         }
       }
 
-      // Update quotation with new VCDS report
-      quotation.vcdsReport = {
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        filePath: req.file.path,
-        fileSize: req.file.size,
-        uploadDate: new Date(),
-      };
-
-      // Reset status to draft when new report is uploaded
-      quotation.status = "draft";
-
-      // Clear previous error codes
-      quotation.errorCodes = [];
-
-      // Parse VCDS report and extract error codes
-      try {
-        const parseResult = await vcdsParserService.parseVCDSReport(
-          req.file.path
-        );
-
-        if (parseResult.success && parseResult.errorCodes.length > 0) {
-          // Add extracted error codes to quotation
-          quotation.errorCodes = parseResult.errorCodes.map((error) => ({
-            code: error.code,
-            description: error.description,
-            severity: error.severity,
-            category: error.category,
-            estimatedCost: error.estimatedCost,
-          }));
-
-          // Calculate total estimated cost
-          const totalPartsCost = parseResult.errorCodes.reduce(
-            (sum, error) => sum + error.estimatedCost,
-            0
-          );
-          quotation.totalEstimatedCost = totalPartsCost;
-
-          // Add vehicle and diagnostic information if available
-          if (parseResult.vehicleInfo) {
-            quotation.vehicleInfo = {
-              ...quotation.vehicleInfo,
-              ...parseResult.vehicleInfo,
-            };
-          }
-
-          if (parseResult.diagnosticInfo) {
-            quotation.diagnosticInfo = parseResult.diagnosticInfo;
-          }
-
-          console.log(
-            `Successfully parsed VCDS report: ${parseResult.errorCodes.length} error codes found`
-          );
-        } else {
-          console.log("No error codes found in VCDS report or parsing failed");
-        }
-      } catch (parseError) {
-        console.error("Error parsing VCDS report:", parseError);
-        // Continue with upload even if parsing fails
-      }
-
-      await quotation.save();
-
-      res.json({
-        success: true,
-        message: "VCDS report uploaded successfully",
-        data: {
-          vcdsReport: quotation.vcdsReport,
-          quotationId: quotation._id,
-        },
-      });
-    } catch (error) {
-      console.error("VCDS report upload error:", error);
-
-      // Clean up uploaded file on error
-      if (req.file) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch (unlinkError) {
-          console.warn("Could not delete uploaded file on error:", unlinkError);
-        }
-      }
-
-      res.status(500).json({
-        success: false,
-        error: "Internal server error while uploading VCDS report",
-      });
-    }
-  }
-);
-
-// @route   POST /api/upload/parse-vcds
-// @desc    Parse VCDS report and extract error codes
-// @access  Private
-router.post("/parse-vcds", upload.single("vcdsReport"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        error: "No file uploaded",
-      });
-    }
-
-    // Parse VCDS report
-    const parseResult = await vcdsParserService.parseVCDSReport(req.file.path);
-
-    // Clean up uploaded file after parsing
-    try {
-      await fs.unlink(req.file.path);
-    } catch (unlinkError) {
-      console.warn(
-        "Could not delete uploaded file after parsing:",
-        unlinkError
-      );
-    }
-
-    if (!parseResult.success) {
-      return res.status(400).json({
-        success: false,
-        error: "Failed to parse VCDS report",
-        details: parseResult.error,
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "VCDS report parsed successfully",
-      data: {
-        errorCodes: parseResult.errorCodes,
-        vehicleInfo: parseResult.vehicleInfo,
-        diagnosticInfo: parseResult.diagnosticInfo,
-        totalErrors: parseResult.errorCodes.length,
-        totalEstimatedCost: parseResult.errorCodes.reduce(
-          (sum, error) => sum + error.estimatedCost,
-          0
-        ),
-      },
-    });
-  } catch (error) {
-    console.error("VCDS parsing error:", error);
-
-    // Clean up uploaded file on error
-    if (req.file) {
-      try {
-        await fs.unlink(req.file.path);
-      } catch (unlinkError) {
-        console.warn("Could not delete uploaded file on error:", unlinkError);
-      }
-    }
-
-    res.status(500).json({
-      success: false,
-      error: "Internal server error while parsing VCDS report",
-    });
-  }
-});
-
-// @route   POST /api/upload/test-parse-vcds
-// @desc    Test VCDS parsing without authentication (for debugging)
-// @access  Public
-router.post(
-  "/test-parse-vcds",
-  upload.single("vcdsReport"),
-  async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          error: "No file uploaded",
-        });
-      }
-
-      console.log(
-        "Test parsing VCDS file:",
+      // Generate unique file key for MinIO
+      const fileKey = minioService.generateFileKey(
         req.file.originalname,
-        req.file.path
+        userId.toString(),
+        orgId ? orgId.toString() : null
       );
 
-      // Parse VCDS report
-      const parseResult = await vcdsParserService.parseVCDSReport(
-        req.file.path
+      // Upload file to MinIO
+      const uploadResult = await minioService.uploadFile(
+        req.file.buffer,
+        fileKey,
+        req.file.mimetype,
+        {
+          "original-name": req.file.originalname,
+          "uploaded-by": userId.toString(),
+          "organization-id": orgId ? orgId.toString() : "individual",
+          source: source,
+        }
       );
 
-      console.log("Parse result:", parseResult);
+      // Create upload record
+      const uploadRecord = new Upload({
+        orgId: orgId,
+        userId: userId,
+        vehicleId: vehicleId || null,
+        storage: {
+          bucket: uploadResult.bucket,
+          key: uploadResult.key,
+          size: uploadResult.size,
+          mime: req.file.mimetype,
+        },
+        status: "uploaded",
+        meta: {
+          source: source,
+          format: req.file.originalname.split(".").pop().toUpperCase(),
+        },
+      });
 
-      // Clean up uploaded file after parsing
-      try {
-        await fs.unlink(req.file.path);
-      } catch (unlinkError) {
-        console.warn(
-          "Could not delete uploaded file after parsing:",
-          unlinkError
-        );
-      }
+      await uploadRecord.save();
 
-      if (!parseResult.success) {
-        return res.status(400).json({
-          success: false,
-          error: "Failed to parse VCDS report",
-          details: parseResult.error,
-        });
-      }
+      // Log upload activity
+      await AuditLog.create({
+        actorId: userId,
+        orgId: orgId,
+        action: "file_uploaded",
+        target: {
+          type: "upload",
+          id: uploadRecord._id,
+          filename: req.file.originalname,
+          size: req.file.size,
+        },
+        meta: {
+          source: source,
+          format: uploadRecord.meta.format,
+        },
+      });
 
-      res.json({
+      // Record API usage
+      await Metering.create({
+        orgId: orgId,
+        userId: userId,
+        type: "parse",
+        count: 1,
+        period: new Date().toISOString().slice(0, 7), // YYYY-MM format
+      });
+
+      res.status(201).json({
         success: true,
-        message: "VCDS report parsed successfully (test endpoint)",
+        message: "File uploaded successfully",
         data: {
-          errorCodes: parseResult.errorCodes,
-          vehicleInfo: parseResult.vehicleInfo,
-          diagnosticInfo: parseResult.diagnosticInfo,
-          totalErrors: parseResult.errorCodes.length,
-          totalEstimatedCost: parseResult.errorCodes.reduce(
-            (sum, error) => sum + error.estimatedCost,
-            0
-          ),
+          uploadId: uploadRecord._id,
+          filename: req.file.originalname,
+          size: req.file.size,
+          status: uploadRecord.status,
+          storage: uploadRecord.storage,
         },
       });
     } catch (error) {
-      console.error("VCDS parsing error:", error);
-
-      // Clean up uploaded file on error
-      if (req.file) {
-        try {
-          await fs.unlink(req.file.path);
-        } catch (unlinkError) {
-          console.warn("Could not delete uploaded file on error:", unlinkError);
-        }
-      }
-
+      console.error("File upload error:", error);
       res.status(500).json({
-        success: false,
-        error: "Internal server error while parsing VCDS report",
+        type: "internal_error",
+        title: "Internal Server Error",
+        detail: "Failed to upload file",
       });
     }
   }
 );
 
-// @route   DELETE /api/upload/vcds-report/:quotationId
-// @desc    Remove VCDS report from a quotation
+// @route   POST /api/v1/upload/:uploadId/parse
+// @desc    Parse uploaded VCDS/OBD report
 // @access  Private
-router.delete("/vcds-report/:quotationId", async (req, res) => {
+router.post("/:uploadId/parse", authMiddleware, async (req, res) => {
   try {
-    const { quotationId } = req.params;
+    const { uploadId } = req.params;
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
 
-    // Verify quotation exists and belongs to user
-    const quotation = await Quotation.findOne({
-      _id: quotationId,
-      user: req.user._id,
-      isActive: true,
+    // Find upload record
+    const uploadRecord = await Upload.findOne({
+      _id: uploadId,
+      userId: userId,
+      status: "uploaded",
     });
 
-    if (!quotation) {
+    if (!uploadRecord) {
       return res.status(404).json({
-        success: false,
-        error: "Quotation not found",
+        type: "upload_not_found",
+        title: "Upload Not Found",
+        detail:
+          "The specified upload does not exist or has already been processed",
       });
     }
 
-    if (!quotation.vcdsReport) {
-      return res.status(400).json({
-        success: false,
-        error: "No VCDS report found for this quotation",
-      });
-    }
+    // Get file from MinIO
+    const fileUrl = await minioService.getFileUrl(uploadRecord.storage.key);
 
-    // Only allow removal if quotation is in draft status
-    if (quotation.status !== "draft") {
-      return res.status(400).json({
-        success: false,
-        error:
-          "Cannot remove VCDS report from quotation that is not in draft status",
-      });
-    }
+    // Determine file type from upload record
+    const fileType = uploadRecord.meta.format.toLowerCase();
 
-    // Delete file from filesystem
-    try {
-      await fs.unlink(quotation.vcdsReport.filePath);
-    } catch (error) {
-      console.warn("Could not delete VCDS report file:", error);
-    }
-
-    // Remove VCDS report from quotation
-    quotation.vcdsReport = undefined;
-    quotation.errorCodes = [];
-    quotation.status = "draft";
-
-    await quotation.save();
-
-    res.json({
-      success: true,
-      message: "VCDS report removed successfully",
-    });
-  } catch (error) {
-    console.error("VCDS report removal error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Internal server error while removing VCDS report",
-    });
-  }
-});
-
-// @route   GET /api/upload/vcds-report/:quotationId
-// @desc    Get VCDS report information for a quotation
-// @access  Private
-router.get("/vcds-report/:quotationId", async (req, res) => {
-  try {
-    const { quotationId } = req.params;
-
-    // Verify quotation exists and belongs to user
-    const quotation = await Quotation.findOne({
-      _id: quotationId,
-      user: req.user._id,
-      isActive: true,
-    });
-
-    if (!quotation) {
-      return res.status(404).json({
-        success: false,
-        error: "Quotation not found",
-      });
-    }
-
-    if (!quotation.vcdsReport) {
-      return res.status(404).json({
-        success: false,
-        error: "No VCDS report found for this quotation",
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        vcdsReport: quotation.vcdsReport,
-      },
-    });
-  } catch (error) {
-    console.error("VCDS report fetch error:", error);
-    res.status(500).json({
-      success: false,
-      error: "Internal server error while fetching VCDS report",
-    });
-  }
-});
-
-// @route   GET /api/upload/vcds-report/:quotationId/download
-// @desc    Download VCDS report file
-// @access  Private
-router.get("/vcds-report/:quotationId/download", async (req, res) => {
-  try {
-    const { quotationId } = req.params;
-
-    // Verify quotation exists and belongs to user
-    const quotation = await Quotation.findOne({
-      _id: quotationId,
-      user: req.user._id,
-      isActive: true,
-    });
-
-    if (!quotation) {
-      return res.status(404).json({
-        success: false,
-        error: "Quotation not found",
-      });
-    }
-
-    if (!quotation.vcdsReport) {
-      return res.status(404).json({
-        success: false,
-        error: "No VCDS report found for this quotation",
-      });
-    }
-
-    // Check if file exists
-    try {
-      await fs.access(quotation.vcdsReport.filePath);
-    } catch (error) {
-      return res.status(404).json({
-        success: false,
-        error: "VCDS report file not found on server",
-      });
-    }
-
-    // Set headers for file download
-    res.setHeader("Content-Type", "application/octet-stream");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${quotation.vcdsReport.originalName}"`
+    // Parse the file
+    const parseResult = await vcdsParserService.parseVCDSReport(
+      fileUrl,
+      fileType
     );
 
-    // Send file
-    res.sendFile(path.resolve(quotation.vcdsReport.filePath));
+    if (!parseResult.success) {
+      // Update upload status to failed
+      uploadRecord.status = "failed";
+      await uploadRecord.save();
+
+      return res.status(400).json({
+        type: "parse_failed",
+        title: "Parse Failed",
+        detail: parseResult.error || "Failed to parse the uploaded file",
+      });
+    }
+
+    // Update upload record with parse results
+    uploadRecord.status = "parsed";
+    uploadRecord.parseResult = {
+      dtcs: parseResult.errorCodes || [],
+      rawContent: parseResult.rawContent || "",
+      parseErrors: parseResult.parseErrors || [],
+      analysisSummary: parseResult.analysisSummary || {},
+      vehicleInfo: parseResult.vehicleInfo || {},
+      diagnosticInfo: parseResult.diagnosticInfo || {},
+    };
+    await uploadRecord.save();
+
+    // Create analysis record
+    const analysis = new Analysis({
+      orgId: orgId,
+      userId: userId,
+      vehicleId: uploadRecord.vehicleId,
+      uploadId: uploadRecord._id,
+      dtcs: parseResult.errorCodes || [],
+      summary: {
+        overview: parseResult.analysisSummary?.totalErrors
+          ? `Found ${parseResult.analysisSummary.totalErrors} error codes`
+          : "Analysis completed",
+        severity: parseResult.analysisSummary?.priority || "monitor",
+        totalErrors: parseResult.analysisSummary?.totalErrors || 0,
+        criticalErrors: parseResult.analysisSummary?.criticalErrors || 0,
+        estimatedCost: parseResult.analysisSummary?.estimatedTotalCost || 0,
+      },
+      causes: parseResult.analysisSummary?.categories
+        ? Object.keys(parseResult.analysisSummary.categories)
+        : [],
+      recommendations: parseResult.analysisSummary?.recommendations || [],
+      module: parseResult.vehicleInfo?.vin
+        ? "VIN: " + parseResult.vehicleInfo.vin
+        : "Unknown",
+      vehicleInfo: parseResult.vehicleInfo || {},
+      diagnosticInfo: parseResult.diagnosticInfo || {},
+    });
+
+    await analysis.save();
+
+    // Log analysis activity
+    await AuditLog.create({
+      actorId: userId,
+      orgId: orgId,
+      action: "analysis_created",
+      target: {
+        type: "analysis",
+        id: analysis._id,
+        uploadId: uploadRecord._id,
+        dtcCount: parseResult.errorCodes?.length || 0,
+      },
+      meta: {
+        source: uploadRecord.meta.source,
+        format: uploadRecord.meta.format,
+      },
+    });
+
+    // Record API usage
+    await Metering.create({
+      orgId: orgId,
+      userId: userId,
+      type: "analysis",
+      count: 1,
+      period: new Date().toISOString().slice(0, 7),
+    });
+
+    res.json({
+      success: true,
+      message: "File parsed successfully",
+      data: {
+        uploadId: uploadRecord._id,
+        analysisId: analysis._id,
+        dtcs: parseResult.errorCodes || [],
+        summary: analysis.summary,
+        vehicleInfo: parseResult.vehicleInfo,
+        diagnosticInfo: parseResult.diagnosticInfo,
+      },
+    });
   } catch (error) {
-    console.error("VCDS report download error:", error);
+    console.error("File parsing error:", error);
     res.status(500).json({
-      success: false,
-      error: "Internal server error while downloading VCDS report",
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "Failed to parse file",
+    });
+  }
+});
+
+// @route   GET /api/v1/upload
+// @desc    Get user's uploads
+// @access  Private
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
+    const { page = 1, limit = 10, status, vehicleId } = req.query;
+
+    // Build query
+    const query = { userId: userId };
+    if (orgId) {
+      query.orgId = orgId;
+    }
+    if (status) {
+      query.status = status;
+    }
+    if (vehicleId) {
+      query.vehicleId = vehicleId;
+    }
+
+    // Get uploads with pagination
+    const uploads = await Upload.find(query)
+      .populate("vehicleId", "make model year plate")
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await Upload.countDocuments(query);
+
+    res.json({
+      success: true,
+      data: {
+        uploads,
+        pagination: {
+          current: parseInt(page),
+          pages: Math.ceil(total / limit),
+          total,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get uploads error:", error);
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "Failed to retrieve uploads",
+    });
+  }
+});
+
+// @route   GET /api/v1/upload/:uploadId
+// @desc    Get specific upload details
+// @access  Private
+router.get("/:uploadId", authMiddleware, async (req, res) => {
+  try {
+    const { uploadId } = req.params;
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
+
+    const upload = await Upload.findOne({
+      _id: uploadId,
+      userId: userId,
+    }).populate("vehicleId", "make model year plate");
+
+    if (!upload) {
+      return res.status(404).json({
+        type: "upload_not_found",
+        title: "Upload Not Found",
+        detail: "The specified upload does not exist",
+      });
+    }
+
+    // Generate presigned URL for file access
+    const fileUrl = await minioService.getFileUrl(upload.storage.key);
+
+    res.json({
+      success: true,
+      data: {
+        upload: {
+          ...upload.toObject(),
+          fileUrl: fileUrl,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get upload error:", error);
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "Failed to retrieve upload",
+    });
+  }
+});
+
+// @route   DELETE /api/v1/upload/:uploadId
+// @desc    Delete upload and associated files
+// @access  Private
+router.delete("/:uploadId", authMiddleware, async (req, res) => {
+  try {
+    const { uploadId } = req.params;
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
+
+    const upload = await Upload.findOne({
+      _id: uploadId,
+      userId: userId,
+    });
+
+    if (!upload) {
+      return res.status(404).json({
+        type: "upload_not_found",
+        title: "Upload Not Found",
+        detail: "The specified upload does not exist",
+      });
+    }
+
+    // Delete file from MinIO
+    await minioService.deleteFile(upload.storage.key);
+
+    // Delete associated analysis if exists
+    await Analysis.deleteMany({ uploadId: uploadId });
+
+    // Delete upload record
+    await Upload.deleteOne({ _id: uploadId });
+
+    // Log deletion activity
+    await AuditLog.create({
+      actorId: userId,
+      orgId: orgId,
+      action: "file_deleted",
+      target: {
+        type: "upload",
+        id: uploadId,
+        filename: upload.storage.key,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Upload deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete upload error:", error);
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "Failed to delete upload",
+    });
+  }
+});
+
+// @route   GET /api/v1/upload/stats
+// @desc    Get upload statistics
+// @access  Private
+router.get("/stats", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
+
+    const query = { userId: userId };
+    if (orgId) {
+      query.orgId = orgId;
+    }
+
+    const stats = await Upload.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+          totalSize: { $sum: "$storage.size" },
+        },
+      },
+    ]);
+
+    const totalUploads = await Upload.countDocuments(query);
+    const totalSize = await Upload.aggregate([
+      { $match: query },
+      { $group: { _id: null, totalSize: { $sum: "$storage.size" } } },
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalUploads,
+        totalSize: totalSize[0]?.totalSize || 0,
+        byStatus: stats.reduce((acc, stat) => {
+          acc[stat._id] = {
+            count: stat.count,
+            size: stat.totalSize,
+          };
+          return acc;
+        }, {}),
+      },
+    });
+  } catch (error) {
+    console.error("Get upload stats error:", error);
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "Failed to retrieve upload statistics",
     });
   }
 });
@@ -529,23 +548,26 @@ router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
       return res.status(400).json({
-        success: false,
-        error: "File too large. Maximum size is 10MB.",
+        type: "file_too_large",
+        title: "File Too Large",
+        detail: "Maximum file size is 10MB",
       });
     }
 
     if (error.code === "LIMIT_UNEXPECTED_FILE") {
       return res.status(400).json({
-        success: false,
-        error: 'Unexpected file field. Use "vcdsReport" as the field name.',
+        type: "unexpected_file",
+        title: "Unexpected File Field",
+        detail: 'Use "file" as the field name',
       });
     }
   }
 
   if (error.message.includes("Invalid file type")) {
     return res.status(400).json({
-      success: false,
-      error: error.message,
+      type: "invalid_file_type",
+      title: "Invalid File Type",
+      detail: error.message,
     });
   }
 
