@@ -5,6 +5,9 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
+// Import Swagger documentation
+const { swaggerUi, specs, swaggerOptions } = require("./docs/swagger");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -95,6 +98,9 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Swagger API Documentation
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
+
 // API routes - VAGnosis v1 API
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/quotations", authMiddleware, quotationRoutes);
@@ -116,6 +122,10 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     description:
       "Multi-tenant SaaS platform for VAG vehicle diagnostics with AI-powered analysis",
+    documentation: {
+      swagger: "/api-docs",
+      description: "Interactive API documentation with Swagger UI"
+    },
     endpoints: {
       v1: {
         auth: "/api/v1/auth",
@@ -140,6 +150,7 @@ app.get("/", (req, res) => {
       "AI-powered DTC analysis",
       "Real-time caching with Redis",
       "Comprehensive audit logging",
+      "Interactive API documentation",
     ],
   });
 });

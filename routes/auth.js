@@ -28,9 +28,84 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
-// @route   POST /api/v1/auth/register
-// @desc    Register a new user
-// @access  Public
+/**
+ * @swagger
+ * /api/v1/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Create a new user account with email and password
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - profile
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: Password123
+ *               profile:
+ *                 type: object
+ *                 required:
+ *                   - name
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     example: John Doe
+ *                   phone:
+ *                     type: string
+ *                     example: +254712345678
+ *               role:
+ *                 type: string
+ *                 enum: [individual, garage_user, garage_admin, insurer_user, insurer_admin]
+ *                 default: individual
+ *                 example: individual
+ *               orgId:
+ *                 type: string
+ *                 description: Organization ID (required for non-individual roles)
+ *                 example: 507f1f77bcf86cd799439012
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: user_created
+ *               title: User Created Successfully
+ *               detail: User account has been created successfully
+ *               data:
+ *                 user:
+ *                   _id: 507f1f77bcf86cd799439011
+ *                   email: user@example.com
+ *                   role: individual
+ *                   profile:
+ *                     name: John Doe
+ *                   isActive: true
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: User already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post(
   "/register",
   [
@@ -143,9 +218,64 @@ router.post(
   }
 );
 
-// @route   POST /api/v1/auth/login
-// @desc    Authenticate user & get tokens
-// @access  Public
+/**
+ * @swagger
+ * /api/v1/auth/login:
+ *   post:
+ *     summary: Login user
+ *     description: Authenticate user with email and password, returns access and refresh tokens
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: Password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: login_successful
+ *               title: Login Successful
+ *               detail: User authenticated successfully
+ *               data:
+ *                 user:
+ *                   _id: 507f1f77bcf86cd799439011
+ *                   email: user@example.com
+ *                   role: individual
+ *                   profile:
+ *                     name: John Doe
+ *                 tokens:
+ *                   accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                   refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post(
   "/login",
   [
