@@ -11,9 +11,70 @@ const AuditLog = require("../models/AuditLog");
 
 const router = express.Router();
 
-// @route   POST /api/v1/analysis/process/:uploadId
-// @desc    Process uploaded VCDS/OBD report and create analysis
-// @access  Private (Garage users)
+/**
+ * @swagger
+ * /api/v1/analysis/process/{uploadId}:
+ *   post:
+ *     summary: Process uploaded file and create analysis
+ *     description: Process uploaded VCDS/OBD report and generate diagnostic analysis
+ *     tags: [Analysis]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uploadId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Upload ID
+ *         example: 507f1f77bcf86cd799439014
+ *     responses:
+ *       201:
+ *         description: Analysis created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: analysis_created
+ *               title: Analysis Created Successfully
+ *               detail: Analysis has been created successfully
+ *               data:
+ *                 analysis:
+ *                   _id: 507f1f77bcf86cd799439015
+ *                   summary:
+ *                     overview: Found 1 critical error code requiring immediate attention
+ *                     severity: critical
+ *                   dtcs:
+ *                     - code: P0300
+ *                       description: Random/Multiple Cylinder Misfire Detected
+ *                       status: active
+ *                   module: Engine
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Upload not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post(
   "/process/:uploadId",
   authMiddleware,

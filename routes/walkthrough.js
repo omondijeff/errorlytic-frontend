@@ -9,9 +9,70 @@ const Organization = require("../models/Organization");
 
 const router = express.Router();
 
-// @route   POST /api/v1/walkthrough/generate/:analysisId
-// @desc    Generate walkthrough steps for an analysis
-// @access  Private (Garage users only)
+/**
+ * @swagger
+ * /api/v1/walkthrough/generate/{analysisId}:
+ *   post:
+ *     summary: Generate repair walkthrough
+ *     description: Generate step-by-step repair walkthrough from analysis
+ *     tags: [Walkthroughs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Analysis ID
+ *         example: 507f1f77bcf86cd799439015
+ *     responses:
+ *       200:
+ *         description: Walkthrough generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: walkthrough_generated
+ *               title: Walkthrough Generated Successfully
+ *               detail: Repair walkthrough has been generated successfully
+ *               data:
+ *                 walkthrough:
+ *                   _id: 507f1f77bcf86cd799439016
+ *                   steps:
+ *                     - title: Check ignition system
+ *                       detail: Inspect spark plugs and coils
+ *                       type: check
+ *                       estMinutes: 30
+ *                       order: 1
+ *                   difficulty: medium
+ *                   totalEstimatedTime: 90
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Analysis not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post(
   "/generate/:analysisId",
   authMiddleware,
@@ -248,9 +309,51 @@ router.delete(
   }
 );
 
-// @route   GET /api/v1/walkthrough/:walkthroughId/export
-// @desc    Export walkthrough as PDF
-// @access  Private
+/**
+ * @swagger
+ * /api/v1/walkthrough/{walkthroughId}/export:
+ *   get:
+ *     summary: Export walkthrough as PDF
+ *     description: Generate and download repair walkthrough as PDF document
+ *     tags: [Walkthroughs]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: walkthroughId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Walkthrough ID
+ *         example: 507f1f77bcf86cd799439016
+ *     responses:
+ *       200:
+ *         description: PDF generated successfully
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *             example: "<!DOCTYPE html>..."
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Walkthrough not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/:walkthroughId/export", authMiddleware, async (req, res) => {
   try {
     const { walkthroughId } = req.params;

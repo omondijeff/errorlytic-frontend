@@ -56,9 +56,80 @@ const upload = multer({
   },
 });
 
-// @route   POST /api/v1/upload
-// @desc    Upload VCDS/OBD report file
-// @access  Private
+/**
+ * @swagger
+ * /api/v1/upload:
+ *   post:
+ *     summary: Upload VCDS/OBD file
+ *     description: Upload and parse VCDS/OBD diagnostic files
+ *     tags: [Uploads]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: VCDS/OBD diagnostic file (TXT, PDF, XML, CSV, XLS, XLSX)
+ *               vehicleId:
+ *                 type: string
+ *                 description: Vehicle ID (optional)
+ *                 example: 507f1f77bcf86cd799439013
+ *               source:
+ *                 type: string
+ *                 enum: [VCDS, OBD, Other]
+ *                 default: VCDS
+ *                 description: Diagnostic tool source
+ *     responses:
+ *       201:
+ *         description: File uploaded and parsed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: file_uploaded
+ *               title: File Uploaded Successfully
+ *               detail: File has been uploaded and parsed successfully
+ *               data:
+ *                 upload:
+ *                   _id: 507f1f77bcf86cd799439014
+ *                   status: parsed
+ *                   meta:
+ *                     source: VCDS
+ *                     format: TXT
+ *                     originalName: vcds-report.txt
+ *                   parseResult:
+ *                     dtcs:
+ *                       - code: P0300
+ *                         description: Random/Multiple Cylinder Misfire Detected
+ *                         status: active
+ *       400:
+ *         description: Validation error or invalid file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       413:
+ *         description: File too large
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post(
   "/",
   authMiddleware,

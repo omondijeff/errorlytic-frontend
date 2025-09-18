@@ -6,9 +6,84 @@ const openaiService = require("../services/openaiService");
 
 const router = express.Router();
 
-// @route   GET /api/error-codes
-// @desc    Get all error codes with filtering and pagination
-// @access  Public
+/**
+ * @swagger
+ * /api/v1/error-codes:
+ *   get:
+ *     summary: Get DTC error codes
+ *     description: Retrieve diagnostic trouble codes with filtering and pagination
+ *     tags: [Error Codes]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of items per page
+ *         example: 10
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         description: Filter by DTC code
+ *         example: P0300
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [Engine, Transmission, ABS, Airbag, Climate, Body, Other]
+ *         description: Filter by category
+ *         example: Engine
+ *       - in: query
+ *         name: severity
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high, critical]
+ *         description: Filter by severity
+ *         example: critical
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search in title and description
+ *         example: misfire
+ *     responses:
+ *       200:
+ *         description: Error codes retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: error_codes_retrieved
+ *               title: Error Codes Retrieved Successfully
+ *               data:
+ *                 errorCodes:
+ *                   - _id: 507f1f77bcf86cd799439018
+ *                     code: P0300
+ *                     title: Random/Multiple Cylinder Misfire Detected
+ *                     category: Engine
+ *                     severity: critical
+ *                     description: This code indicates that the engine control module has detected random or multiple cylinder misfires
+ *               meta:
+ *                 total: 1
+ *                 page: 1
+ *                 pages: 1
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get(
   "/",
   [

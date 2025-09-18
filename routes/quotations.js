@@ -10,9 +10,92 @@ const Organization = require("../models/Organization");
 
 const router = express.Router();
 
-// @route   POST /api/v1/quotations/generate/:analysisId
-// @desc    Generate quotation from analysis and walkthrough
-// @access  Private (Garage users only)
+/**
+ * @swagger
+ * /api/v1/quotations/generate/{analysisId}:
+ *   post:
+ *     summary: Generate quotation from analysis
+ *     description: Generate a detailed quotation from analysis and walkthrough data
+ *     tags: [Quotations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Analysis ID
+ *         example: 507f1f77bcf86cd799439015
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               currency:
+ *                 type: string
+ *                 enum: [KES, UGX, TZS, USD]
+ *                 example: KES
+ *               laborRate:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 2500
+ *               markupPct:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 100
+ *                 example: 15
+ *               taxPct:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 100
+ *                 example: 16
+ *               useOEMParts:
+ *                 type: boolean
+ *                 example: true
+ *               notes:
+ *                 type: string
+ *                 maxLength: 1000
+ *                 example: "This quotation includes all necessary parts and labor."
+ *     responses:
+ *       201:
+ *         description: Quotation generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *             example:
+ *               type: quotation_generated
+ *               title: Quotation Generated Successfully
+ *               detail: Quotation has been generated successfully
+ *               data:
+ *                 quotation:
+ *                   _id: 507f1f77bcf86cd799439017
+ *                   currency: KES
+ *                   totals:
+ *                     grand: 18964
+ *                   status: draft
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post(
   "/generate/:analysisId",
   authMiddleware,
@@ -420,9 +503,51 @@ router.delete(
   }
 );
 
-// @route   GET /api/v1/quotations/:quotationId/export
-// @desc    Export quotation as PDF
-// @access  Private
+/**
+ * @swagger
+ * /api/v1/quotations/{quotationId}/export:
+ *   get:
+ *     summary: Export quotation as PDF
+ *     description: Generate and download quotation as PDF document
+ *     tags: [Quotations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: quotationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Quotation ID
+ *         example: 507f1f77bcf86cd799439017
+ *     responses:
+ *       200:
+ *         description: PDF generated successfully
+ *         content:
+ *           text/html:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *             example: "<!DOCTYPE html>..."
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Quotation not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/:quotationId/export", authMiddleware, async (req, res) => {
   try {
     const { quotationId } = req.params;
