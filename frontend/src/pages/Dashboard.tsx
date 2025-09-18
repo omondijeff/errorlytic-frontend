@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center space-x-4 mb-4">
             <img 
               src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
-              alt="DeQuote Logo" 
+              alt="VAGnosis Logo" 
               className="h-12 w-auto"
             />
             <div>

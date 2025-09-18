@@ -21,7 +21,7 @@ export const useTheme = () => {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     // Check localStorage first, then system preference, default to dark
-    const savedTheme = localStorage.getItem('dequote-theme') as Theme;
+    const savedTheme = localStorage.getItem('vagnosis-theme') as Theme;
     if (savedTheme) return savedTheme;
     
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
@@ -33,7 +33,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('dequote-theme', newTheme);
+    localStorage.setItem('vagnosis-theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
@@ -53,7 +53,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
     const handleChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('dequote-theme')) {
+      if (!localStorage.getItem('vagnosis-theme')) {
         setTheme(e.matches ? 'light' : 'dark');
       }
     };

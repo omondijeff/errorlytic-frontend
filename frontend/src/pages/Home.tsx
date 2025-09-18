@@ -94,7 +94,7 @@ const Home: React.FC = () => {
             >
               <img 
                 src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
-                alt="DeQuote Logo" 
+                alt="VAGnosis Logo" 
                 className="h-24 w-auto drop-shadow-2xl"
               />
             </motion.div>

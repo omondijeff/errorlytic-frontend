@@ -18,6 +18,7 @@ const errorCodeRoutes = require("./routes/errorCodes");
 const uploadRoutes = require("./routes/upload");
 const analysisRoutes = require("./routes/analysis");
 const walkthroughRoutes = require("./routes/walkthrough");
+const billingRoutes = require("./routes/billing");
 
 // Import middleware
 const { errorHandler } = require("./middleware/errorHandler");
@@ -30,10 +31,13 @@ const redisService = require("./services/redisService");
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/dequote_vag", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(
+    process.env.MONGODB_URI || "mongodb://localhost:27017/vagnosis_saas",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -108,6 +112,7 @@ app.use("/api/v1/error-codes", errorCodeRoutes);
 app.use("/api/v1/upload", authMiddleware, uploadRoutes);
 app.use("/api/v1/analysis", authMiddleware, analysisRoutes);
 app.use("/api/v1/walkthrough", authMiddleware, walkthroughRoutes);
+app.use("/api/v1/billing", billingRoutes);
 
 // Legacy API routes (for backward compatibility)
 app.use("/api/auth", authRoutes);
@@ -124,7 +129,7 @@ app.get("/", (req, res) => {
       "Multi-tenant SaaS platform for VAG vehicle diagnostics with AI-powered analysis",
     documentation: {
       swagger: "/api-docs",
-      description: "Interactive API documentation with Swagger UI"
+      description: "Interactive API documentation with Swagger UI",
     },
     endpoints: {
       v1: {
@@ -134,6 +139,7 @@ app.get("/", (req, res) => {
         upload: "/api/v1/upload",
         analysis: "/api/v1/analysis",
         walkthrough: "/api/v1/walkthrough",
+        billing: "/api/v1/billing",
       },
       legacy: {
         auth: "/api/auth",
@@ -151,6 +157,8 @@ app.get("/", (req, res) => {
       "Real-time caching with Redis",
       "Comprehensive audit logging",
       "Interactive API documentation",
+      "Flexible billing system (subscriptions + micropayments)",
+      "Usage metering and quota management",
     ],
   });
 });

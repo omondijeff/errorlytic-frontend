@@ -21,11 +21,13 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 ## 🏗️ **API Architecture**
 
 ### **Authentication & Authorization**
+
 - **JWT-based authentication** with access and refresh tokens
 - **Role-based access control (RBAC)** with 6 user roles
 - **Multi-tenant organization support**
 
 ### **Core Features**
+
 - **Multi-currency support** (KES, UGX, TZS, USD)
 - **S3-compatible file storage** (MinIO integration)
 - **AI-powered DTC analysis** (OpenAI integration)
@@ -37,6 +39,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 ## 📋 **API Endpoints Overview**
 
 ### **Authentication** (`/api/v1/auth`)
+
 - `POST /register` - Register new user
 - `POST /login` - User login with JWT tokens
 - `POST /refresh` - Refresh access token
@@ -45,6 +48,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - `POST /logout` - User logout
 
 ### **Organizations** (`/api/v1/organizations`)
+
 - `POST /` - Create organization (Superadmin only)
 - `GET /` - List organizations (Superadmin only)
 - `GET /:id` - Get organization details
@@ -52,6 +56,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - `DELETE /:id` - Delete organization (Superadmin only)
 
 ### **Vehicles** (`/api/v1/vehicles`)
+
 - `POST /` - Add vehicle
 - `GET /` - List vehicles
 - `GET /:id` - Get vehicle details
@@ -59,12 +64,14 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - `DELETE /:id` - Delete vehicle
 
 ### **File Uploads** (`/api/v1/upload`)
+
 - `POST /` - Upload VCDS/OBD file
 - `GET /` - List uploads
 - `GET /:id` - Get upload details
 - `DELETE /:id` - Delete upload
 
 ### **Analysis** (`/api/v1/analysis`)
+
 - `POST /generate/:uploadId` - Generate analysis from upload
 - `GET /` - List analyses
 - `GET /:id` - Get analysis details
@@ -72,6 +79,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - `DELETE /:id` - Delete analysis
 
 ### **Walkthroughs** (`/api/v1/walkthrough`)
+
 - `POST /generate/:analysisId` - Generate repair walkthrough
 - `GET /:analysisId` - Get walkthrough
 - `PUT /:walkthroughId` - Update walkthrough
@@ -80,6 +88,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - `GET /:walkthroughId/export` - Export walkthrough as PDF
 
 ### **Quotations** (`/api/v1/quotations`)
+
 - `POST /generate/:analysisId` - Generate quotation
 - `GET /` - List quotations
 - `GET /:id` - Get quotation details
@@ -92,6 +101,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - `DELETE /:id` - Delete quotation
 
 ### **Error Codes** (`/api/v1/error-codes`)
+
 - `GET /` - List DTC codes
 - `GET /:code` - Get DTC code details
 - `POST /` - Add DTC code (Admin only)
@@ -103,12 +113,14 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 ## 🔐 **Authentication**
 
 ### **Getting Started**
+
 1. **Register** a new user: `POST /api/v1/auth/register`
 2. **Login** to get tokens: `POST /api/v1/auth/login`
 3. **Use access token** in Authorization header: `Bearer <access_token>`
 4. **Refresh token** when expired: `POST /api/v1/auth/refresh`
 
 ### **User Roles**
+
 - **`individual`** - Individual users
 - **`garage_user`** - Garage employees
 - **`garage_admin`** - Garage administrators
@@ -117,6 +129,7 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 - **`superadmin`** - System administrators
 
 ### **Token Management**
+
 - **Access Token**: 15 minutes expiry
 - **Refresh Token**: 7 days expiry
 - **Automatic refresh**: Use refresh token to get new access token
@@ -126,13 +139,16 @@ Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specifica
 ## 💰 **Multi-Currency Support**
 
 ### **Supported Currencies**
+
 - **KES** - Kenyan Shilling
 - **UGX** - Ugandan Shilling
 - **TZS** - Tanzanian Shilling
 - **USD** - US Dollar
 
 ### **Currency Formatting**
+
 All monetary values are formatted with proper currency symbols:
+
 - KES: `KSh 1,000`
 - UGX: `USh 1,000`
 - TZS: `TSh 1,000`
@@ -143,6 +159,7 @@ All monetary values are formatted with proper currency symbols:
 ## 📊 **Data Models**
 
 ### **User Schema**
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439011",
@@ -165,6 +182,7 @@ All monetary values are formatted with proper currency symbols:
 ```
 
 ### **Organization Schema**
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439012",
@@ -182,6 +200,7 @@ All monetary values are formatted with proper currency symbols:
 ```
 
 ### **Vehicle Schema**
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439013",
@@ -196,6 +215,7 @@ All monetary values are formatted with proper currency symbols:
 ```
 
 ### **Analysis Schema**
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439015",
@@ -222,6 +242,7 @@ All monetary values are formatted with proper currency symbols:
 ```
 
 ### **Quotation Schema**
+
 ```json
 {
   "_id": "507f1f77bcf86cd799439017",
@@ -259,16 +280,18 @@ All monetary values are formatted with proper currency symbols:
 ## 🚀 **Getting Started**
 
 ### **1. Prerequisites**
+
 - Node.js 16+ installed
 - MongoDB running
 - Redis running (optional, for caching)
 - MinIO running (for file storage)
 
 ### **2. Installation**
+
 ```bash
 # Clone repository
 git clone <repository-url>
-cd deQuote
+cd VAGnosis
 
 # Install dependencies
 npm install
@@ -282,6 +305,7 @@ npm start
 ```
 
 ### **3. Environment Variables**
+
 ```bash
 # Database
 MONGODB_URI=mongodb://localhost:27017/vagnosis_saas
@@ -309,6 +333,7 @@ NODE_ENV=development
 ```
 
 ### **4. Testing the API**
+
 1. **Start the server**: `npm start`
 2. **Open Swagger UI**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 3. **Register a user** using the `/api/v1/auth/register` endpoint
@@ -322,6 +347,7 @@ NODE_ENV=development
 ## 📝 **API Response Format**
 
 ### **Success Response**
+
 ```json
 {
   "type": "success_type",
@@ -339,6 +365,7 @@ NODE_ENV=development
 ```
 
 ### **Error Response**
+
 ```json
 {
   "type": "error_type",
@@ -359,6 +386,7 @@ NODE_ENV=development
 ## 🔧 **Development Tools**
 
 ### **Testing**
+
 ```bash
 # Run all tests
 npm test
@@ -371,6 +399,7 @@ npm test -- --coverage
 ```
 
 ### **API Testing with cURL**
+
 ```bash
 # Register user
 curl -X POST http://localhost:3000/api/v1/auth/register \
@@ -400,6 +429,7 @@ curl -X GET http://localhost:3000/api/v1/auth/profile \
 ## 🤝 **Support**
 
 For API support and questions:
+
 - **Email**: support@vagnosis.com
 - **Documentation**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 - **Health Check**: [http://localhost:3000/health](http://localhost:3000/health)

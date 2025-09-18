@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# DeQuote Docker Management Script
+# VAGnosis Docker Management Script
 
 # Colors for output
 RED='\033[0;31m'
@@ -143,7 +143,7 @@ show_urls() {
 
 # Function to show help
 show_help() {
-    echo "DeQuote Docker Management Script"
+    echo "VAGnosis Docker Management Script"
     echo ""
     echo "Usage: $0 [COMMAND]"
     echo ""

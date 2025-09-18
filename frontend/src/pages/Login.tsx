@@ -57,7 +57,7 @@ const Login: React.FC = () => {
           }}>
             <img 
               src={theme === 'dark' ? "/logos/logo_light.png" : "/logos/logo_dark.png"} 
-              alt="DeQuote Logo" 
+              alt="VAGnosis Logo" 
               className="w-16 h-16 object-contain"
             />
           </div>

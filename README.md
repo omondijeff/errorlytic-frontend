@@ -1,4 +1,4 @@
-# DeQuote VAG Car Quotation System
+# VAGnosis SaaS Platform
 
 A comprehensive car quotation estimate system specifically designed for VAG Group vehicles (Volkswagen, Audi, Porsche, Skoda, Seat, Fiat) with AI-powered error code explanations and repair estimates in Kenya Shillings.
 
@@ -44,7 +44,7 @@ A comprehensive car quotation estimate system specifically designed for VAG Grou
 
 ```bash
 git clone <repository-url>
-cd deQuote
+cd VAGnosis
 ```
 
 ### 2. Environment Setup
@@ -63,7 +63,7 @@ NODE_ENV=development
 PORT=3000
 
 # MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017/dequote_vag
+MONGODB_URI=mongodb://localhost:27017/vagnosis_saas
 
 # OpenAI Configuration (Optional)
 OPENAI_API_KEY=your_openai_api_key_here
@@ -251,7 +251,7 @@ npm run docker:run   # Run Docker container
 ### Project Structure
 
 ```
-deQuote/
+VAGnosis/
 ├── models/          # Database models
 ├── routes/          # API route handlers
 ├── middleware/      # Custom middleware

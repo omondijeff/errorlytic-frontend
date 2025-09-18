@@ -9,7 +9,7 @@ services:
       - app
     restart: unless-stopped
     networks:
-      - dequote-network
+      - vagnosis-network
 
   app:
     build: .
@@ -17,7 +17,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://admin:password123@mongo:27017/dequote_vag?authSource=admin
+      - MONGODB_URI=mongodb://admin:password123@mongo:27017/vagnosis_saas?authSource=admin
       - OPENAI_API_KEY=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
       - JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
       - REDIS_URL=redis://redis:6379
@@ -35,7 +35,7 @@ services:
       - ./uploads:/app/uploads
     restart: unless-stopped
     networks:
-      - dequote-network
+      - vagnosis-network
 
   mongo:
     image: mongo:6.0
@@ -49,7 +49,7 @@ services:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     restart: unless-stopped
     networks:
-      - dequote-network
+      - vagnosis-network
 
   mongo-express:
     image: mongo-express:latest
@@ -63,7 +63,7 @@ services:
       - mongo
     restart: unless-stopped
     networks:
-      - dequote-network
+      - vagnosis-network
 
   redis:
     image: redis:7-alpine
@@ -73,7 +73,7 @@ services:
       - redis_data:/data
     restart: unless-stopped
     networks:
-      - dequote-network
+      - vagnosis-network
 
   minio:
     image: minio/minio:latest
@@ -88,10 +88,10 @@ services:
     command: server /data --console-address ":9001"
     restart: unless-stopped
     networks:
-      - dequote-network
+      - vagnosis-network
 
 networks:
-  dequote-network:
+  vagnosis-network:
     driver: bridge
 
 volumes:

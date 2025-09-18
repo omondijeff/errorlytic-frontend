@@ -1,6 +1,6 @@
-# DeQuote Docker Setup
+# VAGnosis Docker Setup
 
-This document explains how to run the entire DeQuote application (frontend + backend + database) using Docker.
+This document explains how to run the entire VAGnosis application (frontend + backend + database) using Docker.
 
 ## Architecture
 
@@ -22,7 +22,7 @@ The application consists of 4 main services:
 ### 1. Clone and Navigate
 
 ```bash
-cd deQuote
+cd VAGnosis
 ```
 
 ### 2. Set Environment Variables (Optional)
@@ -75,7 +75,7 @@ docker-compose up -d --build
 - **Port**: 27017
 - **Version**: 6.0
 - **Authentication**: Enabled (admin/password123)
-- **Database**: dequote_vag
+- **Database**: vagnosis_saas
 - **Persistence**: Docker volume (mongodb_data)
 
 ### Mongo Express Service
@@ -206,7 +206,7 @@ docker-compose ps
 docker-compose logs mongo
 
 # Verify MongoDB is accessible
-docker exec dequote-mongo-1 mongosh --eval "db.adminCommand('ping')"
+docker exec vagnosis-mongo-1 mongosh --eval "db.adminCommand('ping')"
 ```
 
 ### Reset Everything
@@ -254,7 +254,7 @@ docker-compose up -d --build
 ## File Structure
 
 ```
-deQuote/
+VAGnosis/
 ├── docker-compose.yml          # Main Docker orchestration
 ├── Dockerfile                  # Backend Docker configuration
 ├── frontend/

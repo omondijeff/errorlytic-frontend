@@ -1,0 +1,102 @@
+VAGnosis Pricing Strategy Guide
+
+1. Pricing Philosophy
+
+VAGnosis pricing is designed to be flexible, scalable, and accessible to
+different types of users in East Africa and beyond. The model balances
+pay-per-use micropayments for casual/low-volume users with subscription
+tiers for garages and insurers who need consistent access. The goal is
+to:
+
+- Lower barriers to entry for small garages and individuals.
+
+- Provide predictable costs for businesses.
+
+- Ensure high-value enterprise offerings for insurers and large repair
+  networks.
+
+2. Pricing Models
+
+A. Pay-Per-API Call (Micropayments)
+
+- Target Users: Small garages, car communities, individual car owners.
+
+- How It Works: Users pay for each API request (analysis, quotation, or
+  repair walkthrough).
+
+- Proposed Rate:
+
+  - $0.30 – $0.50 per call (KES 40–70).
+
+  - Bundles: e.g., 50 calls/month for a reduced price.
+
+Pros: Low upfront cost, easy adoption.
+Cons: Unpredictable billing for heavy users.
+
+B. Subscription Tiers
+
+1. Basic (Individuals / Communities)
+
+- Features: Access to Explained Analysis only.
+
+- Price: ~$10/month (KES 1,300).
+
+- Benefits: Affordable, easy for enthusiasts and small community admins.
+
+2. Pro (Garages)
+
+- Features: Full access to Explained Analysis + Repair Walkthrough +
+  Quotations.
+
+- Multi-currency support.
+
+- Exportable, customer-ready invoices.
+
+- Price: ~$50–75/month (KES 6,500–10,000).
+
+- Add-ons: Discounted API bundles for higher usage.
+
+3. Enterprise (Insurance Firms / Large Garages)
+
+- Features: Bulk/unlimited API calls.
+
+- Custom integrations into claims systems.
+
+- Dashboards with fraud detection & reporting.
+
+- Price: Starting from $500–1,000/month (KES 65,000–130,000).
+
+- Negotiated contracts depending on volume.
+
+3. Add-On Revenue Streams
+
+- Parts Marketplace Integration: Affiliate revenue from spare part
+  suppliers.
+
+- Predictive Maintenance Insights: Advanced analytics upsell for garages
+  & insurers.
+
+- Fraud Detection / Verification Reports: Enterprise-only premium
+  feature.
+
+4. Strategic Notes
+
+- Launch with subscription tiers + limited API bundles for early
+  adoption.
+
+- Use micropayments to penetrate communities & individuals.
+
+- Gradually introduce enterprise pricing as insurance partnerships
+  mature.
+
+5. Next Steps
+
+1.  Validate pricing with pilot garages and insurers.
+
+2.  Build billing system to support both API metering & subscriptions.
+
+3.  Test price sensitivity by offering limited discounts in early
+    pilots.
+
+Tagline: VAGnosis pricing — built for garages, insurers, and
+communities, from single scans to enterprise-scale.
