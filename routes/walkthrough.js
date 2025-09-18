@@ -2,6 +2,10 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { authMiddleware, requireRole } = require("../middleware/auth");
 const walkthroughService = require("../services/walkthroughService");
+const pdfService = require("../services/pdfService");
+const Walkthrough = require("../models/Walkthrough");
+const Analysis = require("../models/Analysis");
+const Organization = require("../models/Organization");
 
 const router = express.Router();
 
@@ -245,16 +249,71 @@ router.delete(
 );
 
 // @route   GET /api/v1/walkthrough/:walkthroughId/export
-// @desc    Export walkthrough as PDF (placeholder)
+// @desc    Export walkthrough as PDF
 // @access  Private
 router.get("/:walkthroughId/export", authMiddleware, async (req, res) => {
   try {
-    // TODO: Implement PDF export functionality
-    res.status(501).json({
-      type: "not_implemented",
-      title: "PDF Export Not Implemented",
-      detail: "PDF export functionality will be implemented in a future release",
-    });
+    const { walkthroughId } = req.params;
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
+
+    // Get walkthrough with all related data
+    const walkthrough = await Walkthrough.findById(walkthroughId)
+      .populate('analysisId');
+
+    if (!walkthrough) {
+      return res.status(404).json({
+        type: "walkthrough_not_found",
+        title: "Walkthrough Not Found",
+        detail: "Walkthrough not found",
+      });
+    }
+
+    // Get analysis data
+    const analysis = await Analysis.findById(walkthrough.analysisId)
+      .populate('vehicleId')
+      .populate('orgId');
+
+    if (!analysis) {
+      return res.status(404).json({
+        type: "analysis_not_found",
+        title: "Analysis Not Found",
+        detail: "Related analysis not found",
+      });
+    }
+
+    // Check access permissions
+    if (analysis.orgId && analysis.orgId._id.toString() !== orgId.toString()) {
+      return res.status(403).json({
+        type: "access_denied",
+        title: "Access Denied",
+        detail: "You don't have permission to access this walkthrough",
+      });
+    }
+
+    // Get organization data
+    const organization = analysis.orgId || await Organization.findById(orgId);
+
+    if (!organization) {
+      return res.status(404).json({
+        type: "organization_not_found",
+        title: "Organization Not Found",
+        detail: "Organization not found",
+      });
+    }
+
+    // Generate PDF
+    const pdfResult = await pdfService.generateWalkthroughPDF(
+      walkthrough,
+      analysis,
+      organization
+    );
+
+    // Set response headers for HTML download
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `attachment; filename="${pdfResult.filename}"`);
+    
+    res.status(200).send(pdfResult.html);
   } catch (error) {
     console.error("Error exporting walkthrough:", error);
     res.status(500).json({

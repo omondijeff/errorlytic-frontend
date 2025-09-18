@@ -2,6 +2,11 @@ const express = require("express");
 const { body, validationResult } = require("express-validator");
 const { authMiddleware, requireRole } = require("../middleware/auth");
 const quotationService = require("../services/quotationService");
+const pdfService = require("../services/pdfService");
+const Quotation = require("../models/Quotation");
+const Analysis = require("../models/Analysis");
+const Walkthrough = require("../models/Walkthrough");
+const Organization = require("../models/Organization");
 
 const router = express.Router();
 
@@ -416,7 +421,7 @@ router.delete(
 );
 
 // @route   GET /api/v1/quotations/:quotationId/export
-// @desc    Export quotation as PDF (placeholder)
+// @desc    Export quotation as PDF
 // @access  Private
 router.get("/:quotationId/export", authMiddleware, async (req, res) => {
   try {
@@ -424,17 +429,67 @@ router.get("/:quotationId/export", authMiddleware, async (req, res) => {
     const userId = req.user._id;
     const orgId = req.user.orgId;
 
-    const result = await quotationService.exportQuotationPDF(
-      quotationId,
-      userId,
-      orgId
+    // Get quotation with all related data
+    const quotation = await Quotation.findById(quotationId)
+      .populate('analysisId')
+      .populate('orgId');
+
+    if (!quotation) {
+      return res.status(404).json({
+        type: "quotation_not_found",
+        title: "Quotation Not Found",
+        detail: "Quotation not found",
+      });
+    }
+
+    // Check access permissions
+    if (quotation.orgId && quotation.orgId._id.toString() !== orgId.toString()) {
+      return res.status(403).json({
+        type: "access_denied",
+        title: "Access Denied",
+        detail: "You don't have permission to access this quotation",
+      });
+    }
+
+    // Get analysis and walkthrough data
+    const analysis = await Analysis.findById(quotation.analysisId)
+      .populate('vehicleId')
+      .populate('uploadId');
+
+    if (!analysis) {
+      return res.status(404).json({
+        type: "analysis_not_found",
+        title: "Analysis Not Found",
+        detail: "Related analysis not found",
+      });
+    }
+
+    const walkthrough = await Walkthrough.findOne({ analysisId: analysis._id });
+
+    // Get organization data
+    const organization = quotation.orgId || await Organization.findById(orgId);
+
+    if (!organization) {
+      return res.status(404).json({
+        type: "organization_not_found",
+        title: "Organization Not Found",
+        detail: "Organization not found",
+      });
+    }
+
+    // Generate PDF
+    const pdfResult = await pdfService.generateQuotationPDF(
+      quotation,
+      organization,
+      analysis,
+      walkthrough
     );
 
-    res.status(501).json({
-      type: "not_implemented",
-      title: "PDF Export Not Implemented",
-      detail: result.message,
-    });
+    // Set response headers for HTML download
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `attachment; filename="${pdfResult.filename}"`);
+    
+    res.status(200).send(pdfResult.html);
   } catch (error) {
     console.error("Error exporting quotation:", error);
     res.status(500).json({
