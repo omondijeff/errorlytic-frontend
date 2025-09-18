@@ -22,7 +22,7 @@ const Dashboard: React.FC = () => {
     { label: 'Total Quotations', value: '12', icon: FileText, color: 'from-blue-500 to-blue-700' },
     { label: 'Active Quotes', value: '5', icon: Car, color: 'from-green-500 to-green-700' },
     { label: 'Error Codes', value: '156', icon: AlertTriangle, color: 'from-orange-500 to-orange-700' },
-    { label: 'Total Revenue', value: 'KES 45,000', icon: DollarSign, color: 'from-primary-500 to-primary-700' }
+    { label: 'Total Revenue', value: 'KES 45,000', icon: DollarSign, color: 'from-red-500 to-red-700' }
   ];
 
   const recentQuotations = [
@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
   ];
 
   const quickActions = [
-    { title: 'Create Quotation', description: 'Start a new car repair quote', icon: Plus, link: '/quotations/create', color: 'from-primary-500 to-primary-700' },
+    { title: 'Create Quotation', description: 'Start a new car repair quote', icon: Plus, link: '/quotations/create', color: 'from-red-500 to-red-700' },
     { title: 'View Error Codes', description: 'Browse VAG error code database', icon: AlertTriangle, link: '/error-codes', color: 'from-orange-500 to-orange-700' },
     { title: 'Manage Quotes', description: 'View and edit quotations', icon: FileText, link: '/quotations', color: 'from-blue-500 to-blue-700' }
   ];
@@ -149,7 +149,9 @@ const Dashboard: React.FC = () => {
                     style={{ background: 'var(--bg-secondary)' }}
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ 
+                        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))'
+                      }}>
                         <Car className="w-5 h-5 text-white" />
                       </div>
                       <div>

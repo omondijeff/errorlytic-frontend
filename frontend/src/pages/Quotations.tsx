@@ -16,7 +16,9 @@ const Quotations: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-700 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6" style={{ 
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))'
+          }}>
             <FileText className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-4xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>VAG Culture Quotations</h1>

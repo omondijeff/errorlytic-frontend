@@ -18,18 +18,27 @@
   --text-tertiary: #a3a3a3;
   --text-muted: #737373;
   
-  --accent-primary: #dc2626;
-  --accent-secondary: #ef4444;
-  --accent-tertiary: #f87171;
+  --accent-primary: #FF0000;
+  --accent-secondary: #ff3333;
+  --accent-tertiary: #ff6666;
+  --accent-dark: #cc0000;
+  --accent-light: #ffcccc;
   
-  --border-primary: rgba(255, 255, 255, 0.1);
-  --border-secondary: rgba(255, 255, 255, 0.05);
+  --border-primary: rgba(255, 0, 0, 0.08);
+  --border-secondary: rgba(255, 0, 0, 0.05);
+  --border-tertiary: rgba(255, 0, 0, 0.03);
   
-  --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-secondary: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-primary: 0 8px 32px rgba(255, 0, 0, 0.15);
+  --shadow-secondary: 0 4px 16px rgba(255, 0, 0, 0.1);
   
   --glass-bg: rgba(26, 26, 26, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 0, 0, 0.05);
+  
+  /* Icon Colors */
+  --icon-primary: #FF0000;
+  --icon-secondary: #ff3333;
+  --icon-accent: #ff6666;
+  --icon-muted: #a3a3a3;
 }
 
 [data-theme="light"] {
@@ -44,18 +53,27 @@
   --text-tertiary: #64748b;
   --text-muted: #94a3b8;
   
-  --accent-primary: #dc2626;
-  --accent-secondary: #ef4444;
-  --accent-tertiary: #f87171;
+  --accent-primary: #FF0000;
+  --accent-secondary: #ff3333;
+  --accent-tertiary: #ff6666;
+  --accent-dark: #cc0000;
+  --accent-light: #ffcccc;
   
-  --border-primary: rgba(15, 23, 42, 0.1);
-  --border-secondary: rgba(15, 23, 42, 0.05);
+  --border-primary: rgba(255, 0, 0, 0.08);
+  --border-secondary: rgba(255, 0, 0, 0.05);
+  --border-tertiary: rgba(255, 0, 0, 0.03);
   
-  --shadow-primary: 0 8px 32px rgba(15, 23, 42, 0.1);
-  --shadow-secondary: 0 4px 16px rgba(15, 23, 42, 0.08);
+  --shadow-primary: 0 8px 32px rgba(255, 0, 0, 0.1);
+  --shadow-secondary: 0 4px 16px rgba(255, 0, 0, 0.08);
   
   --glass-bg: rgba(248, 250, 252, 0.8);
-  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-border: rgba(255, 0, 0, 0.05);
+  
+  /* Icon Colors */
+  --icon-primary: #FF0000;
+  --icon-secondary: #ff3333;
+  --icon-accent: #ff6666;
+  --icon-muted: #64748b;
 }
 
 /* Base Styles */
@@ -73,19 +91,20 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glass Card Effect */
+/* Glass Card */
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border-tertiary);
   border-radius: 16px;
-  box-shadow: var(--shadow-primary);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-secondary);
   transition: all 0.3s ease;
 }
 
 .glass-card:hover {
+  border-color: var(--border-primary);
+  box-shadow: var(--shadow-primary);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-secondary);
 }
 
 /* Glass Button */
@@ -121,7 +140,7 @@ body {
 .glass-button-secondary {
   background: var(--glass-bg);
   color: var(--text-primary);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-tertiary);
   padding: 12px 24px;
   border-radius: 12px;
   font-weight: 600;
@@ -138,7 +157,7 @@ body {
 
 .glass-button-secondary:hover {
   background: var(--bg-card-hover);
-  border-color: var(--accent-primary);
+  border-color: var(--border-primary);
   transform: translateY(-2px);
   box-shadow: var(--shadow-secondary);
 }
@@ -171,7 +190,7 @@ body {
 .input-field:focus {
   outline: none;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.05);
 }
 
 .input-field::placeholder {
@@ -220,7 +239,7 @@ body {
 /* Theme Toggle */
 .theme-toggle {
   background: var(--glass-bg);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-tertiary);
   border-radius: 12px;
   padding: 8px;
   cursor: pointer;
@@ -233,7 +252,24 @@ body {
 
 .theme-toggle:hover {
   background: var(--bg-card-hover);
-  border-color: var(--accent-primary);
+  border-color: var(--border-primary);
   transform: translateY(-2px);
   box-shadow: var(--shadow-secondary);
+}
+
+/* Icon Color Classes */
+.icon-primary {
+  color: var(--icon-primary) !important;
+}
+
+.icon-secondary {
+  color: var(--icon-secondary) !important;
+}
+
+.icon-accent {
+  color: var(--icon-accent) !important;
+}
+
+.icon-muted {
+  color: var(--icon-muted) !important;
 }

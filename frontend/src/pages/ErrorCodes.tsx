@@ -4,9 +4,9 @@ import { AlertTriangle, Search, Database, BookOpen, Zap } from 'lucide-react';
 
 const ErrorCodes: React.FC = () => {
   const stats = [
-    { label: 'Error Codes', value: '1000+', icon: Database },
-    { label: 'VAG Brands', value: '6', icon: BookOpen },
-    { label: 'AI Explanations', value: 'AI', icon: Zap }
+    { label: 'Error Codes', value: '1000+', icon: Database, color: 'from-red-500 to-red-700' },
+    { label: 'VAG Brands', value: '6', icon: BookOpen, color: 'from-blue-500 to-blue-700' },
+    { label: 'AI Explanations', value: 'AI', icon: Zap, color: 'from-green-500 to-green-700' }
   ];
 
   return (
@@ -59,7 +59,7 @@ const ErrorCodes: React.FC = () => {
                 transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
                 className="glass-card p-6 text-center"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className={`w-16 h-16 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
                   <Icon className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{stat.value}</div>

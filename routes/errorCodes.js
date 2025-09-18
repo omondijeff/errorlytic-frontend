@@ -1,6 +1,8 @@
 const express = require("express");
 const { query, validationResult } = require("express-validator");
 const ErrorCode = require("../models/ErrorCode");
+const { authMiddleware } = require("../middleware/auth");
+const openaiService = require("../services/openaiService");
 
 const router = express.Router();
 
@@ -380,5 +382,114 @@ router.get(
     }
   }
 );
+
+// @route   POST /api/error-codes/ai-explanation
+// @desc    Get AI-powered explanation for an error code
+// @access  Private
+router.post("/ai-explanation", authMiddleware, async (req, res) => {
+  try {
+    const { errorCode, description, vehicleMake, vehicleModel } = req.body;
+
+    if (!errorCode || !description) {
+      return res.status(400).json({
+        success: false,
+        error: "Error code and description are required",
+      });
+    }
+
+    const aiExplanation = await openaiService.generateAIExplanation(
+      errorCode,
+      description,
+      vehicleMake || "VAG",
+      vehicleModel || "Vehicle"
+    );
+
+    res.json({
+      success: true,
+      data: {
+        errorCode,
+        description,
+        aiExplanation,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Error generating AI explanation:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to generate AI explanation",
+    });
+  }
+});
+
+// @route   POST /api/error-codes/ai-estimate
+// @desc    Get AI-enhanced repair estimate
+// @access  Private
+router.post("/ai-estimate", authMiddleware, async (req, res) => {
+  try {
+    const { errorCodes, vehicleInfo } = req.body;
+
+    if (!errorCodes || !Array.isArray(errorCodes) || errorCodes.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Error codes array is required",
+      });
+    }
+
+    const aiEstimate = await openaiService.generateAIEnhancedEstimate(
+      errorCodes,
+      vehicleInfo || { make: "VAG", model: "Vehicle", year: "Unknown" }
+    );
+
+    res.json({
+      success: true,
+      data: aiEstimate,
+    });
+  } catch (error) {
+    console.error("Error generating AI estimate:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to generate AI estimate",
+    });
+  }
+});
+
+// @route   POST /api/error-codes/troubleshooting
+// @desc    Get AI-powered troubleshooting steps for an error code
+// @access  Private
+router.post("/troubleshooting", authMiddleware, async (req, res) => {
+  try {
+    const { errorCode, vehicleMake, vehicleModel } = req.body;
+
+    if (!errorCode) {
+      return res.status(400).json({
+        success: false,
+        error: "Error code is required",
+      });
+    }
+
+    const troubleshootingSteps =
+      await openaiService.generateTroubleshootingSteps(
+        errorCode,
+        vehicleMake || "VAG",
+        vehicleModel || "Vehicle"
+      );
+
+    res.json({
+      success: true,
+      data: {
+        errorCode,
+        troubleshootingSteps,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("Error generating troubleshooting steps:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to generate troubleshooting steps",
+    });
+  }
+});
 
 module.exports = router;

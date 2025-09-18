@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs").promises;
 const { body, validationResult } = require("express-validator");
 const Quotation = require("../models/Quotation");
+const vcdsParserService = require("../services/vcdsParserService");
 
 const router = express.Router();
 
@@ -138,6 +139,52 @@ router.post(
       // Clear previous error codes
       quotation.errorCodes = [];
 
+      // Parse VCDS report and extract error codes
+      try {
+        const parseResult = await vcdsParserService.parseVCDSReport(
+          req.file.path
+        );
+
+        if (parseResult.success && parseResult.errorCodes.length > 0) {
+          // Add extracted error codes to quotation
+          quotation.errorCodes = parseResult.errorCodes.map((error) => ({
+            code: error.code,
+            description: error.description,
+            severity: error.severity,
+            category: error.category,
+            estimatedCost: error.estimatedCost,
+          }));
+
+          // Calculate total estimated cost
+          const totalPartsCost = parseResult.errorCodes.reduce(
+            (sum, error) => sum + error.estimatedCost,
+            0
+          );
+          quotation.totalEstimatedCost = totalPartsCost;
+
+          // Add vehicle and diagnostic information if available
+          if (parseResult.vehicleInfo) {
+            quotation.vehicleInfo = {
+              ...quotation.vehicleInfo,
+              ...parseResult.vehicleInfo,
+            };
+          }
+
+          if (parseResult.diagnosticInfo) {
+            quotation.diagnosticInfo = parseResult.diagnosticInfo;
+          }
+
+          console.log(
+            `Successfully parsed VCDS report: ${parseResult.errorCodes.length} error codes found`
+          );
+        } else {
+          console.log("No error codes found in VCDS report or parsing failed");
+        }
+      } catch (parseError) {
+        console.error("Error parsing VCDS report:", parseError);
+        // Continue with upload even if parsing fails
+      }
+
       await quotation.save();
 
       res.json({
@@ -163,6 +210,152 @@ router.post(
       res.status(500).json({
         success: false,
         error: "Internal server error while uploading VCDS report",
+      });
+    }
+  }
+);
+
+// @route   POST /api/upload/parse-vcds
+// @desc    Parse VCDS report and extract error codes
+// @access  Private
+router.post("/parse-vcds", upload.single("vcdsReport"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "No file uploaded",
+      });
+    }
+
+    // Parse VCDS report
+    const parseResult = await vcdsParserService.parseVCDSReport(req.file.path);
+
+    // Clean up uploaded file after parsing
+    try {
+      await fs.unlink(req.file.path);
+    } catch (unlinkError) {
+      console.warn(
+        "Could not delete uploaded file after parsing:",
+        unlinkError
+      );
+    }
+
+    if (!parseResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Failed to parse VCDS report",
+        details: parseResult.error,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "VCDS report parsed successfully",
+      data: {
+        errorCodes: parseResult.errorCodes,
+        vehicleInfo: parseResult.vehicleInfo,
+        diagnosticInfo: parseResult.diagnosticInfo,
+        totalErrors: parseResult.errorCodes.length,
+        totalEstimatedCost: parseResult.errorCodes.reduce(
+          (sum, error) => sum + error.estimatedCost,
+          0
+        ),
+      },
+    });
+  } catch (error) {
+    console.error("VCDS parsing error:", error);
+
+    // Clean up uploaded file on error
+    if (req.file) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.warn("Could not delete uploaded file on error:", unlinkError);
+      }
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Internal server error while parsing VCDS report",
+    });
+  }
+});
+
+// @route   POST /api/upload/test-parse-vcds
+// @desc    Test VCDS parsing without authentication (for debugging)
+// @access  Public
+router.post(
+  "/test-parse-vcds",
+  upload.single("vcdsReport"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: "No file uploaded",
+        });
+      }
+
+      console.log(
+        "Test parsing VCDS file:",
+        req.file.originalname,
+        req.file.path
+      );
+
+      // Parse VCDS report
+      const parseResult = await vcdsParserService.parseVCDSReport(
+        req.file.path
+      );
+
+      console.log("Parse result:", parseResult);
+
+      // Clean up uploaded file after parsing
+      try {
+        await fs.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.warn(
+          "Could not delete uploaded file after parsing:",
+          unlinkError
+        );
+      }
+
+      if (!parseResult.success) {
+        return res.status(400).json({
+          success: false,
+          error: "Failed to parse VCDS report",
+          details: parseResult.error,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "VCDS report parsed successfully (test endpoint)",
+        data: {
+          errorCodes: parseResult.errorCodes,
+          vehicleInfo: parseResult.vehicleInfo,
+          diagnosticInfo: parseResult.diagnosticInfo,
+          totalErrors: parseResult.errorCodes.length,
+          totalEstimatedCost: parseResult.errorCodes.reduce(
+            (sum, error) => sum + error.estimatedCost,
+            0
+          ),
+        },
+      });
+    } catch (error) {
+      console.error("VCDS parsing error:", error);
+
+      // Clean up uploaded file on error
+      if (req.file) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          console.warn("Could not delete uploaded file on error:", unlinkError);
+        }
+      }
+
+      res.status(500).json({
+        success: false,
+        error: "Internal server error while parsing VCDS report",
       });
     }
   }

@@ -1,0 +1,807 @@
+VAGnosis MVP Development Guide (MERN + Docker)
+
+  Goal: Ship a production-grade MVP of VAGnosis focused on three core
+  modules — Explained Analysis, Repair Walkthrough, and
+  Quotations/Estimates — with multi-currency support and role-based
+  access, optimized for East Africa. Stack: MERN (MongoDB, Express,
+  React, Node) in Dockerized environments.
+
+0) MVP Scope (What we ship in v0.1)
+
+- Auth & RBAC: Email+password (JWT), OAuth (Google) optional, roles:
+  individual, garage_user, garage_admin, insurer_user, insurer_admin,
+  superadmin.
+
+- Uploads: Accept VCDS/OBD reports in TXT, PDF, XML. Max 10MB. Storage:
+  S3-compatible (MinIO in dev).
+
+- Explained Analysis: Parse report → extract DTCs → map to
+  human-readable explanations, severity, likely causes.
+
+- Repair Walkthrough: For each DTC, show steps (check/replace/retest),
+  tools, parts (OEM vs aftermarket placeholder).
+
+- Quotations/Estimates: Auto-generate parts + labor + tax; support KES,
+  UGX, TZS, USD; configurable markup; export PDF + shareable link.
+
+- Multi-tenancy: Workspaces for garages/insurers; personal workspace for
+  individuals.
+
+- Billing: Usage metering and pricing tiers; hybrid model
+  (subscription + pay-per-call overage). Manual activation in MVP;
+  Stripe mock in dev.
+
+- Activity & History: Vehicle vault per VIN/plate; analysis history;
+  downloadable reports.
+
+- Basic Admin: Manage plans, quotas, users, orgs, and audit logs.
+
+Nice-to-have (post-MVP): WhatsApp share, offline-ready PWA sync,
+marketplace integrations.
+
+1) High-Level Architecture
+
+[Client: React + Vite]
+
+→ Axios → [API Gateway: Express]
+
+├─ Auth Service (JWT, RBAC)
+
+├─ Upload Service (file ingest → S3/MinIO)
+
+├─ Parser Service (VCDS TXT/XML/PDF → DTC list)
+
+├─ Analysis Service (Rule engine + AI provider abstraction)
+
+├─ Quotation Service (pricing engine + currency FX)
+
+├─ Report Service (PDF/HTML generator + short links)
+
+├─ Billing Service (plans, quotas, metering, webhooks)
+
+└─ Admin Service (orgs, users, audit)
+
+[MongoDB]
+
+[S3/MinIO]
+
+[Redis] (caching, rate limiting, queues)
+
+[Nginx] (reverse proxy, TLS termination)
+
+Patterns: API-first, 12-factor, stateless services, background jobs via
+BullMQ (Redis).
+
+2) Data Model (MongoDB Schemas)
+
+  Namespaced collections; indexes called out; minimal for MVP.
+
+User
+
+{
+
+_id: ObjectId,
+
+orgId: ObjectId | null, // null for individuals
+
+email: string, // unique
+
+passwordHash: string,
+
+role:
+'individual'|'garage_user'|'garage_admin'|'insurer_user'|'insurer_admin'|'superadmin',
+
+profile: { name: string, phone?: string, country?: string },
+
+plan: { tier: 'starter'|'pro'|'enterprise', renewsAt: Date, status:
+'active'|'past_due'|'canceled' },
+
+quotas: { apiCalls: { used: number, limit: number, periodStart: Date,
+periodEnd: Date } },
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Indexes: { email: 1 } unique; { orgId: 1 }
+
+Organization (Garage/Insurer)
+
+{
+
+_id: ObjectId,
+
+type: 'garage'|'insurer',
+
+name: string,
+
+country: string,
+
+currency: 'KES'|'UGX'|'TZS'|'USD',
+
+settings: { laborRatePerHour: number, taxRatePct: number,
+defaultMarkupPct: number },
+
+plan: { tier: 'pro'|'enterprise', status: 'active'|'trial'|'canceled' },
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Indexes: { type: 1 }, { name: 'text' }
+
+Vehicle
+
+{
+
+_id: ObjectId,
+
+orgId: ObjectId | null, // null for individuals
+
+ownerUserId?: ObjectId,
+
+vin?: string,
+
+plate?: string,
+
+make: 'VW'|'Audi'|'Skoda'|'Seat'|'Porsche'|'Other',
+
+model?: string,
+
+year?: number,
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Indexes: { vin: 1 }, { plate: 1 }, { orgId: 1 }
+
+Upload
+
+{
+
+_id: ObjectId,
+
+orgId: ObjectId | null,
+
+userId: ObjectId,
+
+vehicleId?: ObjectId,
+
+storage: { bucket: string, key: string, size: number, mime: string },
+
+status: 'uploaded'|'parsed'|'failed',
+
+meta: { source: 'VCDS'|'OBD'|'Other', format: 'TXT'|'XML'|'PDF' },
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Indexes: { orgId: 1 }, { userId: 1 }, { vehicleId: 1 }
+
+Analysis
+
+{
+
+_id: ObjectId,
+
+orgId: ObjectId | null,
+
+userId: ObjectId,
+
+vehicleId?: ObjectId,
+
+uploadId: ObjectId,
+
+dtcs: [{ code: string, description?: string, status?:
+'active'|'historic' }],
+
+summary: { overview: string, severity:
+'critical'|'recommended'|'monitor' },
+
+causes: [string],
+
+recommendations: [string],
+
+module: 'Engine'|'Transmission'|'ABS'|'Airbag'|'Infotainment'|'Other',
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Indexes: { orgId: 1 }, { uploadId: 1 }, { 'dtcs.code': 1 }
+
+Walkthrough
+
+{
+
+_id: ObjectId,
+
+analysisId: ObjectId,
+
+steps: [ { title: string, detail: string, type:
+'check'|'replace'|'retest', estMinutes?: number } ],
+
+parts: [ { name: string, oem?: string, alt?: string[], qty: number } ],
+
+tools: [string],
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Index: { analysisId: 1 }
+
+Quotation
+
+{
+
+_id: ObjectId,
+
+orgId: ObjectId | null,
+
+analysisId: ObjectId,
+
+currency: 'KES'|'UGX'|'TZS'|'USD',
+
+labor: { hours: number, ratePerHour: number, subtotal: number },
+
+parts: [ { name: string, unitPrice: number, qty: number, subtotal:
+number } ],
+
+taxPct: number,
+
+markupPct: number,
+
+totals: { parts: number, labor: number, tax: number, grand: number },
+
+status: 'draft'|'sent'|'approved'|'rejected',
+
+shareLinkId?: string, // short link lookup
+
+createdAt: Date, updatedAt: Date
+
+}
+
+// Indexes: { orgId: 1 }, { analysisId: 1 }, { shareLinkId: 1 }
+
+Metering (API Calls)
+
+{
+
+_id: ObjectId,
+
+orgId: ObjectId | null,
+
+userId: ObjectId,
+
+type: 'analysis'|'parse'|'quotation',
+
+count: number,
+
+period: '2025-09',
+
+createdAt: Date
+
+}
+
+// Indexes: { orgId: 1, period: 1 }, { userId: 1, period: 1 }
+
+AuditLog
+
+{ _id: ObjectId, actorId: ObjectId, orgId?: ObjectId, action: string,
+target?: any, meta?: any, createdAt: Date }
+
+// Index: { orgId: 1, createdAt: -1 }
+
+3) API Design (REST)
+
+Base URL: /api/v1
+
+Auth
+
+- POST /auth/register – email, password, role (default individual).
+
+- POST /auth/login – returns JWT (access + refresh).
+
+- POST /auth/refresh – rotate tokens.
+
+Orgs & Users
+
+- POST /orgs (admin) – create garage/insurer org.
+
+- GET /orgs/:id – org details.
+
+- POST /orgs/:id/users – invite user.
+
+Uploads
+
+- POST /uploads – pre-signed URL → upload to S3/MinIO.
+
+- POST /uploads/:id/commit – finalize & enqueue parse job.
+
+- GET /uploads/:id – status.
+
+Parsing & Analysis
+
+- POST /analysis – body: { uploadId, vehicleId? } → creates analysis
+  (metered).
+
+- GET /analysis/:id – get analysis.
+
+- GET /analysis/:id/walkthrough – generated steps.
+
+Quotations
+
+- POST /quotations – { analysisId, currency, laborRate, hours, parts[],
+  taxPct, markupPct }.
+
+- GET /quotations/:id – details.
+
+- POST /quotations/:id/share – returns public short link token.
+
+- POST /quotations/:id/status – approve/reject.
+
+Vehicles
+
+- POST /vehicles – create / link.
+
+- GET /vehicles/:id – history (analyses, quotes).
+
+Billing
+
+- GET /billing/usage – current period usage.
+
+- GET /billing/plan – plan info.
+
+Admin
+
+- GET /admin/audit – audit logs (superadmin).
+
+Errors: JSON API Problem format (type, title, detail, status).
+
+4) Core Flows (Swimlane Summary)
+
+1.  Upload → Parse → Analysis
+
+- Client requests upload URL → puts file → commit → queue parse →
+  extract DTCs → create Analysis → decrement quota/meter → return
+  analysisId.
+
+2.  Analysis → Walkthrough → Quote
+
+- Fetch rules/AI to enrich DTCs → Walkthrough doc → user adjusts
+  labor/parts → generate Quotation → export PDF → share.
+
+3.  Billing & Quotas
+
+- On POST /analysis, check plan & quota → allow/deny. Record metering by
+  period. Overage allowed for Pro (config).
+
+5) AI & Rule Engine Strategy
+
+- Phase 1 (MVP): Deterministic ruleset + curated DTC library for common
+  VAG codes; template-based explanations; severity heuristics.
+
+- Phase 2: LLM enrichment (provider abstraction: OpenAIProvider,
+  LocalProvider) with safety rails, summarization, and hallucination
+  guards (must reference parsed DTCs only).
+
+- Guardrails:
+
+  - Strict prompt templates with allowed fields.
+
+  - Confidence score + fallback to rules-only when low.
+
+  - Output schema validation (Ajv JSON schema).
+
+DTC Library Schema
+
+{ code: 'P0299', title: 'Turbo/Super Charger Underboost', modules:
+['Engine'], commonCauses: ['vacuum leak','wastegate'], checks: [...],
+replacements: [...], estLaborMin: 60-180 }
+
+6) Multi-Currency & FX
+
+- Currencies: KES, UGX, TZS, USD (add RWF if needed).
+
+- FX Source: MVP: admin-set static rates in Settings; CRON updates daily
+  from free FX API in staging; production with paid provider later.
+
+- Monetary fields stored in minor units (cents) with currency tag.
+
+- Price calc order: parts + (laborRate*hours) → apply markup → apply
+  tax.
+
+7) Security & Compliance (MVP Baseline)
+
+- JWT access (15m) + refresh (7d) rotation; revoke on logout.
+
+- Bcrypt(12) for passwords; zxcvbn strength enforcement.
+
+- Input validation with Joi/Zod; output schema enforcement.
+
+- File scanning (ClamAV container) for uploads.
+
+- S3 signed URLs; private by default; PDFs watermarked.
+
+- RBAC middleware; per-org data isolation; object-level checks.
+
+- Audit logging on create/update/delete, download, share.
+
+- Rate limiting: IP + user combo (Redis Sliding Window, e.g., 100
+  req/5m).
+
+- CORS locked to known origins; HTTPS only behind Nginx.
+
+8) DevOps & Environments
+
+- Docker Compose for local: api, web, mongo, redis, minio, nginx,
+  clamav, worker.
+
+- GitHub Actions:
+
+  - Lint + test on PR.
+
+  - Build Docker images.
+
+  - Push to registry (GHCR).
+
+  - Staging deploy via SSH or Kubernetes.
+
+- Monitoring: pino logs → Loki; metrics via Prometheus; alerts to Slack.
+
+- Config: Twelve-factor via .env & Docker secrets.
+
+docker-compose.yml (MVP skeleton)
+
+version: '3.9'
+
+services:
+
+api:
+
+build: ./services/api
+
+env_file: .env
+
+depends_on: [mongo, redis, minio]
+
+ports: ['3001:3000']
+
+worker:
+
+build: ./services/worker
+
+env_file: .env
+
+depends_on: [mongo, redis]
+
+web:
+
+build: ./apps/web
+
+env_file: .env
+
+ports: ['5173:5173']
+
+mongo:
+
+image: mongo:7
+
+volumes: ['mongo-data:/data/db']
+
+redis:
+
+image: redis:7
+
+minio:
+
+image: minio/minio
+
+command: server /data --console-address ":9001"
+
+environment:
+
+MINIO_ROOT_USER: minio
+
+MINIO_ROOT_PASSWORD: minio123
+
+volumes: ['minio-data:/data']
+
+ports: ['9000:9000', '9001:9001']
+
+nginx:
+
+image: nginx:alpine
+
+volumes:
+
+- ./infra/nginx.conf:/etc/nginx/nginx.conf:ro
+
+ports: ['80:80']
+
+volumes:
+
+mongo-data:
+
+minio-data:
+
+API Dockerfile (Node 20)
+
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci --only=production
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+
+COPY . .
+
+ENV NODE_ENV=production
+
+CMD ["node", "dist/index.js"]
+
+Web Dockerfile (Vite)
+
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+FROM nginx:alpine
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+9) Frontend (React + Vite + Tailwind)
+
+Key Pages
+
+- Auth (Login/Register/Forgot).
+
+- Dashboard (usage, recent analyses, quick upload).
+
+- Uploads (new upload + history).
+
+- Analysis Detail (DTCs, explanations, severity chips).
+
+- Walkthrough (steps, parts, tools; editable).
+
+- Quotation Builder (labor, parts, FX, tax, markup; preview; PDF
+  export).
+
+- Vehicles (list + detail history).
+
+- Settings (org settings, currency, labor rate, users).
+
+- Admin (plans, quotas, audit logs).
+
+UI Components: FileDropZone, SeverityBadge, DTCList, PartsTable,
+CurrencySelect, PDFPreviewModal, ShareLinkButton.
+
+State: React Query (TanStack) for server cache; Zod for client
+validation.
+
+10) PDF & Sharing
+
+- PDF generation via Puppeteer (server-side render HTML templates).
+
+- Templates: Quotation, ExplainedAnalysis with headers, watermark, org
+  branding.
+
+- Short links: GET /r/:token → view-only, expires in 30d (configurable),
+  rate-limited.
+
+11) Testing Strategy
+
+- Unit: Jest + ts-jest for services (parsers, calculators).
+
+- Contract: OpenAPI schema validation with supertest.
+
+- E2E: Playwright (upload → analysis → quote → PDF).
+
+- Security: Dependency scanning (npm audit, Snyk optional).
+
+12) Logging, Metrics, Observability
+
+- Logs: pino JSON; correlation IDs per request.
+
+- Metrics: /metrics (Prometheus) – request latencies, queue depth,
+  analysis count.
+
+- Tracing: OpenTelemetry optional (Jaeger in dev).
+
+13) Internationalization & Localization
+
+- i18n: English (MVP), Swahili (post-MVP); number/date format by locale.
+
+- Currency display via Intl APIs; backend computes totals in minor
+  units.
+
+14) Roadmap & Milestones
+
+Sprint 0 (Week 1):
+
+- Repo scaffold (Turbo monorepo or multi-repo), CI, Docker Compose up.
+
+- Auth + RBAC skeleton; Mongo models; MinIO integration.
+
+Sprint 1 (Weeks 2–3):
+
+- Upload → parse TXT/XML → extract DTCs.
+
+- Analysis API (rules-only) + UI view.
+
+Sprint 2 (Weeks 4–5):
+
+- Walkthrough generator + editable steps/parts.
+
+- Quotation builder + FX + PDF export.
+
+Sprint 3 (Weeks 6–7):
+
+- Billing usage metering + plan enforcement.
+
+- Org settings; vehicle vault; shareable links.
+
+Pilot (Week 8):
+
+- Deploy staging; onboard 3 garages + 1 insurer; collect feedback.
+
+15) Acceptance Criteria (MVP Done)
+
+- Upload VCDS TXT/XML; analysis created with ≥1 DTC; human-readable
+  summary.
+
+- Walkthrough displays minimum 3 actionable steps per DTC; editable and
+  persisted.
+
+- Quotation generated with configurable labor rate, markup, and tax;
+  supports 4 currencies; PDF export < 5s; totals correct to minor units;
+  rounding rules tested.
+
+- Usage metering increments on analysis creation; plan limits enforced;
+  overage blocked for Starter, allowed for Pro (config).
+
+- RBAC prevents cross-org data access; audit logs recorded.
+
+16) Risks & Mitigations
+
+- Parsing variance (VCDS formats differ) → Create adapter pattern + test
+  fixtures.
+
+- LLM hallucinations → Start rules-first, validate outputs, show
+  confidence.
+
+- FX volatility → Admin-controlled rates; snapshot FX on quote creation.
+
+- PDF rendering failures → Queue with retries; fallback to server-side
+  PDFKit minimal.
+
+- Costs → Cache, batch, and limit external AI calls; metering first.
+
+17) Example Request/Response
+
+Create Analysis
+
+POST /api/v1/analysis
+
+Authorization: Bearer <token>
+
+{
+
+"uploadId": "66e0...",
+
+"vehicleId": "66df..."
+
+}
+
+Response
+
+{
+
+"id": "66e1...",
+
+"dtcs": [
+
+{ "code": "P0299", "description": "Turbo underboost", "status": "active"
+}
+
+],
+
+"summary": {
+
+"overview": "Detected turbo underboost likely due to vacuum leak or
+wastegate issue.",
+
+"severity": "critical"
+
+}
+
+}
+
+Create Quotation
+
+POST /api/v1/quotations
+
+{
+
+"analysisId": "66e1...",
+
+"currency": "KES",
+
+"labor": { "hours": 2.5, "ratePerHour": 1500 },
+
+"parts": [ { "name": "Boost pressure sensor", "unitPrice": 6500, "qty":
+1 } ],
+
+"taxPct": 16,
+
+"markupPct": 10
+
+}
+
+Response
+
+{
+
+"totals": { "parts": 6500, "labor": 3750, "tax": 1640, "grand": 11890 }
+
+}
+
+18) Coding Standards & Conventions
+
+- TypeScript across API and web. ESLint + Prettier.
+
+- Controllers thin; services thick. DTOs validated with Zod.
+
+- Feature folders (api/services/analysis, ...).
+
+- Commit style: Conventional Commits.
+
+19) Feature Flags
+
+- ai.enrichment (off by default in MVP).
+
+- quotations.fxAutoUpdate.
+
+- sharing.whatsapp.
+
+20) Go-To-Market in Pilot
+
+- Target 3 garages (Nairobi) + 1 insurer partner.
+
+- Offer Pro plan free for 60 days; collect structured feedback
+  (surveys + NPS).
+
+- Success metrics: time-to-quote (<3 min), claim approval time (-30%),
+  repeat usage (≥5 analyses/week/site).
+
+21) Post-MVP Enhancements
+
+- WhatsApp share deep links.
+
+- Offline-first PWA with background sync.
+
+- Parts marketplace integration; supplier APIs.
+
+- Predictive maintenance scoring.
+
+- Expand beyond VAG (generic OBD-II library).
+
+Tagline for MVP: From code to quote in minutes.

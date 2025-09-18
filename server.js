@@ -18,8 +18,8 @@ const uploadRoutes = require("./routes/upload");
 const { errorHandler } = require("./middleware/errorHandler");
 const { authMiddleware } = require("./middleware/auth");
 
-// TODO: Uncomment when OpenAI API key is configured
-// const openaiService = require("./services/openaiService");
+// OpenAI service for AI-powered error code explanations
+const openaiService = require("./services/openaiService");
 
 // Connect to MongoDB
 mongoose

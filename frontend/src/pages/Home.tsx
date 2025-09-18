@@ -24,13 +24,13 @@ const Home: React.FC = () => {
       icon: Car,
       title: 'VAG Culture Diagnostics',
       description: 'Exclusive diagnostic tools for Volkswagen, Audi, Porsche, Skoda, Seat, and Fiat vehicles',
-      color: 'from-primary-500 to-primary-700'
+      color: 'from-red-500 to-red-700'
     },
     {
       icon: FileText,
       title: 'Community Quotations',
       description: 'AI-powered repair estimates in Kenya Shillings with community-verified accuracy',
-      color: 'from-red-500 to-red-700'
+      color: 'from-red-600 to-red-800'
     },
     {
       icon: AlertTriangle,
@@ -60,7 +60,7 @@ const Home: React.FC = () => {
 
   const stats = [
     { label: 'VAG Models', value: '6+', icon: Car, color: 'from-blue-500 to-blue-700' },
-    { label: 'Error Codes', value: '1000+', icon: AlertTriangle, color: 'from-orange-500 to-orange-700' },
+    { label: 'Error Codes', value: '1000+', icon: AlertTriangle, color: 'from-red-500 to-red-700' },
     { label: 'Users', value: '50+', icon: Users, color: 'from-green-500 to-green-700' },
     { label: 'Quotations', value: '100+', icon: FileText, color: 'from-purple-500 to-purple-700' }
   ];
@@ -74,7 +74,7 @@ const Home: React.FC = () => {
           background: 'linear-gradient(135deg, var(--bg-primary), var(--bg-secondary))'
         }}>
           <div className="absolute inset-0" style={{ 
-            background: 'radial-gradient(circle at 50% 50%, rgba(220,38,38,0.1), transparent 50%)' 
+            background: 'radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.15), transparent 50%)' 
           }} />
         </div>
         
@@ -169,12 +169,14 @@ const Home: React.FC = () => {
         <motion.div
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-primary-500/20 to-transparent rounded-full blur-3xl"
+          className="absolute top-20 right-20 w-32 h-32 rounded-full blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(255, 0, 0, 0.2), transparent)' }}
         />
         <motion.div
           animate={{ y: [0, 20, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-20 left-20 w-40 h-40 bg-gradient-to-tr from-red-500/20 to-transparent rounded-full blur-3xl"
+          className="absolute bottom-20 left-20 w-40 h-40 rounded-full blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(255, 0, 0, 0.15), transparent)' }}
         />
       </section>
 

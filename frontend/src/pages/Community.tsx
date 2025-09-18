@@ -6,7 +6,7 @@ const Community: React.FC = () => {
   const communityStats = [
     { label: 'Active Members', value: '150+', icon: Users, color: 'from-blue-500 to-blue-700' },
     { label: 'Garages', value: '25+', icon: Wrench, color: 'from-green-500 to-green-700' },
-    { label: 'VAG Models', value: '50+', icon: Car, color: 'from-orange-500 to-orange-700' },
+    { label: 'VAG Models', value: '50+', icon: Car, color: 'from-red-500 to-red-700' },
     { label: 'Events Hosted', value: '12', icon: Calendar, color: 'from-purple-500 to-purple-700' }
   ];
 
@@ -163,7 +163,9 @@ const Community: React.FC = () => {
                   className="text-center p-6 rounded-lg"
                   style={{ background: 'var(--bg-secondary)' }}
                 >
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ 
+                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))'
+                  }}>
                     <span className="text-2xl font-bold text-white">{member.name.charAt(0)}</span>
                   </div>
                   <h3 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>{member.name}</h3>

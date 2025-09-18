@@ -18,7 +18,7 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://admin:password123@mongo:27017/dequote_vag?authSource=admin
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=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
       - JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
     depends_on:
       - mongo

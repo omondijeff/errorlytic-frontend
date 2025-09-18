@@ -2,139 +2,112 @@ const mongoose = require("mongoose");
 
 const quotationSchema = new mongoose.Schema(
   {
-    user: {
+    orgId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Organization",
+      default: null,
+    },
+    analysisId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Analysis",
       required: true,
     },
-    vehicleInfo: {
-      make: {
-        type: String,
-        required: true,
-        enum: ["Volkswagen", "Audi", "Porsche", "Skoda", "Seat", "Fiat"],
-      },
-      model: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-      year: {
+    currency: {
+      type: String,
+      enum: ["KES", "UGX", "TZS", "USD"],
+      default: "KES",
+    },
+    labor: {
+      hours: {
         type: Number,
         required: true,
-        min: 1990,
-        max: new Date().getFullYear() + 1,
-      },
-      vin: {
-        type: String,
-        trim: true,
-        uppercase: true,
-      },
-      mileage: {
-        type: Number,
         min: 0,
       },
-      engineType: {
-        type: String,
-        trim: true,
-      },
-    },
-    vcdsReport: {
-      filename: {
-        type: String,
-        required: false,
-      },
-      originalName: {
-        type: String,
-        required: false,
-      },
-      filePath: {
-        type: String,
-        required: false,
-      },
-      fileSize: {
+      ratePerHour: {
         type: Number,
+        required: true,
+        min: 0,
       },
-      uploadDate: {
-        type: Date,
-        default: Date.now,
+      subtotal: {
+        type: Number,
+        required: true,
+        min: 0,
       },
     },
-    errorCodes: [
+    parts: [
       {
-        code: {
+        name: {
           type: String,
           required: true,
           trim: true,
-          uppercase: true,
         },
-        description: {
-          type: String,
+        unitPrice: {
+          type: Number,
           required: true,
-        },
-        severity: {
-          type: String,
-          enum: ["low", "medium", "high", "critical"],
-          default: "medium",
-        },
-        aiExplanation: {
-          type: String,
-        },
-        estimatedRepairTime: {
-          type: String,
-        },
-        estimatedCost: {
-          type: Number,
           min: 0,
         },
-        parts: [
-          {
-            name: {
-              type: String,
-              required: true,
-            },
-            cost: {
-              type: Number,
-              required: true,
-              min: 0,
-            },
-            quantity: {
-              type: Number,
-              default: 1,
-              min: 1,
-            },
-          },
-        ],
-        laborHours: {
+        qty: {
           type: Number,
+          required: true,
+          min: 1,
+        },
+        subtotal: {
+          type: Number,
+          required: true,
           min: 0,
+        },
+        partNumber: {
+          type: String,
+          trim: true,
+        },
+        isOEM: {
+          type: Boolean,
+          default: false,
         },
       },
     ],
-    totalEstimate: {
-      partsCost: {
+    taxPct: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
+    markupPct: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
+    totals: {
+      parts: {
         type: Number,
-        default: 0,
+        required: true,
         min: 0,
       },
-      laborCost: {
+      labor: {
         type: Number,
-        default: 0,
+        required: true,
         min: 0,
       },
-      totalCost: {
+      tax: {
         type: Number,
-        default: 0,
+        required: true,
         min: 0,
       },
-      currency: {
-        type: String,
-        default: "KES",
+      grand: {
+        type: Number,
+        required: true,
+        min: 0,
       },
     },
     status: {
       type: String,
-      enum: ["draft", "pending", "approved", "rejected", "completed"],
+      enum: ["draft", "sent", "approved", "rejected"],
       default: "draft",
+    },
+    shareLinkId: {
+      type: String,
+      trim: true,
     },
     notes: {
       type: String,
@@ -156,32 +129,36 @@ const quotationSchema = new mongoose.Schema(
   }
 );
 
-// Calculate total estimate before saving
+// Calculate totals before saving
 quotationSchema.pre("save", function (next) {
-  let totalPartsCost = 0;
-  let totalLaborCost = 0;
+  // Calculate parts subtotal
+  this.totals.parts = this.parts.reduce((total, part) => {
+    return total + part.unitPrice * part.qty;
+  }, 0);
 
-  this.errorCodes.forEach((error) => {
-    // Calculate parts cost
-    error.parts.forEach((part) => {
-      totalPartsCost += part.cost * part.quantity;
-    });
+  // Calculate labor subtotal
+  this.totals.labor = this.labor.hours * this.labor.ratePerHour;
 
-    // Calculate labor cost (assuming 3500 KES per hour)
-    const laborRate = 3500;
-    totalLaborCost += (error.laborHours || 0) * laborRate;
-  });
+  // Calculate subtotal before tax and markup
+  const subtotal = this.totals.parts + this.totals.labor;
 
-  this.totalEstimate.partsCost = totalPartsCost;
-  this.totalEstimate.laborCost = totalLaborCost;
-  this.totalEstimate.totalCost = totalPartsCost + totalLaborCost;
+  // Apply markup
+  const afterMarkup = subtotal * (1 + this.markupPct / 100);
+
+  // Calculate tax
+  this.totals.tax = afterMarkup * (this.taxPct / 100);
+
+  // Calculate grand total
+  this.totals.grand = afterMarkup + this.totals.tax;
 
   next();
 });
 
-// Index for efficient queries
-quotationSchema.index({ user: 1, createdAt: -1 });
-quotationSchema.index({ "vehicleInfo.make": 1, "vehicleInfo.model": 1 });
+// Indexes for efficient queries
+quotationSchema.index({ orgId: 1 });
+quotationSchema.index({ analysisId: 1 });
+quotationSchema.index({ shareLinkId: 1 });
 quotationSchema.index({ status: 1, createdAt: -1 });
+quotationSchema.index({ currency: 1 });
 
 module.exports = mongoose.model("Quotation", quotationSchema);

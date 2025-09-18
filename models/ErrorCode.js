@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const errorCodeSchema = new mongoose.Schema(
+const dtcLibrarySchema = new mongoose.Schema(
   {
     code: {
       type: String,
@@ -9,86 +9,88 @@ const errorCodeSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
     },
-    description: {
+    title: {
       type: String,
       required: true,
       trim: true,
     },
-    severity: {
-      type: String,
-      enum: ["low", "medium", "high", "critical"],
-      required: true,
-    },
-    category: {
-      type: String,
-      required: true,
-      enum: [
-        "Engine",
-        "Transmission",
-        "Electrical",
-        "Suspension",
-        "Brakes",
-        "Exhaust",
-        "Cooling",
-        "Emissions",
-        "Body",
-        "Other",
-      ],
-    },
-    subcategory: {
-      type: String,
-      trim: true,
-    },
+    modules: [
+      {
+        type: String,
+        enum: [
+          "Engine",
+          "Transmission",
+          "ABS",
+          "Airbag",
+          "Infotainment",
+          "Other",
+        ],
+        required: true,
+      },
+    ],
     commonCauses: [
       {
         type: String,
         trim: true,
       },
     ],
+    checks: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    replacements: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    estLaborMin: {
+      min: {
+        type: Number,
+        min: 0,
+      },
+      max: {
+        type: Number,
+        min: 0,
+      },
+    },
+    severity: {
+      type: String,
+      enum: ["critical", "recommended", "monitor"],
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     symptoms: [
       {
         type: String,
         trim: true,
       },
     ],
-    estimatedRepairTime: {
-      type: String,
-      trim: true,
-    },
-    estimatedCostKes: {
-      type: Number,
-      min: 0,
-    },
-    laborHours: {
-      type: Number,
-      min: 0,
-    },
-    partsRequired: [
-      {
-        name: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-        estimatedCost: {
-          type: Number,
-          min: 0,
-        },
-        partNumber: {
-          type: String,
-          trim: true,
-        },
-        isOEM: {
-          type: Boolean,
-          default: false,
-        },
+    technicalDetails: {
+      ecuModule: {
+        type: String,
+        trim: true,
       },
-    ],
+      dataBus: {
+        type: String,
+        trim: true,
+      },
+      freezeFrameData: {
+        type: Boolean,
+        default: false,
+      },
+    },
     vagModels: [
       {
         make: {
           type: String,
-          enum: ["Volkswagen", "Audi", "Porsche", "Skoda", "Seat", "Fiat"],
+          enum: ["VW", "Audi", "Skoda", "Seat", "Porsche"],
           required: true,
         },
         models: [
@@ -109,31 +111,13 @@ const errorCodeSchema = new mongoose.Schema(
         },
       },
     ],
-    technicalDetails: {
-      ecuModule: {
-        type: String,
-        trim: true,
-      },
-      dataBus: {
-        type: String,
-        trim: true,
-      },
-      freezeFrameData: {
-        type: Boolean,
-        default: false,
-      },
-    },
-    aiExplanation: {
-      type: String,
-      trim: true,
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     lastUpdated: {
       type: Date,
       default: Date.now,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
     },
   },
   {
@@ -141,28 +125,10 @@ const errorCodeSchema = new mongoose.Schema(
   }
 );
 
-// Index for efficient queries
-errorCodeSchema.index({ code: 1 });
-errorCodeSchema.index({ category: 1, severity: 1 });
-errorCodeSchema.index({ "vagModels.make": 1 });
-errorCodeSchema.index({ estimatedCostKes: 1 });
+// Indexes for efficient queries
+dtcLibrarySchema.index({ code: 1 });
+dtcLibrarySchema.index({ modules: 1, severity: 1 });
+dtcLibrarySchema.index({ "vagModels.make": 1 });
+dtcLibrarySchema.index({ isActive: 1 });
 
-// Virtual for total parts cost
-errorCodeSchema.virtual("totalPartsCost").get(function () {
-  return this.partsRequired.reduce(
-    (total, part) => total + part.estimatedCost,
-    0
-  );
-});
-
-// Virtual for total estimated cost including labor
-errorCodeSchema.virtual("totalEstimatedCost").get(function () {
-  const laborCost = (this.laborHours || 0) * 3500; // 3500 KES per hour
-  return this.estimatedCostKes + laborCost;
-});
-
-// Ensure virtuals are included in JSON output
-errorCodeSchema.set("toJSON", { virtuals: true });
-errorCodeSchema.set("toObject", { virtuals: true });
-
-module.exports = mongoose.model("ErrorCode", errorCodeSchema);
+module.exports = mongoose.model("DtcLibrary", dtcLibrarySchema);
