@@ -1,5 +1,6 @@
 const vcdsParserService = require("./vcdsParserService");
 const openaiService = require("./openaiService");
+const walkthroughService = require("./walkthroughService");
 const Analysis = require("../models/Analysis");
 const Upload = require("../models/Upload");
 const Vehicle = require("../models/Vehicle");
@@ -110,12 +111,27 @@ class AnalysisService {
         period: new Date().toISOString().slice(0, 7),
       });
 
+      // Generate walkthrough automatically
+      let walkthrough = null;
+      try {
+        const walkthroughResult = await walkthroughService.generateWalkthrough(
+          analysis._id,
+          userId,
+          orgId
+        );
+        walkthrough = walkthroughResult.walkthrough;
+      } catch (walkthroughError) {
+        console.warn("Failed to generate walkthrough:", walkthroughError.message);
+        // Don't fail the analysis if walkthrough generation fails
+      }
+
       const result = {
         success: true,
         analysisId: analysis._id,
         uploadId: uploadId,
         summary: analysis.summary,
         dtcs: analysis.dtcs,
+        walkthroughId: walkthrough?._id || null,
         recommendations: analysis.recommendations,
         aiAnalysis: aiAnalysis,
         vehicleInfo: parseResult.vehicleInfo,

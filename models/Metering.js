@@ -14,7 +14,7 @@ const meteringSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["analysis", "parse", "quotation"],
+      enum: ["analysis", "parse", "quotation", "walkthrough"],
       required: true,
     },
     count: {

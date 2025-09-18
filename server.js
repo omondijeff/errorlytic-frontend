@@ -14,6 +14,7 @@ const quotationRoutes = require("./routes/quotations");
 const errorCodeRoutes = require("./routes/errorCodes");
 const uploadRoutes = require("./routes/upload");
 const analysisRoutes = require("./routes/analysis");
+const walkthroughRoutes = require("./routes/walkthrough");
 
 // Import middleware
 const { errorHandler } = require("./middleware/errorHandler");
@@ -100,6 +101,7 @@ app.use("/api/v1/quotations", authMiddleware, quotationRoutes);
 app.use("/api/v1/error-codes", errorCodeRoutes);
 app.use("/api/v1/upload", authMiddleware, uploadRoutes);
 app.use("/api/v1/analysis", authMiddleware, analysisRoutes);
+app.use("/api/v1/walkthrough", authMiddleware, walkthroughRoutes);
 
 // Legacy API routes (for backward compatibility)
 app.use("/api/auth", authRoutes);
@@ -121,6 +123,7 @@ app.get("/", (req, res) => {
         errorCodes: "/api/v1/error-codes",
         upload: "/api/v1/upload",
         analysis: "/api/v1/analysis",
+        walkthrough: "/api/v1/walkthrough",
       },
       legacy: {
         auth: "/api/auth",
