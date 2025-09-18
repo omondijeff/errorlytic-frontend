@@ -6,6 +6,9 @@ process.env.JWT_SECRET = "test-jwt-secret-key";
 process.env.MONGODB_URI =
   "mongodb://admin:password123@localhost:27017/vagnosis_test?authSource=admin";
 
+// Disable server startup in test environment
+process.env.DISABLE_SERVER_STARTUP = "true";
+
 // Setup test database connection
 beforeAll(async () => {
   try {
@@ -13,6 +16,7 @@ beforeAll(async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
+    console.log("Test database connected");
   } catch (error) {
     console.error("Test database connection error:", error);
   }
@@ -35,5 +39,10 @@ afterEach(async () => {
 
 // Close database connection after all tests
 afterAll(async () => {
-  await mongoose.connection.close();
+  try {
+    await mongoose.connection.close();
+    console.log("Test database connection closed");
+  } catch (error) {
+    console.error("Error closing test database:", error);
+  }
 });

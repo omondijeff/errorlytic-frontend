@@ -152,11 +152,13 @@ app.use("*", (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-});
+// Start server only if not in test mode or server startup is not disabled
+if (process.env.NODE_ENV !== "test" && !process.env.DISABLE_SERVER_STARTUP) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+  });
+}
 
 module.exports = app;

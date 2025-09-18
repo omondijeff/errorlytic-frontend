@@ -1,5 +1,5 @@
 const request = require("supertest");
-const app = require("../../server");
+const app = require("../testServer");
 const User = require("../../models/User");
 const Organization = require("../../models/Organization");
 const Vehicle = require("../../models/Vehicle");
