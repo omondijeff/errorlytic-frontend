@@ -217,6 +217,7 @@ router.post(
         meta: {
           source: source,
           format: req.file.originalname.split(".").pop().toUpperCase(),
+          originalName: req.file.originalname,
         },
       });
 
