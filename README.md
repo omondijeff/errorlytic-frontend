@@ -1,15 +1,15 @@
-# VAGnosis SaaS Platform
+# Errorlytic SaaS Platform
 
-A comprehensive car quotation estimate system specifically designed for VAG Group vehicles (Volkswagen, Audi, Porsche, Skoda, Seat, Fiat) with AI-powered error code explanations and repair estimates in Kenya Shillings.
+A comprehensive automotive diagnostic platform with AI-powered error code analysis and repair estimation for multiple vehicle brands.
 
 ## Features
 
-- **VAG-Specific Focus**: Specialized for Volkswagen Group vehicles
-- **VCDS Report Processing**: Upload and analyze VCDS diagnostic reports
-- **AI-Powered Explanations**: ChatGPT integration for detailed error code explanations
-- **Cost Estimation**: Automatic repair cost calculations in Kenya Shillings (KES)
+- **Multi-Brand Support**: Comprehensive diagnostic support for various vehicle brands
+- **Diagnostic Report Processing**: Upload and analyze diagnostic reports from multiple formats
+- **AI-Powered Analysis**: Advanced AI integration for detailed error code explanations
+- **Cost Estimation**: Automatic repair cost calculations in multiple currencies
 - **User Management**: Role-based access control (User, Mechanic, Admin)
-- **File Management**: Secure VCDS report upload and storage
+- **File Management**: Secure diagnostic report upload and storage
 - **RESTful API**: Comprehensive API endpoints for all functionality
 - **Docker Support**: Full containerization with MongoDB
 
@@ -21,6 +21,12 @@ A comprehensive car quotation estimate system specifically designed for VAG Grou
 - Skoda
 - Seat
 - Fiat
+- BMW
+- Mercedes-Benz
+- Toyota
+- Honda
+- Ford
+- And many more...
 
 ## Technology Stack
 
@@ -44,7 +50,7 @@ A comprehensive car quotation estimate system specifically designed for VAG Grou
 
 ```bash
 git clone <repository-url>
-cd VAGnosis
+cd Errorlytic
 ```
 
 ### 2. Environment Setup
@@ -63,7 +69,7 @@ NODE_ENV=development
 PORT=3000
 
 # MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017/vagnosis_saas
+MONGODB_URI=mongodb://localhost:27017/errorlytic_saas
 
 # OpenAI Configuration (Optional)
 OPENAI_API_KEY=your_openai_api_key_here
@@ -132,10 +138,10 @@ npm run dev
 
 ### File Upload
 
-- `POST /api/upload/vcds-report` - Upload VCDS report
-- `GET /api/upload/vcds-report/:quotationId` - Get report info
-- `DELETE /api/upload/vcds-report/:quotationId` - Remove report
-- `GET /api/upload/vcds-report/:quotationId/download` - Download report
+- `POST /api/upload/diagnostic-report` - Upload diagnostic report
+- `GET /api/upload/diagnostic-report/:quotationId` - Get report info
+- `DELETE /api/upload/diagnostic-report/:quotationId` - Remove report
+- `GET /api/upload/diagnostic-report/:quotationId/download` - Download report
 
 ## Usage Examples
 
@@ -157,19 +163,19 @@ curl -X POST http://localhost:3000/api/quotations \
   }'
 ```
 
-### 2. Upload VCDS Report
+### 2. Upload Diagnostic Report
 
 ```bash
-curl -X POST http://localhost:3000/api/upload/vcds-report \
+curl -X POST http://localhost:3000/api/upload/diagnostic-report \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -F "quotationId=QUOTATION_ID" \
-  -F "vcdsReport=@/path/to/vcds_report.txt"
+  -F "diagnosticReport=@/path/to/diagnostic_report.txt"
 ```
 
-### 3. Process VCDS Report
+### 3. Process Diagnostic Report
 
 ```bash
-curl -X POST http://localhost:3000/api/quotations/QUOTATION_ID/process-vcds \
+curl -X POST http://localhost:3000/api/quotations/QUOTATION_ID/process-diagnostic \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -179,15 +185,16 @@ curl -X POST http://localhost:3000/api/quotations/QUOTATION_ID/process-vcds \
 curl http://localhost:3000/api/error-codes/P0300
 ```
 
-## VCDS Report Format Support
+## Diagnostic Report Format Support
 
-The system supports various VCDS report formats:
+The system supports various diagnostic report formats:
 
 - **Text files** (.txt) - Plain text diagnostic reports
 - **CSV files** (.csv) - Comma-separated diagnostic data
 - **PDF files** (.pdf) - PDF diagnostic reports
 - **Excel files** (.xls, .xlsx) - Spreadsheet diagnostic data
 - **JSON files** (.json) - Structured diagnostic data
+- **XML files** (.xml) - XML diagnostic reports
 
 ## AI Integration
 
@@ -205,26 +212,31 @@ To enable AI-powered error code explanations:
 
 ### AI Features
 
-- **Smart Error Explanations**: Context-aware explanations for VAG vehicles
+- **Smart Error Explanations**: Context-aware explanations for multiple vehicle brands
 - **Repair Recommendations**: AI-suggested repair priorities and methods
 - **Cost Optimization**: Suggestions for cost-effective repair strategies
 - **Troubleshooting**: Step-by-step diagnostic procedures
+- **Predictive Analysis**: Advanced pattern recognition in diagnostic data
 
 ## Database Schema
 
 ### Collections
 
 - **users**: User accounts and authentication
-- **quotations**: Car repair quotations and estimates
-- **error_codes**: VAG-specific error code database
+- **quotations**: Vehicle repair quotations and estimates
+- **error_codes**: Multi-brand error code database
 - **repair_costs**: Repair cost categories and labor rates
+- **organizations**: Multi-tenant organization management
+- **subscriptions**: Billing and subscription management
 
 ### Key Models
 
 - **User**: Authentication, roles, profile information
-- **Quotation**: Vehicle info, VCDS reports, error codes, cost estimates
-- **ErrorCode**: Error details, severity, costs, VAG compatibility
+- **Quotation**: Vehicle info, diagnostic reports, error codes, cost estimates
+- **ErrorCode**: Error details, severity, costs, multi-brand compatibility
 - **RepairCost**: Labor rates, parts costs, category breakdowns
+- **Organization**: Multi-tenant organization data
+- **Subscription**: Billing and usage tracking
 
 ## Security Features
 
@@ -251,7 +263,7 @@ npm run docker:run   # Run Docker container
 ### Project Structure
 
 ```
-VAGnosis/
+Errorlytic/
 ├── models/          # Database models
 ├── routes/          # API route handlers
 ├── middleware/      # Custom middleware
@@ -294,13 +306,15 @@ For support and questions:
 
 - [ ] Web-based frontend interface
 - [ ] Mobile application
-- [ ] Advanced VCDS parsing
+- [ ] Advanced diagnostic parsing
 - [ ] Integration with parts suppliers
 - [ ] Customer management system
 - [ ] Reporting and analytics dashboard
 - [ ] Multi-language support
 - [ ] Advanced AI diagnostics
+- [ ] Real-time diagnostic monitoring
+- [ ] Predictive maintenance features
 
 ---
 
-**Note**: This system is specifically designed for VAG Group vehicles and provides estimates in Kenya Shillings (KES). For other vehicle brands or currencies, modifications may be required.
+**Note**: This system provides comprehensive automotive diagnostic support for multiple vehicle brands with estimates in various currencies. The platform is designed to be scalable and adaptable to different markets and vehicle types.

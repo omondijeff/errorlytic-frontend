@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 process.env.NODE_ENV = "test";
 process.env.JWT_SECRET = "test-jwt-secret-key";
 process.env.MONGODB_URI =
-  "mongodb://admin:password123@localhost:27017/vagnosis_test?authSource=admin";
+  "mongodb://admin:password123@localhost:27017/errorlytic_test?authSource=admin";
 
 // Disable server startup in test environment
 process.env.DISABLE_SERVER_STARTUP = "true";

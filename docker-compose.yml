@@ -7,7 +7,7 @@ services:
       - "3002:3000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://admin:password123@mongo:27017/vagnosis_saas?authSource=admin
+      - MONGODB_URI=mongodb://admin:password123@mongo:27017/errorlytic_saas?authSource=admin
       - OPENAI_API_KEY=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
       - JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
       - REDIS_URL=redis://redis:6379
@@ -15,7 +15,7 @@ services:
       - MINIO_PORT=9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin123
-      - MINIO_BUCKET=vagnosis-uploads
+      - MINIO_BUCKET=errorlytic-uploads
       - MINIO_USE_SSL=false
     depends_on:
       - mongo
@@ -25,7 +25,7 @@ services:
       - ./uploads:/app/uploads
     restart: unless-stopped
     networks:
-      - vagnosis-network
+      - errorlytic-network
 
   mongo:
     image: mongo:6.0
@@ -39,7 +39,7 @@ services:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     restart: unless-stopped
     networks:
-      - vagnosis-network
+      - errorlytic-network
 
   mongo-express:
     image: mongo-express:latest
@@ -53,7 +53,7 @@ services:
       - mongo
     restart: unless-stopped
     networks:
-      - vagnosis-network
+      - errorlytic-network
 
   redis:
     image: redis:7-alpine
@@ -63,13 +63,13 @@ services:
       - redis_data:/data
     restart: unless-stopped
     networks:
-      - vagnosis-network
+      - errorlytic-network
 
   minio:
     image: minio/minio:latest
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9002:9000"
+      - "9003:9001"
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin123
@@ -78,10 +78,10 @@ services:
     command: server /data --console-address ":9001"
     restart: unless-stopped
     networks:
-      - vagnosis-network
+      - errorlytic-network
 
 networks:
-  vagnosis-network:
+  errorlytic-network:
     driver: bridge
 
 volumes:

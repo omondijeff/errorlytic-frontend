@@ -32,7 +32,7 @@ const redisService = require("./services/redisService");
 // Connect to MongoDB
 mongoose
   .connect(
-    process.env.MONGODB_URI || "mongodb://localhost:27017/vagnosis_saas",
+    process.env.MONGODB_URI || "mongodb://localhost:27017/errorlytic_saas",
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -42,21 +42,29 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // CORS configuration
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:3001", 
-    "http://localhost:8080",
-    "http://localhost:8081",
-    "http://localhost:8082",
-    "http://localhost:8083",
-    "http://frontend:80",
-    "http://frontend:3001",
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:8080",
+      "http://localhost:8081",
+      "http://localhost:8082",
+      "http://localhost:8083",
+      "http://frontend:80",
+      "http://frontend:3001",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Origin",
+      "X-Requested-With",
+      "Content-Type",
+      "Accept",
+      "Authorization",
+    ],
+  })
+);
 
 // Security middleware with less restrictive CORS settings
 app.use(
@@ -112,10 +120,10 @@ app.use("/api/upload", authMiddleware, uploadRoutes);
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
-    message: "VAGnosis SaaS API - Automotive Diagnostic Platform",
+    message: "Errorlytic SaaS API - Advanced Automotive Diagnostic Platform",
     version: "1.0.0",
     description:
-      "Multi-tenant SaaS platform for VAG vehicle diagnostics with AI-powered analysis",
+      "Multi-tenant SaaS platform for automotive diagnostics with AI-powered error code analysis",
     documentation: {
       swagger: "/api-docs",
       description: "Interactive API documentation with Swagger UI",
@@ -142,12 +150,14 @@ app.get("/", (req, res) => {
       "RBAC with 6 user roles",
       "Multi-currency support (KES, UGX, TZS, USD)",
       "S3-compatible file storage",
-      "AI-powered DTC analysis",
+      "AI-powered error code analysis",
       "Real-time caching with Redis",
       "Comprehensive audit logging",
       "Interactive API documentation",
       "Flexible billing system (subscriptions + micropayments)",
       "Usage metering and quota management",
+      "Advanced diagnostic report processing",
+      "Multi-brand vehicle support",
     ],
   });
 });

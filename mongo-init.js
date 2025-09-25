@@ -1,5 +1,5 @@
 // MongoDB initialization script
-db = db.getSiblingDB("vagnosis_saas");
+db = db.getSiblingDB("errorlytic_saas");
 
 // Create collections
 db.createCollection("users");
@@ -130,6 +130,6 @@ db.repair_costs.insertMany([
   },
 ]);
 
-print("Database 'vagnosis_saas' initialized successfully!");
+print("Database 'errorlytic_saas' initialized successfully!");
 print("Inserted " + db.error_codes.count() + " error codes");
 print("Inserted " + db.repair_costs.count() + " repair cost categories");

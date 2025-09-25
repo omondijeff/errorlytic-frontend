@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Quick test script for VAGnosis API
-BASE_URL="http://localhost:3000"
+BASE_URL="http://localhost:3002"
 
 echo "🔍 Testing server health..."
 curl -s "$BASE_URL/health" | jq '.'

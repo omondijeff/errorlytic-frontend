@@ -4,7 +4,7 @@
 # This script tests all 60+ API endpoints using curl commands
 
 # Configuration
-BASE_URL="http://localhost:3000"
+BASE_URL="http://localhost:3002"
 API_BASE="${BASE_URL}/api/v1"
 
 # Colors for output

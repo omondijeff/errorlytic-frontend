@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Script to create a super admin user for VAGnosis
+ * Script to create a super admin user for Errorlytic
  * This bypasses the registration endpoint restrictions
  */
 
@@ -17,7 +17,7 @@ async function createSuperAdmin() {
     // Connect to MongoDB
     const mongoUri =
       process.env.MONGODB_URI ||
-      "mongodb://admin:password123@localhost:27017/vagnosis_saas?authSource=admin";
+      "mongodb://admin:password123@localhost:27017/errorlytic_saas?authSource=admin";
     console.log("🔌 Connecting to MongoDB...");
     await mongoose.connect(mongoUri);
     console.log("✅ Connected to MongoDB");
