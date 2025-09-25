@@ -162,9 +162,9 @@ class InvoiceService {
 
       // Prepare email
       const emailOptions = {
-        from: process.env.SMTP_FROM || "noreply@vagnosis.com",
+        from: process.env.SMTP_FROM || "noreply@Errorlytic.com",
         to: invoice.userId.email,
-        subject: `Invoice ${invoice.invoiceNumber} - VAGnosis`,
+        subject: `Invoice ${invoice.invoiceNumber} - Errorlytic`,
         html: this.generateInvoiceEmailHTML(invoice),
         attachments: [
           {
@@ -269,7 +269,7 @@ class InvoiceService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>VAGnosis Invoice</h1>
+            <h1>Errorlytic Invoice</h1>
             <p>Invoice #${invoice.invoiceNumber}</p>
             <p>Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}</p>
           </div>
@@ -324,7 +324,7 @@ class InvoiceService {
           </div>
           
           <div class="footer">
-            <p>Thank you for using VAGnosis!</p>
+            <p>Thank you for using Errorlytic!</p>
             <p>This invoice was generated automatically. Please contact support if you have any questions.</p>
           </div>
         </div>

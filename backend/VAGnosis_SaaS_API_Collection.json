@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "VAGnosis SaaS API Collection",
-    "description": "Complete API collection for VAGnosis SaaS platform with billing, fraud detection, and invoice management",
+    "name": "Errorlytic SaaS API Collection",
+    "description": "Complete API collection for Errorlytic SaaS platform with billing, fraud detection, and invoice management",
     "version": "2.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

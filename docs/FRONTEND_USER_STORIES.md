@@ -1,8 +1,8 @@
-# VAGnosis Frontend User Stories & Requirements
+# Errorlytic Frontend User Stories & Requirements
 
 ## 🎯 **Overview**
 
-This document outlines the comprehensive user stories and requirements for the VAGnosis frontend application. These stories define the user experience, functionality, and features that need to be implemented to create a seamless automotive diagnostic platform for users across East Africa.
+This document outlines the comprehensive user stories and requirements for the Errorlytic frontend application. These stories define the user experience, functionality, and features that need to be implemented to create a seamless automotive diagnostic platform for users across East Africa.
 
 ---
 
@@ -1109,6 +1109,6 @@ This document outlines the comprehensive user stories and requirements for the V
 
 ---
 
-**VAGnosis Frontend User Stories v1.0.0** - Comprehensive User Experience Guide
+**Errorlytic Frontend User Stories v1.0.0** - Comprehensive User Experience Guide
 
 _Designed for automotive professionals across East Africa_

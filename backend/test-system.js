@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Simple test script to verify the VAGnosis SaaS system functionality
+ * Simple test script to verify the Errorlytic SaaS system functionality
  * Run this after starting the system to test basic functionality
  */
 
@@ -11,7 +11,7 @@ const BASE_URL = "http://localhost:3000";
 let authToken = null;
 
 async function testSystem() {
-  console.log("🚗 Testing VAGnosis SaaS System...\n");
+  console.log("🚗 Testing Errorlytic SaaS System...\n");
 
   try {
     // Test 1: Health Check

@@ -71,7 +71,7 @@ app.use("/api/upload", authMiddleware, uploadRoutes);
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
-    message: "VAGnosis SaaS API - Automotive Diagnostic Platform",
+    message: "Errorlytic SaaS API - Automotive Diagnostic Platform",
     version: "1.0.0",
     description:
       "Multi-tenant SaaS platform for VAG vehicle diagnostics with AI-powered analysis",

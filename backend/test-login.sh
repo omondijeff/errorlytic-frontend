@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔐 Testing VAGnosis Login Flow"
+echo "🔐 Testing Errorlytic Login Flow"
 echo "================================"
 
 # Test login endpoint
@@ -8,7 +8,7 @@ echo "📡 Testing login endpoint..."
 LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@vagnosis.com",
+    "email": "test@Errorlytic.com",
     "password": "TestPassword123"
   }')
 
@@ -38,13 +38,13 @@ echo "📝 To test the frontend:"
 echo ""
 echo "🔐 Regular User:"
 echo "1. Go to http://localhost:8082/login"
-echo "2. Use email: test@vagnosis.com"
+echo "2. Use email: test@Errorlytic.com"
 echo "3. Use password: TestPassword123"
 echo "4. Click Login"
 echo ""
 echo "👑 Super Admin:"
 echo "1. Go to http://localhost:8082/login"
-echo "2. Use email: admin@vagnosis.com"
+echo "2. Use email: admin@Errorlytic.com"
 echo "3. Use password: AdminPassword123"
 echo "4. Click Login"
     echo ""

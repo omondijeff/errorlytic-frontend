@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🐳 VAGnosis SaaS API - Docker Testing Setup"
+echo "🐳 Errorlytic SaaS API - Docker Testing Setup"
 echo "=========================================="
 echo ""
 
@@ -45,7 +45,7 @@ fi
 print_status "Docker Compose is available"
 
 echo ""
-echo "🚀 Starting VAGnosis SaaS Services..."
+echo "🚀 Starting Errorlytic SaaS Services..."
 echo "====================================="
 
 # Stop any existing containers
@@ -108,7 +108,7 @@ echo "🎨 Frontend:               http://localhost:3001"
 echo ""
 echo "📋 Testing Instructions:"
 echo "======================="
-echo "1. Import the Postman collection: VAGnosis_SaaS_API.postman_collection.json"
+echo "1. Import the Postman collection: Errorlytic_SaaS_API.postman_collection.json"
 echo "2. Start with the 'Complete Workflow' folder in Postman"
 echo "3. Or test individual endpoints using the organized folders"
 echo "4. Use the Swagger UI for interactive testing: http://localhost:3000/api-docs"
@@ -137,10 +137,10 @@ fi
 echo ""
 echo "🎯 Next Steps:"
 echo "=============="
-echo "1. Open Postman and import: VAGnosis_SaaS_API.postman_collection.json"
+echo "1. Open Postman and import: Errorlytic_SaaS_API.postman_collection.json"
 echo "2. Visit Swagger UI: http://localhost:3000/api-docs"
 echo "3. Start testing the complete workflow!"
 echo "4. Check service logs if needed: docker-compose logs -f"
 
 echo ""
-echo "✨ VAGnosis SaaS API is ready for testing in Docker! 🚀"
+echo "✨ Errorlytic SaaS API is ready for testing in Docker! 🚀"

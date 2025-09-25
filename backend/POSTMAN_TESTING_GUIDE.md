@@ -1,4 +1,4 @@
-# VAGnosis SaaS API - Postman Collection Testing Guide
+# Errorlytic SaaS API - Postman Collection Testing Guide
 
 ## 🚀 Quick Start
 
@@ -6,7 +6,7 @@
 
 - Open Postman
 - Click "Import" button
-- Select `VAGnosis_SaaS_API_Collection.json`
+- Select `Errorlytic_SaaS_API_Collection.json`
 - The collection will be imported with all endpoints and variables
 
 ### 2. Set Up Environment Variables

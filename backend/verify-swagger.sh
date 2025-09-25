@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔍 VAGnosis SaaS API - Swagger Documentation Verification"
+echo "🔍 Errorlytic SaaS API - Swagger Documentation Verification"
 echo "========================================================="
 echo ""
 
@@ -17,7 +17,7 @@ echo ""
 echo "📖 Swagger Documentation Status:"
 echo "--------------------------------"
 
-if curl -s http://localhost:3000/api-docs/ | grep -q "VAGnosis SaaS API Documentation"; then
+if curl -s http://localhost:3000/api-docs/ | grep -q "Errorlytic SaaS API Documentation"; then
     echo "✅ Swagger UI is accessible at: http://localhost:3000/api-docs"
 else
     echo "❌ Swagger UI is not accessible"

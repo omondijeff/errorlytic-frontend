@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VAGnosis SaaS API - Complete Endpoint Testing with curl
+# Errorlytic SaaS API - Complete Endpoint Testing with curl
 # This script tests all 60+ API endpoints using curl commands
 
 # Configuration
@@ -75,7 +75,7 @@ test_auth_endpoints() {
     register_response=$(curl -s -X POST "${API_BASE}/auth/register" \
         -H "Content-Type: application/json" \
         -d '{
-            "email": "test@vagnosis.com",
+            "email": "test@Errorlytic.com",
             "password": "TestPassword123!",
             "firstName": "Test",
             "lastName": "User",
@@ -97,7 +97,7 @@ test_auth_endpoints() {
     login_response=$(curl -s -X POST "${API_BASE}/auth/login" \
         -H "Content-Type: application/json" \
         -d '{
-            "email": "test@vagnosis.com",
+            "email": "test@Errorlytic.com",
             "password": "TestPassword123!"
         }')
     
@@ -195,7 +195,7 @@ test_organization_endpoints() {
             "email": "garage@test.com",
             "phone": "+254700000000",
             "address": "123 Test Street, Nairobi",
-            "description": "Test garage for VAGnosis"
+            "description": "Test garage for Errorlytic"
         }')
     
     if echo "$create_org_response" | grep -q "organization\|created"; then
@@ -824,7 +824,7 @@ test_system_health_endpoints() {
     echo -e "\nTesting API information..."
     api_info_response=$(curl -s -X GET "${BASE_URL}/")
     
-    if echo "$api_info_response" | grep -q "VAGnosis\|API"; then
+    if echo "$api_info_response" | grep -q "Errorlytic\|API"; then
         print_result 0 "API information"
     else
         print_result 1 "API information"
@@ -912,7 +912,7 @@ test_webhook_endpoints() {
 
 # Main execution
 main() {
-    echo -e "${GREEN}🚀 VAGnosis SaaS API - Complete Endpoint Testing${NC}"
+    echo -e "${GREEN}🚀 Errorlytic SaaS API - Complete Endpoint Testing${NC}"
     echo -e "${GREEN}================================================${NC}\n"
     
     # Check if jq is installed for JSON parsing

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Quick test script for VAGnosis API
+# Quick test script for Errorlytic API
 BASE_URL="http://localhost:3002"
 
 echo "🔍 Testing server health..."
@@ -10,7 +10,7 @@ echo -e "\n🔐 Testing authentication..."
 LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/api/v1/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@vagnosis.com",
+    "email": "test@Errorlytic.com",
     "password": "TestPassword123!"
   }')
 

@@ -1,8 +1,8 @@
-# VAGnosis - Automotive Diagnostic Platform
+# Errorlytic - Automotive Diagnostic Platform
 
 ## 🚗 **Overview**
 
-VAGnosis is a comprehensive **Multi-tenant SaaS platform** for automotive diagnostics with AI-powered error code analysis. The platform serves automotive repair businesses, insurance companies, and individual users across East Africa with advanced diagnostic capabilities, billing management, and multi-currency support.
+Errorlytic is a comprehensive **Multi-tenant SaaS platform** for automotive diagnostics with AI-powered error code analysis. The platform serves automotive repair businesses, insurance companies, and individual users across East Africa with advanced diagnostic capabilities, billing management, and multi-currency support.
 
 ### **Key Features**
 
@@ -21,7 +21,7 @@ VAGnosis is a comprehensive **Multi-tenant SaaS platform** for automotive diagno
 ## 🏗️ **Project Structure**
 
 ```
-VAGnosis/
+Errorlytic/
 ├── backend/                 # Backend API (Node.js + Express)
 │   ├── routes/             # API route handlers
 │   ├── models/             # MongoDB data models
@@ -58,7 +58,7 @@ VAGnosis/
 
 ```bash
 git clone <repository-url>
-cd VAGnosis
+cd Errorlytic
 ```
 
 2. **Backend Setup**
@@ -266,6 +266,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**VAGnosis v1.0.0** - Professional Automotive Diagnostic Platform
+**Errorlytic v1.0.0** - Professional Automotive Diagnostic Platform
 
 _Built with ❤️ for the automotive industry in East Africa_

@@ -1,8 +1,8 @@
-VAGnosis Pricing Strategy Guide
+Errorlytic Pricing Strategy Guide
 
 1. Pricing Philosophy
 
-VAGnosis pricing is designed to be flexible, scalable, and accessible to
+Errorlytic pricing is designed to be flexible, scalable, and accessible to
 different types of users in East Africa and beyond. The model balances
 pay-per-use micropayments for casual/low-volume users with subscription
 tiers for garages and insurers who need consistent access. The goal is
@@ -98,5 +98,5 @@ B. Subscription Tiers
 3.  Test price sensitivity by offering limited discounts in early
     pilots.
 
-Tagline: VAGnosis pricing — built for garages, insurers, and
+Tagline: Errorlytic pricing — built for garages, insurers, and
 communities, from single scans to enterprise-scale.

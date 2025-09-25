@@ -12,7 +12,7 @@ class MinIOService {
       secretKey: process.env.MINIO_SECRET_KEY || "minioadmin123",
     });
 
-    this.bucketName = process.env.MINIO_BUCKET || "vagnosis-uploads";
+    this.bucketName = process.env.MINIO_BUCKET || "Errorlytic-uploads";
     this.initializeBucket();
   }
 

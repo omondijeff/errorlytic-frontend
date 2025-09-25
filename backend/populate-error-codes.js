@@ -299,7 +299,7 @@ async function populateErrorCodes() {
   try {
     // Connect to MongoDB
     await mongoose.connect(
-      "mongodb://admin:password123@localhost:27018/vagnosis_saas?authSource=admin"
+      "mongodb://admin:password123@localhost:27018/Errorlytic_saas?authSource=admin"
     );
     console.log("✅ Connected to MongoDB");
 

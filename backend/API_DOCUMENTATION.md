@@ -1,8 +1,8 @@
-# VAGnosis SaaS API Documentation
+# Errorlytic SaaS API Documentation
 
 ## 🚀 **Interactive API Documentation**
 
-Our VAGnosis SaaS API is fully documented with **Swagger/OpenAPI 3.0** specification, providing interactive documentation that allows you to:
+Our Errorlytic SaaS API is fully documented with **Swagger/OpenAPI 3.0** specification, providing interactive documentation that allows you to:
 
 - **Explore all endpoints** with detailed descriptions
 - **Test API calls directly** from the browser
@@ -291,7 +291,7 @@ All monetary values are formatted with proper currency symbols:
 ```bash
 # Clone repository
 git clone <repository-url>
-cd VAGnosis
+cd Errorlytic
 
 # Install dependencies
 npm install
@@ -308,7 +308,7 @@ npm start
 
 ```bash
 # Database
-MONGODB_URI=mongodb://localhost:27017/vagnosis_saas
+MONGODB_URI=mongodb://localhost:27017/Errorlytic_saas
 
 # JWT
 JWT_SECRET=your_jwt_secret_key_here
@@ -321,7 +321,7 @@ MINIO_ENDPOINT=localhost
 MINIO_PORT=9000
 MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin123
-MINIO_BUCKET=vagnosis-uploads
+MINIO_BUCKET=Errorlytic-uploads
 MINIO_USE_SSL=false
 
 # OpenAI
@@ -430,10 +430,10 @@ curl -X GET http://localhost:3000/api/v1/auth/profile \
 
 For API support and questions:
 
-- **Email**: support@vagnosis.com
+- **Email**: support@Errorlytic.com
 - **Documentation**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 - **Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
 
 ---
 
-**VAGnosis SaaS API v1.0.0** - Professional Automotive Diagnostic Platform
+**Errorlytic SaaS API v1.0.0** - Professional Automotive Diagnostic Platform

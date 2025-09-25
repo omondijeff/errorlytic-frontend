@@ -1,4 +1,4 @@
-# 🎉 VAGnosis SaaS API - Complete Postman Collection (Updated)
+# 🎉 Errorlytic SaaS API - Complete Postman Collection (Updated)
 
 ## 📋 **Collection Overview**
 
@@ -182,7 +182,7 @@ The Postman collection has been **updated** to include **ALL API endpoints** inc
 
 ## 📚 **Files Updated**
 
-1. **`VAGnosis_SaaS_API_Collection.json`** - Complete Postman collection with Organizations and Vehicles
+1. **`Errorlytic_SaaS_API_Collection.json`** - Complete Postman collection with Organizations and Vehicles
 2. **`POSTMAN_TESTING_GUIDE.md`** - Updated testing guide
 3. **`test-api.sh`** - Automated testing script
 4. **`POSTMAN_COLLECTION_SUMMARY.md`** - Complete overview
@@ -200,7 +200,7 @@ The updated Postman collection now includes:
 - ✅ **Comprehensive error handling**
 - ✅ **Production-ready security** with RBAC
 
-**Import the updated collection and test the complete VAGnosis SaaS API including organization and vehicle management!** 🎉
+**Import the updated collection and test the complete Errorlytic SaaS API including organization and vehicle management!** 🎉
 
 ## 🔄 **What's New**
 

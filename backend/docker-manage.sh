@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VAGnosis Docker Management Script
+# Errorlytic Docker Management Script
 
 # Colors for output
 RED='\033[0;31m'
@@ -143,7 +143,7 @@ show_urls() {
 
 # Function to show help
 show_help() {
-    echo "VAGnosis Docker Management Script"
+    echo "Errorlytic Docker Management Script"
     echo ""
     echo "Usage: $0 [COMMAND]"
     echo ""

@@ -1,6 +1,6 @@
-VAGnosis MVP Development Guide (MERN + Docker)
+Errorlytic MVP Development Guide (MERN + Docker)
 
-  Goal: Ship a production-grade MVP of VAGnosis focused on three core
+  Goal: Ship a production-grade MVP of Errorlytic focused on three core
   modules — Explained Analysis, Repair Walkthrough, and
   Quotations/Estimates — with multi-currency support and role-based
   access, optimized for East Africa. Stack: MERN (MongoDB, Express,

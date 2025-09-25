@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# VAGnosis SaaS API - Quick Testing Script
+# Errorlytic SaaS API - Quick Testing Script
 # This script demonstrates the key API endpoints
 
 BASE_URL="http://localhost:3000"
 EMAIL="test@postman.com"
 PASSWORD="Password123"
 
-echo "🚀 VAGnosis SaaS API Testing Script"
+echo "🚀 Errorlytic SaaS API Testing Script"
 echo "=================================="
 
 # Colors for output
@@ -193,6 +193,6 @@ echo "4. Configure SMTP for email testing"
 echo "5. Test fraud detection with various scenarios"
 
 echo -e "\n${BLUE}📚 Documentation:${NC}"
-echo "- Postman Collection: VAGnosis_SaaS_API_Collection.json"
+echo "- Postman Collection: Errorlytic_SaaS_API_Collection.json"
 echo "- Testing Guide: POSTMAN_TESTING_GUIDE.md"
 echo "- API Docs: http://localhost:3000/api-docs"

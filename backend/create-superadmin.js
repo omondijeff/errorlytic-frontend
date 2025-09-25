@@ -34,10 +34,10 @@ async function createSuperAdmin() {
 
     // Create super admin user
     const superAdminData = {
-      email: "admin@vagnosis.com",
+      email: "admin@Errorlytic.com",
       passwordHash: await bcrypt.hash("AdminPassword123", 12),
       profile: {
-        name: "VAGnosis Super Admin",
+        name: "Errorlytic Super Admin",
         phone: "+254700000000",
         country: "Kenya",
       },
@@ -62,9 +62,9 @@ async function createSuperAdmin() {
     await superAdmin.save();
 
     console.log("🎉 Super admin created successfully!");
-    console.log("📧 Email: admin@vagnosis.com");
+    console.log("📧 Email: admin@Errorlytic.com");
     console.log("🔑 Password: AdminPassword123");
-    console.log("👤 Name: VAGnosis Super Admin");
+    console.log("👤 Name: Errorlytic Super Admin");
     console.log("🔑 Role: superadmin");
     console.log("📊 Plan: Enterprise");
     console.log("📈 API Limit: 10,000 calls/year");

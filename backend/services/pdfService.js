@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 class PDFService {
   constructor() {
-    this.templatesDir = path.join(__dirname, '../templates');
+    this.templatesDir = path.join(__dirname, "../templates");
     this.ensureTemplatesDir();
   }
 
@@ -23,17 +23,22 @@ class PDFService {
    */
   async generateQuotationPDF(quotation, organization, analysis, walkthrough) {
     try {
-      const html = this.generateQuotationHTML(quotation, organization, analysis, walkthrough);
-      
+      const html = this.generateQuotationHTML(
+        quotation,
+        organization,
+        analysis,
+        walkthrough
+      );
+
       // For now, we'll return the HTML as a string
       // In production, you would use puppeteer or similar to convert HTML to PDF
       return {
         success: true,
         html: html,
-        filename: `quotation_${quotation._id}_${Date.now()}.html`
+        filename: `quotation_${quotation._id}_${Date.now()}.html`,
       };
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error("PDF generation error:", error);
       throw error;
     }
   }
@@ -49,19 +54,19 @@ class PDFService {
   generateQuotationHTML(quotation, organization, analysis, walkthrough) {
     const formatCurrency = (amount, currency) => {
       const symbols = {
-        'KES': 'KSh',
-        'UGX': 'USh',
-        'TZS': 'TSh',
-        'USD': '$'
+        KES: "KSh",
+        UGX: "USh",
+        TZS: "TSh",
+        USD: "$",
       };
       return `${symbols[currency] || currency} ${amount.toLocaleString()}`;
     };
 
     const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     };
 
@@ -309,17 +314,26 @@ class PDFService {
         <div class="header">
             <h1>${organization.name}</h1>
             <p>Professional Automotive Services</p>
-            <p>Quotation #${quotation._id.toString().slice(-8).toUpperCase()}</p>
+            <p>Quotation #${quotation._id
+              .toString()
+              .slice(-8)
+              .toUpperCase()}</p>
         </div>
         
         <div class="content">
             <div class="quotation-info">
                 <div class="info-section">
                     <h3>Quotation Details</h3>
-                    <p><strong>Date:</strong> ${formatDate(quotation.createdAt)}</p>
-                    <p><strong>Status:</strong> <span class="status-badge status-${quotation.status}">${quotation.status}</span></p>
+                    <p><strong>Date:</strong> ${formatDate(
+                      quotation.createdAt
+                    )}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${
+                      quotation.status
+                    }">${quotation.status}</span></p>
                     <p><strong>Currency:</strong> ${quotation.currency}</p>
-                    <p><strong>Valid Until:</strong> ${formatDate(quotation.validUntil)}</p>
+                    <p><strong>Valid Until:</strong> ${formatDate(
+                      quotation.validUntil
+                    )}</p>
                 </div>
                 <div class="info-section">
                     <h3>Organization</h3>
@@ -330,34 +344,58 @@ class PDFService {
                 </div>
             </div>
             
-            ${analysis.vehicleId ? `
+            ${
+              analysis.vehicleId
+                ? `
             <div class="vehicle-info">
                 <h3>Vehicle Information</h3>
-                <p><strong>VIN:</strong> ${analysis.vehicleId.vin || 'N/A'}</p>
-                <p><strong>Make:</strong> ${analysis.vehicleId.make || 'N/A'}</p>
-                <p><strong>Model:</strong> ${analysis.vehicleId.model || 'N/A'}</p>
-                <p><strong>Year:</strong> ${analysis.vehicleId.year || 'N/A'}</p>
-                <p><strong>Engine:</strong> ${analysis.vehicleId.engine || 'N/A'}</p>
+                <p><strong>VIN:</strong> ${analysis.vehicleId.vin || "N/A"}</p>
+                <p><strong>Make:</strong> ${
+                  analysis.vehicleId.make || "N/A"
+                }</p>
+                <p><strong>Model:</strong> ${
+                  analysis.vehicleId.model || "N/A"
+                }</p>
+                <p><strong>Year:</strong> ${
+                  analysis.vehicleId.year || "N/A"
+                }</p>
+                <p><strong>Engine:</strong> ${
+                  analysis.vehicleId.engine || "N/A"
+                }</p>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <div class="diagnostic-summary">
                 <h3>Diagnostic Summary</h3>
-                <p><strong>Analysis Date:</strong> ${formatDate(analysis.createdAt)}</p>
-                <p><strong>Severity:</strong> <span class="status-badge status-${analysis.summary.severity}">${analysis.summary.severity}</span></p>
+                <p><strong>Analysis Date:</strong> ${formatDate(
+                  analysis.createdAt
+                )}</p>
+                <p><strong>Severity:</strong> <span class="status-badge status-${
+                  analysis.summary.severity
+                }">${analysis.summary.severity}</span></p>
                 <p><strong>Overview:</strong> ${analysis.summary.overview}</p>
                 
-                ${analysis.dtcs && analysis.dtcs.length > 0 ? `
+                ${
+                  analysis.dtcs && analysis.dtcs.length > 0
+                    ? `
                 <h4>Diagnostic Trouble Codes Found:</h4>
                 <ul class="dtc-list">
-                    ${analysis.dtcs.map(dtc => `
+                    ${analysis.dtcs
+                      .map(
+                        (dtc) => `
                     <li>
                         <span class="dtc-code">${dtc.code}</span> - ${dtc.description}
                         <br><small>Status: ${dtc.status}</small>
                     </li>
-                    `).join('')}
+                    `
+                      )
+                      .join("")}
                 </ul>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
             
             <div class="labor-section">
@@ -375,8 +413,14 @@ class PDFService {
                         <tr>
                             <td>Diagnostic & Repair Work</td>
                             <td>${quotation.labor.hours}</td>
-                            <td>${formatCurrency(quotation.labor.ratePerHour, quotation.currency)}</td>
-                            <td>${formatCurrency(quotation.labor.subtotal, quotation.currency)}</td>
+                            <td>${formatCurrency(
+                              quotation.labor.ratePerHour,
+                              quotation.currency
+                            )}</td>
+                            <td>${formatCurrency(
+                              quotation.labor.subtotal,
+                              quotation.currency
+                            )}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -395,15 +439,27 @@ class PDFService {
                         </tr>
                     </thead>
                     <tbody>
-                        ${quotation.parts.map(part => `
+                        ${quotation.parts
+                          .map(
+                            (part) => `
                         <tr>
-                            <td>${part.name} ${part.isOEM ? '(OEM)' : '(Aftermarket)'}</td>
-                            <td>${part.partNumber || 'N/A'}</td>
+                            <td>${part.name} ${
+                              part.isOEM ? "(OEM)" : "(Aftermarket)"
+                            }</td>
+                            <td>${part.partNumber || "N/A"}</td>
                             <td>${part.qty}</td>
-                            <td>${formatCurrency(part.unitPrice, quotation.currency)}</td>
-                            <td>${formatCurrency(part.subtotal, quotation.currency)}</td>
+                            <td>${formatCurrency(
+                              part.unitPrice,
+                              quotation.currency
+                            )}</td>
+                            <td>${formatCurrency(
+                              part.subtotal,
+                              quotation.currency
+                            )}</td>
                         </tr>
-                        `).join('')}
+                        `
+                          )
+                          .join("")}
                     </tbody>
                 </table>
             </div>
@@ -413,47 +469,74 @@ class PDFService {
                 <table class="totals-table">
                     <tr>
                         <td class="label">Parts Subtotal:</td>
-                        <td class="amount">${formatCurrency(quotation.totals.parts, quotation.currency)}</td>
+                        <td class="amount">${formatCurrency(
+                          quotation.totals.parts,
+                          quotation.currency
+                        )}</td>
                     </tr>
                     <tr>
                         <td class="label">Labor Subtotal:</td>
-                        <td class="amount">${formatCurrency(quotation.totals.labor, quotation.currency)}</td>
+                        <td class="amount">${formatCurrency(
+                          quotation.totals.labor,
+                          quotation.currency
+                        )}</td>
                     </tr>
                     <tr>
                         <td class="label">Subtotal:</td>
-                        <td class="amount">${formatCurrency(quotation.totals.parts + quotation.totals.labor, quotation.currency)}</td>
+                        <td class="amount">${formatCurrency(
+                          quotation.totals.parts + quotation.totals.labor,
+                          quotation.currency
+                        )}</td>
                     </tr>
                     <tr>
                         <td class="label">Markup (${quotation.markupPct}%):</td>
-                        <td class="amount">${formatCurrency((quotation.totals.parts + quotation.totals.labor) * (quotation.markupPct / 100), quotation.currency)}</td>
+                        <td class="amount">${formatCurrency(
+                          (quotation.totals.parts + quotation.totals.labor) *
+                            (quotation.markupPct / 100),
+                          quotation.currency
+                        )}</td>
                     </tr>
                     <tr>
                         <td class="label">Tax (${quotation.taxPct}%):</td>
-                        <td class="amount">${formatCurrency(quotation.totals.tax, quotation.currency)}</td>
+                        <td class="amount">${formatCurrency(
+                          quotation.totals.tax,
+                          quotation.currency
+                        )}</td>
                     </tr>
                     <tr class="grand-total">
                         <td class="label">Grand Total:</td>
-                        <td class="amount">${formatCurrency(quotation.totals.grand, quotation.currency)}</td>
+                        <td class="amount">${formatCurrency(
+                          quotation.totals.grand,
+                          quotation.currency
+                        )}</td>
                     </tr>
                 </table>
             </div>
             
-            ${quotation.notes ? `
+            ${
+              quotation.notes
+                ? `
             <div class="notes-section">
                 <h3>Additional Notes</h3>
                 <p>${quotation.notes}</p>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <div class="validity-info">
-                <p><strong>Important:</strong> This quotation is valid until ${formatDate(quotation.validUntil)}. Prices are subject to change without notice.</p>
+                <p><strong>Important:</strong> This quotation is valid until ${formatDate(
+                  quotation.validUntil
+                )}. Prices are subject to change without notice.</p>
             </div>
         </div>
         
         <div class="footer">
             <p><strong>${organization.name}</strong></p>
             <p>Professional Automotive Services</p>
-            <p>Generated on ${formatDate(new Date())} by VAGnosis SaaS Platform</p>
+            <p>Generated on ${formatDate(
+              new Date()
+            )} by Errorlytic SaaS Platform</p>
         </div>
     </div>
 </body>
@@ -471,15 +554,19 @@ class PDFService {
    */
   async generateWalkthroughPDF(walkthrough, analysis, organization) {
     try {
-      const html = this.generateWalkthroughHTML(walkthrough, analysis, organization);
-      
+      const html = this.generateWalkthroughHTML(
+        walkthrough,
+        analysis,
+        organization
+      );
+
       return {
         success: true,
         html: html,
-        filename: `walkthrough_${walkthrough._id}_${Date.now()}.html`
+        filename: `walkthrough_${walkthrough._id}_${Date.now()}.html`,
       };
     } catch (error) {
-      console.error('Walkthrough PDF generation error:', error);
+      console.error("Walkthrough PDF generation error:", error);
       throw error;
     }
   }
@@ -502,10 +589,10 @@ class PDFService {
     };
 
     const formatDate = (date) => {
-      return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     };
 
@@ -731,72 +818,125 @@ class PDFService {
             <div class="walkthrough-info">
                 <div class="info-section">
                     <h3>Walkthrough Details</h3>
-                    <p><strong>Generated:</strong> ${formatDate(walkthrough.createdAt)}</p>
-                    <p><strong>Difficulty:</strong> <span class="difficulty-badge difficulty-${walkthrough.difficulty}">${walkthrough.difficulty}</span></p>
-                    <p><strong>Total Time:</strong> ${formatTime(walkthrough.totalEstimatedTime)}</p>
+                    <p><strong>Generated:</strong> ${formatDate(
+                      walkthrough.createdAt
+                    )}</p>
+                    <p><strong>Difficulty:</strong> <span class="difficulty-badge difficulty-${
+                      walkthrough.difficulty
+                    }">${walkthrough.difficulty}</span></p>
+                    <p><strong>Total Time:</strong> ${formatTime(
+                      walkthrough.totalEstimatedTime
+                    )}</p>
                     <p><strong>Steps:</strong> ${walkthrough.steps.length}</p>
                 </div>
                 <div class="info-section">
                     <h3>Analysis Reference</h3>
-                    <p><strong>Analysis ID:</strong> ${analysis._id.toString().slice(-8).toUpperCase()}</p>
-                    <p><strong>Severity:</strong> ${analysis.summary.severity}</p>
-                    <p><strong>DTCs Found:</strong> ${analysis.dtcs ? analysis.dtcs.length : 0}</p>
+                    <p><strong>Analysis ID:</strong> ${analysis._id
+                      .toString()
+                      .slice(-8)
+                      .toUpperCase()}</p>
+                    <p><strong>Severity:</strong> ${
+                      analysis.summary.severity
+                    }</p>
+                    <p><strong>DTCs Found:</strong> ${
+                      analysis.dtcs ? analysis.dtcs.length : 0
+                    }</p>
                     <p><strong>Module:</strong> ${analysis.module}</p>
                 </div>
             </div>
             
             <div class="steps-section">
                 <h3 class="section-title">Repair Steps</h3>
-                ${walkthrough.steps.map((step, index) => `
+                ${walkthrough.steps
+                  .map(
+                    (step, index) => `
                 <div class="step">
                     <div class="step-header">
                         <span class="step-number">${step.order}</span>
                         <span class="step-title">${step.title}</span>
-                        <span class="step-time">${formatTime(step.estMinutes || 0)}</span>
+                        <span class="step-time">${formatTime(
+                          step.estMinutes || 0
+                        )}</span>
                     </div>
                     <div class="step-content">
                         <div class="step-detail">${step.detail}</div>
-                        <span class="step-type type-${step.type}">${step.type}</span>
+                        <span class="step-type type-${step.type}">${
+                      step.type
+                    }</span>
                     </div>
                 </div>
-                `).join('')}
+                `
+                  )
+                  .join("")}
             </div>
             
-            ${walkthrough.parts && walkthrough.parts.length > 0 ? `
+            ${
+              walkthrough.parts && walkthrough.parts.length > 0
+                ? `
             <div class="parts-section">
                 <h3 class="section-title">Required Parts</h3>
                 <ul class="parts-list">
-                    ${walkthrough.parts.map(part => `
+                    ${walkthrough.parts
+                      .map(
+                        (part) => `
                     <li>
                         <div class="part-name">${part.name}</div>
                         <div class="part-details">
                             <strong>Quantity:</strong> ${part.qty}<br>
-                            ${part.oem ? `<strong>OEM:</strong> ${part.oem}<br>` : ''}
-                            ${part.alt && part.alt.length > 0 ? `<strong>Alternatives:</strong> ${part.alt.join(', ')}<br>` : ''}
-                            ${part.estimatedCost ? `<span class="estimated-cost">Estimated Cost: ${part.estimatedCost}</span>` : ''}
+                            ${
+                              part.oem
+                                ? `<strong>OEM:</strong> ${part.oem}<br>`
+                                : ""
+                            }
+                            ${
+                              part.alt && part.alt.length > 0
+                                ? `<strong>Alternatives:</strong> ${part.alt.join(
+                                    ", "
+                                  )}<br>`
+                                : ""
+                            }
+                            ${
+                              part.estimatedCost
+                                ? `<span class="estimated-cost">Estimated Cost: ${part.estimatedCost}</span>`
+                                : ""
+                            }
                         </div>
                     </li>
-                    `).join('')}
+                    `
+                      )
+                      .join("")}
                 </ul>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
             
-            ${walkthrough.tools && walkthrough.tools.length > 0 ? `
+            ${
+              walkthrough.tools && walkthrough.tools.length > 0
+                ? `
             <div class="tools-section">
                 <h3 class="section-title">Required Tools</h3>
                 <ul class="tools-list">
-                    ${walkthrough.tools.map(tool => `
+                    ${walkthrough.tools
+                      .map(
+                        (tool) => `
                     <li>${tool}</li>
-                    `).join('')}
+                    `
+                      )
+                      .join("")}
                 </ul>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
         </div>
         
         <div class="footer">
             <p><strong>${organization.name}</strong></p>
             <p>Professional Automotive Services</p>
-            <p>Generated on ${formatDate(new Date())} by VAGnosis SaaS Platform</p>
+            <p>Generated on ${formatDate(
+              new Date()
+            )} by Errorlytic SaaS Platform</p>
         </div>
     </div>
 </body>
@@ -813,7 +953,7 @@ class PDFService {
    */
   async saveHTMLToFile(html, filename) {
     const filePath = path.join(this.templatesDir, filename);
-    await fs.promises.writeFile(filePath, html, 'utf8');
+    await fs.promises.writeFile(filePath, html, "utf8");
     return filePath;
   }
 }

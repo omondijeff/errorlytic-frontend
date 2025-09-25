@@ -1,4 +1,4 @@
-# 🚀 VAGnosis API - Quick curl Testing Guide
+# 🚀 Errorlytic API - Quick curl Testing Guide
 
 ## 📋 Prerequisites
 
@@ -24,7 +24,7 @@ sudo apt-get install jq
 curl -X POST http://localhost:3000/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@vagnosis.com",
+    "email": "test@Errorlytic.com",
     "password": "TestPassword123!",
     "firstName": "Test",
     "lastName": "User",
@@ -40,7 +40,7 @@ curl -X POST http://localhost:3000/api/v1/auth/register \
 LOGIN_RESPONSE=$(curl -s -X POST http://localhost:3000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@vagnosis.com",
+    "email": "test@Errorlytic.com",
     "password": "TestPassword123!"
   }')
 
@@ -84,7 +84,7 @@ curl -X POST http://localhost:3000/api/v1/auth/orgs \
     "email": "garage@test.com",
     "phone": "+254700000000",
     "address": "123 Test Street, Nairobi",
-    "description": "Test garage for VAGnosis"
+    "description": "Test garage for Errorlytic"
   }' | jq '.'
 ```
 
@@ -379,7 +379,7 @@ Save this as `quick-test.sh` and run it:
 ```bash
 #!/bin/bash
 
-# Quick test script for VAGnosis API
+# Quick test script for Errorlytic API
 BASE_URL="http://localhost:3000"
 
 echo "🔍 Testing server health..."
@@ -389,7 +389,7 @@ echo -e "\n🔐 Testing authentication..."
 LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/api/v1/auth/login" \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "test@vagnosis.com",
+    "email": "test@Errorlytic.com",
     "password": "TestPassword123!"
   }')
 

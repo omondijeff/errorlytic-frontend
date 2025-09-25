@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "VAGnosis SaaS API",
-    "description": "Complete API collection for VAGnosis SaaS - Professional Automotive Diagnostic Platform",
+    "name": "Errorlytic SaaS API",
+    "description": "Complete API collection for Errorlytic SaaS - Professional Automotive Diagnostic Platform",
     "version": "1.0.0",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -550,7 +550,13 @@
             "url": {
               "raw": "{{baseUrl}}/api/v1/walkthrough/{{walkthroughId}}/export",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "walkthrough", "{{walkthroughId}}", "export"]
+              "path": [
+                "api",
+                "v1",
+                "walkthrough",
+                "{{walkthroughId}}",
+                "export"
+              ]
             }
           },
           "response": []

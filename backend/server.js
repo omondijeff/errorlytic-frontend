@@ -102,7 +102,7 @@ app.get("/health", (req, res) => {
 // Swagger API Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerOptions));
 
-// API routes - VAGnosis v1 API
+// API routes - Errorlytic v1 API
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/quotations", authMiddleware, quotationRoutes);
 app.use("/api/v1/error-codes", errorCodeRoutes);
