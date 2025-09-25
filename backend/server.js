@@ -47,6 +47,8 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
+      "http://localhost:3003",
+      "http://localhost:5173", // Vite dev server
       "http://localhost:8080",
       "http://localhost:8081",
       "http://localhost:8082",

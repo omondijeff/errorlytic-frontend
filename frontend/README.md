@@ -6,401 +6,258 @@ This is the frontend application for Errorlytic, a comprehensive **Multi-tenant 
 
 > **Note**: This is the frontend component of the Errorlytic platform. For the complete project overview, see the [root README](../README.md).
 
-### **Key Features**
-
-- 🔐 **Role-Based Dashboards** tailored for different user types
-- 📱 **Mobile-First Design** with responsive layouts
-- 💰 **Multi-Currency Support** (KES, UGX, TZS, USD)
-- 📊 **Interactive Analytics** with charts and visualizations
-- 🎨 **Modern UI/UX** with accessibility compliance
-- ⚡ **Real-Time Updates** with WebSocket integration
-- 📁 **File Upload** with drag-and-drop functionality
-- 📋 **Step-by-Step Walkthroughs** for repair processes
-
----
-
-## 🏗️ **Project Structure**
-
-```
-frontend/
-├── src/
-│   ├── components/         # Reusable UI components
-│   │   ├── common/         # Common components (Button, Modal, etc.)
-│   │   ├── forms/          # Form components
-│   │   ├── charts/         # Chart and visualization components
-│   │   └── layout/         # Layout components (Header, Sidebar, etc.)
-│   ├── pages/              # Page components
-│   │   ├── auth/           # Authentication pages
-│   │   ├── dashboard/      # Dashboard pages
-│   │   ├── analysis/       # Analysis pages
-│   │   ├── quotations/     # Quotation pages
-│   │   └── billing/        # Billing pages
-│   ├── services/           # API service layer
-│   │   ├── api.js          # API client configuration
-│   │   ├── auth.js         # Authentication services
-│   │   ├── analysis.js     # Analysis services
-│   │   └── billing.js      # Billing services
-│   ├── hooks/              # Custom React hooks
-│   ├── contexts/           # React contexts
-│   ├── utils/              # Utility functions
-│   ├── assets/             # Static assets
-│   └── App.js              # Main App component
-├── public/                 # Public static files
-└── README.md               # This file
-```
-
----
-
-## 🚀 **Getting Started**
-
-### **Prerequisites**
-
-- Node.js 16+
-- npm or yarn
-- Backend API running (see [backend README](../backend/README.md))
-
-### **Installation**
-
-1. **Install Dependencies**
-
-```bash
-npm install
-# or
-yarn install
-```
-
-2. **Environment Configuration**
-
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. **Start Development Server**
-
-```bash
-npm start
-# or
-yarn start
-```
-
-4. **Access the Application**
-
-- **Frontend**: `http://localhost:3000`
-- **Backend API**: `http://localhost:3000` (configured in .env)
-
----
-
-## 🎨 **Design System**
-
-### **Color Palette**
-
-#### **Severity Levels**
-
-- **Critical**: `#DC2626` (Red)
-- **High**: `#EA580C` (Orange)
-- **Medium**: `#D97706` (Yellow)
-- **Low**: `#16A34A` (Green)
-
-#### **Status Colors**
-
-- **Success**: `#16A34A` (Green)
-- **Warning**: `#D97706` (Yellow)
-- **Error**: `#DC2626` (Red)
-- **Info**: `#2563EB` (Blue)
-
-### **Typography**
-
-- **Primary Font**: Inter, system-ui, sans-serif
-- **Monospace**: 'Fira Code', 'Monaco', monospace
-
-### **Spacing Scale**
-
-- **xs**: 4px
-- **sm**: 8px
-- **md**: 16px
-- **lg**: 24px
-- **xl**: 32px
-- **2xl**: 48px
-
----
-
-## 📱 **Responsive Design**
-
-### **Breakpoints**
-
-- **Mobile**: 320px - 768px
-- **Tablet**: 768px - 1024px
-- **Desktop**: 1024px+
-
-### **Mobile-First Approach**
-
-- Touch-friendly interfaces
-- Swipe gestures for navigation
-- Optimized for small screens
-- Progressive Web App (PWA) capabilities
-
----
-
-## 🔐 **Authentication Flow**
-
-### **User Roles & Permissions**
-
-| Role              | Dashboard Features  | Permissions                         |
-| ----------------- | ------------------- | ----------------------------------- |
-| **individual**    | Personal dashboard  | Basic analysis, personal quotations |
-| **garage_user**   | Garage dashboard    | Organization analysis, quotations   |
-| **garage_admin**  | Admin dashboard     | Full garage management, billing     |
-| **insurer_user**  | Insurance dashboard | View claims, basic analysis         |
-| **insurer_admin** | Admin dashboard     | Full insurance management           |
-| **superadmin**    | System dashboard    | Full system access                  |
-
-### **Authentication Components**
-
-- Login/Register forms
-- Password reset flow
-- Role selection interface
-- Team invitation system
-- Two-factor authentication (2FA)
-
----
-
-## 📊 **Key Features**
-
-### **Dashboard System**
-
-- **Role-Aware Dashboards**: Different layouts for each user role
-- **Usage Statistics**: Visual progress bars and limit indicators
-- **Activity Feeds**: Recent actions and notifications
-- **Quick Actions**: Role-specific action buttons
-
-### **File Upload & Analysis**
-
-- **Drag-and-Drop Upload**: Support for VCDS/OBD files
-- **Progress Tracking**: Real-time upload and analysis progress
-- **File Management**: Upload history and file organization
-- **Format Support**: .txt, .csv, .xml files
-
-### **Analysis Display**
-
-- **Error Code Visualization**: Color-coded severity levels
-- **AI-Powered Insights**: Plain language explanations
-- **Interactive Charts**: Error distribution and trends
-- **Export Functionality**: PDF generation and sharing
-
-### **Repair Walkthroughs**
-
-- **Step-by-Step Interface**: Stepper UI with navigation
-- **Interactive Editing**: Add/edit/remove steps
-- **Progress Tracking**: Completion status and time estimates
-- **Export Options**: PDF generation for offline use
-
-### **Quotation System**
-
-- **Dynamic Pricing**: Real-time calculation engine
-- **Multi-Currency Support**: KES, UGX, TZS, USD
-- **Status Management**: Track customer decisions
-- **Sharing Options**: Links and PDF exports
-
-### **Billing & Subscriptions**
-
-- **Plan Comparison**: Feature matrix and pricing
-- **Usage Monitoring**: Track limits and usage
-- **Payment History**: Transaction and invoice management
-- **Invoice Generation**: Professional PDF invoices
-
----
-
-## 🛠️ **Technology Stack**
+## 🚀 **Tech Stack**
 
 ### **Core Technologies**
 
-- **Framework**: React 18+ with TypeScript
-- **State Management**: Redux Toolkit or Zustand
-- **Routing**: React Router v6
-- **Styling**: Styled Components or Emotion
-- **Forms**: React Hook Form with Yup validation
+- **React 18** - Modern React with hooks and concurrent features
+- **TypeScript** - Type-safe development
+- **Vite** - Lightning-fast build tool and dev server
+- **Redux Toolkit** - State management with RTK Query
+- **React Router v6** - Client-side routing
+- **Tailwind CSS** - Utility-first CSS framework
 
-### **UI Libraries**
+### **UI/UX Libraries**
 
-- **Component Library**: Material-UI, Ant Design, or Chakra UI
-- **Icons**: React Icons or Heroicons
-- **Charts**: Chart.js, D3.js, or Recharts
-- **Date Picker**: React DatePicker
-- **File Upload**: React Dropzone
+- **Framer Motion** - Smooth animations and transitions
+- **Headless UI** - Accessible UI components
+- **Heroicons** - Beautiful SVG icons
+- **Lucide React** - Additional icon library
 
-### **Development Tools**
+### **Form Handling**
 
-- **Build Tool**: Vite or Create React App
-- **Testing**: Jest, React Testing Library
-- **Linting**: ESLint with TypeScript support
-- **Formatting**: Prettier
-- **Type Checking**: TypeScript
+- **React Hook Form** - Performant forms with easy validation
+- **Yup** - Schema validation
+- **@hookform/resolvers** - Form validation resolvers
 
----
+### **Data Fetching**
 
-## 🧪 **Testing Strategy**
+- **RTK Query** - Data fetching and caching
+- **TanStack Query** - Server state management
+- **Axios** - HTTP client
 
-### **Testing Levels**
+### **Web3 Integration** (Future)
 
-- **Unit Tests**: Component and utility function testing
-- **Integration Tests**: API integration and user flows
-- **E2E Tests**: Complete user journey testing
-- **Accessibility Tests**: WCAG compliance testing
+- **Ethers.js** - Ethereum library
+- **Web3Modal** - Wallet connection
+- **Wagmi** - React hooks for Ethereum
 
-### **Test Coverage Goals**
+## 🎨 **Design System**
 
-- **Unit Tests**: 80%+ coverage
-- **Integration Tests**: Critical user flows
-- **E2E Tests**: Complete user journeys
-- **Accessibility**: 100% WCAG compliance
+### **Brand Colors (Tajilabs)**
 
-### **Testing Tools**
-
-- **Jest**: Unit testing framework
-- **React Testing Library**: Component testing
-- **Cypress**: End-to-end testing
-- **axe-core**: Accessibility testing
-
----
-
-## 📱 **Progressive Web App (PWA)**
-
-### **PWA Features**
-
-- **Offline Support**: Service worker for offline functionality
-- **Push Notifications**: Real-time notifications
-- **App Installation**: Install as native app
-- **Background Sync**: Sync data when online
-
-### **Mobile Optimizations**
-
-- **Touch Gestures**: Swipe navigation and interactions
-- **Camera Integration**: Photo capture for vehicle identification
-- **GPS Integration**: Location-based features
-- **Performance**: Optimized for mobile devices
-
----
-
-## 🔧 **Development Guidelines**
-
-### **Code Standards**
-
-- **TypeScript**: Strict type checking enabled
-- **ESLint**: Enforced code quality rules
-- **Prettier**: Consistent code formatting
-- **Conventional Commits**: Standardized commit messages
-
-### **Component Guidelines**
-
-- **Functional Components**: Use React hooks
-- **Props Interface**: Define TypeScript interfaces
-- **Error Boundaries**: Implement error handling
-- **Accessibility**: WCAG 2.1 AA compliance
-
-### **Performance Guidelines**
-
-- **Code Splitting**: Lazy loading for routes
-- **Memoization**: Use React.memo and useMemo
-- **Bundle Optimization**: Tree shaking and compression
-- **Image Optimization**: WebP format and lazy loading
-
----
-
-## 📚 **User Stories**
-
-For detailed user stories and requirements, see:
-
-- **Frontend User Stories**: [docs/FRONTEND_USER_STORIES.md](../docs/FRONTEND_USER_STORIES.md)
-
-### **Key User Stories**
-
-- **US-001**: User registration with role selection
-- **US-007**: Role-aware dashboard system
-- **US-010**: File upload with progress tracking
-- **US-012**: AI-powered analysis display
-- **US-016**: Repair walkthrough generation
-- **US-020**: Quotation generation and editing
-- **US-025**: Subscription plan management
-
----
-
-## 🚀 **Deployment**
-
-### **Build Process**
-
-```bash
-# Production build
-npm run build
-
-# Preview build
-npm run preview
+```css
+Primary Orange: #E05426 (HSL: 13 78% 52%)
+Secondary Orange: #FFAB88 (HSL: 19 100% 76%)
 ```
 
-### **Environment Configuration**
+### **Typography**
+
+- **Primary Font**: Poppins (300, 400, 500, 600, 700)
+- **Secondary Font**: Lexend Deca (300, 400, 500, 600, 700)
+- **Accent Font**: Montserrat (300, 400, 500, 600, 700)
+
+### **Design Principles**
+
+- **Apple Standards**: Clean, minimal, intuitive interface
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Responsive**: Mobile-first design approach
+- **Performance**: Optimized for speed and smooth interactions
+
+## 📁 **Project Structure**
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── Auth/           # Authentication components
+│   ├── Layout/         # Layout components (Header, Sidebar)
+│   ├── UI/             # Basic UI components
+│   ├── Forms/          # Form components
+│   └── Charts/         # Chart components
+├── pages/              # Page components
+│   ├── Auth/           # Login, Register pages
+│   ├── Dashboard/      # Dashboard page
+│   ├── Analysis/       # Analysis pages
+│   ├── Quotations/     # Quotation pages
+│   ├── Billing/        # Billing pages
+│   └── Profile/        # Profile pages
+├── store/              # Redux store
+│   ├── slices/         # Redux slices
+│   └── index.ts        # Store configuration
+├── services/           # API services
+├── hooks/              # Custom React hooks
+├── utils/              # Utility functions
+├── types/              # TypeScript type definitions
+└── constants/          # App constants
+```
+
+## 🛠 **Setup & Installation**
+
+### **Prerequisites**
+
+- Node.js 18+
+- npm or yarn
+- Backend API running on port 3003
+
+### **Installation**
+
+1. **Clone and navigate to frontend directory**
+
+   ```bash
+   cd frontend
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Environment setup**
+
+   ```bash
+   cp env.example .env.local
+   # Edit .env.local with your configuration
+   ```
+
+4. **Start development server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**
+   ```
+   http://localhost:5173
+   ```
+
+### **Available Scripts**
 
 ```bash
 # Development
-REACT_APP_API_URL=http://localhost:3000
-REACT_APP_ENV=development
+npm run dev          # Start dev server
+npm run build        # Build for production
+npm run preview      # Preview production build
 
-# Production
-REACT_APP_API_URL=https://api.Errorlytic.com
-REACT_APP_ENV=production
+# Code Quality
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript checks
+npm run test         # Run tests
 ```
 
-### **Deployment Options**
+## 🔐 **Authentication**
 
-- **Vercel**: Recommended for React applications
-- **Netlify**: Static site hosting
-- **AWS S3 + CloudFront**: Scalable hosting
-- **Docker**: Containerized deployment
+The frontend implements a comprehensive authentication system with:
 
----
+- **JWT Token Management** - Secure token storage and refresh
+- **Role-Based Access Control** - 6 different user roles
+- **Protected Routes** - Automatic redirects for unauthorized access
+- **Persistent Sessions** - Remember user login state
+
+### **User Roles**
+
+1. **Individual** - Personal diagnostic analysis
+2. **Garage User** - Basic garage operations
+3. **Garage Admin** - Full garage management
+4. **Insurer User** - Insurance claim analysis
+5. **Insurer Admin** - Insurance company management
+6. **Superadmin** - Platform administration
+
+## 🎨 **UI Components**
+
+### **Design System Components**
+
+- **Buttons**: Primary, Secondary, Outline variants
+- **Cards**: Elevated cards with hover effects
+- **Forms**: Accessible form inputs with validation
+- **Loading States**: Smooth loading spinners and skeletons
+- **Modals**: Accessible modal dialogs
+- **Navigation**: Responsive sidebar and header
+
+### **Custom Styling**
+
+- **Gradient Backgrounds** - Tajilabs brand gradients
+- **Glass Effects** - Modern glassmorphism
+- **Smooth Animations** - Framer Motion transitions
+- **Shadow System** - Consistent elevation shadows
+
+## 📱 **Responsive Design**
+
+The frontend is fully responsive with breakpoints:
+
+- **Mobile**: < 768px
+- **Tablet**: 768px - 1024px
+- **Desktop**: > 1024px
+
+## 🚀 **Performance Optimizations**
+
+- **Code Splitting** - Route-based code splitting
+- **Lazy Loading** - Component lazy loading
+- **Image Optimization** - Optimized image loading
+- **Bundle Analysis** - Regular bundle size monitoring
+- **Caching** - RTK Query caching strategies
+
+## 🔧 **Development Guidelines**
+
+### **Code Style**
+
+- **TypeScript** - Strict type checking enabled
+- **ESLint** - Consistent code formatting
+- **Prettier** - Automatic code formatting
+- **Conventional Commits** - Standardized commit messages
+
+### **Component Guidelines**
+
+- **Functional Components** - Use React hooks
+- **TypeScript Props** - Properly typed component props
+- **Accessibility** - ARIA labels and keyboard navigation
+- **Performance** - Memoization where appropriate
+
+## 🌐 **API Integration**
+
+The frontend integrates with the Errorlytic backend API:
+
+- **Base URL**: `http://localhost:3003/api/v1`
+- **Authentication**: JWT Bearer tokens
+- **Error Handling**: Comprehensive error boundaries
+- **Loading States**: Skeleton screens and spinners
+- **Caching**: RTK Query automatic caching
+
+## 🔮 **Future Features**
+
+### **Web3 Integration**
+
+- **Blockchain Authentication** - Wallet-based login
+- **NFT Certificates** - Digital diagnostic certificates
+- **Smart Contracts** - Automated billing and payments
+- **Decentralized Storage** - IPFS for diagnostic files
+
+### **Advanced Features**
+
+- **Real-time Updates** - WebSocket integration
+- **Offline Support** - Progressive Web App features
+- **Mobile App** - React Native mobile app
+- **Analytics Dashboard** - Advanced reporting
 
 ## 📊 **Analytics & Monitoring**
 
-### **User Analytics**
-
-- **Page Views**: Track user navigation
-- **Feature Usage**: Monitor feature adoption
-- **Performance Metrics**: Load times and errors
-- **Conversion Tracking**: Registration and subscription rates
-
-### **Error Monitoring**
-
-- **Client-Side Errors**: JavaScript error tracking
-- **API Errors**: Failed request monitoring
-- **Performance Issues**: Slow loading detection
-- **User Feedback**: Error reporting system
-
----
+- **Performance Monitoring** - Core Web Vitals tracking
+- **Error Tracking** - Comprehensive error reporting
+- **User Analytics** - User behavior tracking
+- **A/B Testing** - Feature flag system
 
 ## 🤝 **Contributing**
 
-### **Development Workflow**
-
-1. **Fork** the repository
-2. **Create** a feature branch
-3. **Implement** changes with tests
-4. **Submit** a pull request
-5. **Review** and merge
-
-### **Code Review Process**
-
-- **Automated Tests**: All tests must pass
-- **Code Quality**: ESLint and TypeScript checks
-- **Accessibility**: WCAG compliance verification
-- **Performance**: Bundle size and load time checks
-
----
+1. Follow the established code style
+2. Write comprehensive TypeScript types
+3. Add proper error handling
+4. Include accessibility features
+5. Test on multiple devices and browsers
 
 ## 📄 **License**
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is part of the Errorlytic platform by Tajilabs. All rights reserved.
 
 ---
 
-**Errorlytic Frontend v1.0.0** - Professional Automotive Diagnostic Platform
-
-_Designed for automotive professionals across East Africa_
+**Built with ❤️ by Tajilabs**

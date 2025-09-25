@@ -28,14 +28,22 @@ Errorlytic/
 │   ├── services/           # Business logic services
 │   ├── middleware/         # Express middleware
 │   ├── tests/              # Backend tests
+│   ├── docker-compose.yml  # Docker services configuration
+│   ├── Dockerfile          # Backend container configuration
 │   └── README.md           # Backend documentation
-├── frontend/               # Frontend Application (React)
+├── frontend/               # Frontend Application (React + TypeScript)
 │   ├── src/                # React source code
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── store/          # Redux store and slices
+│   │   ├── services/       # API services
+│   │   └── hooks/          # Custom React hooks
 │   ├── public/             # Static assets
+│   ├── tests/              # Frontend tests
 │   └── README.md           # Frontend documentation
 ├── docs/                   # Shared documentation
-│   ├── shared/             # Common documentation
-│   └── FRONTEND_USER_STORIES.md
+│   ├── FRONTEND_USER_STORIES.md
+│   └── swagger.js          # API documentation
 └── README.md               # This file
 ```
 
@@ -71,12 +79,14 @@ cp env.example .env
 npm run dev
 ```
 
-3. **Frontend Setup** (when implemented)
+3. **Frontend Setup**
 
 ```bash
 cd frontend
 npm install
-npm start
+cp env.example .env.local
+# Edit .env.local with your configuration
+npm run dev
 ```
 
 4. **Docker Setup** (Alternative)
