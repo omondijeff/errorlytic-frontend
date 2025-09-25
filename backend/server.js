@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 // Import Swagger documentation
-const { swaggerUi, specs, swaggerOptions } = require("./docs/swagger");
+const { swaggerUi, specs, swaggerOptions } = require("./swagger");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
