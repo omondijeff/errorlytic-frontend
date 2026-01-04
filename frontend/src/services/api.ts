@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const API_BASE_URL = 'http://localhost:3003';
+const API_BASE_URL = 'http://localhost:7337';
 
 export const api = createApi({
   reducerPath: 'api',
@@ -14,7 +14,7 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ['User', 'Analysis', 'Quotation', 'Billing', 'Upload', 'Walkthrough'],
+  tagTypes: ['User', 'Analysis', 'Quotation', 'Billing', 'Upload', 'Walkthrough', 'Organization', 'SuperAdmin'],
   endpoints: (builder) => ({
     // Auth endpoints
     login: builder.mutation({
@@ -133,6 +133,194 @@ export const api = createApi({
       query: (analysisId) => `/walkthrough/${analysisId}`,
       providesTags: ['Walkthrough'],
     }),
+    
+    // Super Admin endpoints
+    getUsers: builder.query({
+      query: (params: { page?: number; limit?: number; role?: string; status?: string; search?: string } = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value) searchParams.append(key, value.toString());
+        });
+        return `/superadmin/users?${searchParams.toString()}`;
+      },
+      providesTags: ['SuperAdmin'],
+    }),
+    createUser: builder.mutation({
+      query: (userData) => ({
+        url: '/superadmin/users',
+        method: 'POST',
+        body: userData,
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+    updateUser: builder.mutation({
+      query: ({ id, ...updates }) => ({
+        url: `/superadmin/users/${id}`,
+        method: 'PUT',
+        body: updates,
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `/superadmin/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+    getOrganizations: builder.query({
+      query: (params: { page?: number; limit?: number; type?: string; search?: string } = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value) searchParams.append(key, value.toString());
+        });
+        return `/superadmin/organizations?${searchParams.toString()}`;
+      },
+      providesTags: ['SuperAdmin'],
+    }),
+    createOrganization: builder.mutation({
+      query: (orgData) => ({
+        url: '/superadmin/organizations',
+        method: 'POST',
+        body: orgData,
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+    updateOrganization: builder.mutation({
+      query: ({ id, ...updates }) => ({
+        url: `/superadmin/organizations/${id}`,
+        method: 'PUT',
+        body: updates,
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+    deleteOrganization: builder.mutation({
+      query: (id) => ({
+        url: `/superadmin/organizations/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+    getSystemStats: builder.query({
+      query: () => '/superadmin/stats',
+      providesTags: ['SuperAdmin'],
+    }),
+    getAuditLogs: builder.query({
+      query: (params: { page?: number; limit?: number; action?: string; userId?: string } = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value) searchParams.append(key, value.toString());
+        });
+        return `/superadmin/audit?${searchParams.toString()}`;
+      },
+      providesTags: ['SuperAdmin'],
+    }),
+    getAnalytics: builder.query({
+      query: (params: { period?: string } = {}) => {
+        const { period = '30d' } = params;
+        return `/superadmin/analytics?period=${period}`;
+      },
+      providesTags: ['SuperAdmin'],
+    }),
+    getRevenue: builder.query({
+      query: (params: { period?: string } = {}) => {
+        const { period = '30d' } = params;
+        return `/superadmin/revenue?period=${period}`;
+      },
+      providesTags: ['SuperAdmin'],
+    }),
+    getPlatformSettings: builder.query({
+      query: () => '/superadmin/settings',
+      providesTags: ['SuperAdmin'],
+    }),
+    updatePlatformSettings: builder.mutation({
+      query: (settings) => ({
+        url: '/superadmin/settings',
+        method: 'PUT',
+        body: settings,
+      }),
+      invalidatesTags: ['SuperAdmin'],
+    }),
+
+    // Credit endpoints
+    getCreditPacks: builder.query({
+      query: () => '/credits/packs',
+      providesTags: ['Billing'],
+    }),
+    getCreditBalance: builder.query({
+      query: () => '/credits/balance',
+      providesTags: ['Billing'],
+    }),
+    purchaseCredits: builder.mutation({
+      query: (purchaseData) => ({
+        url: '/credits/purchase',
+        method: 'POST',
+        body: purchaseData,
+      }),
+      invalidatesTags: ['Billing'],
+    }),
+    getCreditHistory: builder.query({
+      query: (params: { page?: number; limit?: number; status?: string } = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value) searchParams.append(key, value.toString());
+        });
+        return `/credits/history?${searchParams.toString()}`;
+      },
+      providesTags: ['Billing'],
+    }),
+    getFeatureAccess: builder.query({
+      query: () => '/credits/features',
+      providesTags: ['Billing'],
+    }),
+    canAnalyze: builder.query({
+      query: () => '/credits/can-analyze',
+      providesTags: ['Billing'],
+    }),
+    validatePromoCode: builder.mutation({
+      query: (promoData) => ({
+        url: '/credits/promo/validate',
+        method: 'POST',
+        body: promoData,
+      }),
+    }),
+    addCredits: builder.mutation({
+      query: (creditData) => ({
+        url: '/credits/add',
+        method: 'POST',
+        body: creditData,
+      }),
+      invalidatesTags: ['SuperAdmin', 'Billing'],
+    }),
+
+    // Payment endpoints
+    verifyPayment: builder.query({
+      query: (reference: string) => `/payments/verify/${reference}`,
+    }),
+    checkMpesaStatus: builder.query({
+      query: (checkoutRequestId: string) => `/payments/mpesa/status/${checkoutRequestId}`,
+    }),
+    getPaymentHistory: builder.query({
+      query: (params: { page?: number; limit?: number; status?: string; type?: string } = {}) => {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value) searchParams.append(key, value.toString());
+        });
+        return `/payments/history?${searchParams.toString()}`;
+      },
+      providesTags: ['Billing'],
+    }),
+    getBanks: builder.query({
+      query: (country = 'KE') => `/payments/banks?country=${country}`,
+    }),
+    requestRefund: builder.mutation({
+      query: (refundData) => ({
+        url: '/payments/refund',
+        method: 'POST',
+        body: refundData,
+      }),
+      invalidatesTags: ['SuperAdmin', 'Billing'],
+    }),
   }),
 });
 
@@ -154,4 +342,34 @@ export const {
   useGetBillingUsageQuery,
   useGenerateWalkthroughMutation,
   useGetWalkthroughQuery,
+  // Super Admin hooks
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useGetOrganizationsQuery,
+  useCreateOrganizationMutation,
+  useUpdateOrganizationMutation,
+  useDeleteOrganizationMutation,
+  useGetSystemStatsQuery,
+  useGetAuditLogsQuery,
+  useGetAnalyticsQuery,
+  useGetRevenueQuery,
+  useGetPlatformSettingsQuery,
+  useUpdatePlatformSettingsMutation,
+  // Credit hooks
+  useGetCreditPacksQuery,
+  useGetCreditBalanceQuery,
+  usePurchaseCreditsMutation,
+  useGetCreditHistoryQuery,
+  useGetFeatureAccessQuery,
+  useCanAnalyzeQuery,
+  useValidatePromoCodeMutation,
+  useAddCreditsMutation,
+  // Payment hooks
+  useVerifyPaymentQuery,
+  useCheckMpesaStatusQuery,
+  useGetPaymentHistoryQuery,
+  useGetBanksQuery,
+  useRequestRefundMutation,
 } = api;

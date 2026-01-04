@@ -9,6 +9,7 @@ export interface User {
     name: string;
     phone?: string;
     country?: string;
+    picture?: string;
   };
   plan?: {
     name: string;

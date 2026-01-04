@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { motion } from 'framer-motion';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon, StarIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
 import { setCredentials } from '../../store/slices/authSlice';
 import { useRegisterMutation } from '../../services/api';
+import type { RootState } from '../../store';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
 
 const schema = yup.object({
@@ -27,6 +28,14 @@ const RegisterPage: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [registerMutation, { isLoading }] = useRegisterMutation();
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/app/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,
@@ -44,7 +53,7 @@ const RegisterPage: React.FC = () => {
         token: result.data.accessToken,
         refreshToken: result.data.refreshToken,
       }));
-      navigate('/dashboard', { replace: true });
+      navigate('/app/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Registration failed:', error);
     }

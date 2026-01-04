@@ -1,398 +1,449 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../../store';
-import { motion } from 'framer-motion';
 import {
-  DocumentTextIcon,
-  ClipboardDocumentListIcon,
   ChartBarIcon,
-  ClockIcon,
-  ArrowTrendingUpIcon,
+  HeartIcon,
   UsersIcon,
   CurrencyDollarIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  EyeIcon,
-  PlusIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  ShieldCheckIcon,
+  WrenchScrewdriverIcon,
+  DocumentTextIcon,
+  TruckIcon,
 } from '@heroicons/react/24/outline';
-import AnimatedBackground from '../../components/UI/AnimatedBackground';
-import ModernButton from '../../components/UI/ModernButton';
+import api from '../../services/apiClient';
+import type { RootState } from '../../store';
 
-interface StatCardProps {
+interface MetricCardProps {
   title: string;
   value: string;
   change: string;
-  changeType: 'positive' | 'negative';
-  icon: React.ElementType;
-  trend?: number;
+  isPositive: boolean;
+  bgColor: string;
+  icon: React.ReactNode;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, change, changeType, icon: Icon, trend }) => (
-  <motion.div
-    className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-tajilabs border border-gray-200/50 p-6 hover:shadow-tajilabs-lg transition-all duration-300"
-    whileHover={{ scale: 1.02, y: -2 }}
-    transition={{ duration: 0.2 }}
-  >
-    <div className="flex items-center justify-between">
-      <div className="flex-1">
-        <p className="text-sm font-medium text-gray-600 font-sf-pro-text mb-1">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 font-sf-pro mb-2">{value}</p>
-        <div className="flex items-center space-x-2">
-          {changeType === 'positive' ? (
-            <ArrowUpIcon className="h-4 w-4 text-green-500" />
-          ) : (
-            <ArrowDownIcon className="h-4 w-4 text-red-500" />
-          )}
-          <p className={`text-sm font-medium font-sf-pro-text ${
-            changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {change}
-          </p>
-          <p className="text-sm text-gray-500 font-sf-pro-text">from last month</p>
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, isPositive, bgColor, icon }) => (
+  <div className={`${bgColor} rounded-3xl p-6 relative overflow-hidden`}>
+    <div className="relative z-10">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-white/90 mb-1">{title}</p>
+          <p className="text-4xl font-bold text-white">{value}</p>
+        </div>
+        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+          {icon}
         </div>
       </div>
-      <div className={`h-16 w-16 bg-gradient-to-br from-tajilabs-primary/10 to-tajilabs-secondary/10 rounded-2xl flex items-center justify-center shadow-sm ${
-        title === 'Total Analyses' ? 'animate-engine-start' :
-        title === 'Active Quotations' ? 'animate-wrench-turn' :
-        title === 'Success Rate' ? 'animate-success-check' :
-        'animate-dashboard-glow'
-      }`}>
-        <Icon className="h-8 w-8 text-tajilabs-primary" />
+      <div className="flex items-center space-x-2">
+        <span className={`text-sm font-medium ${isPositive ? 'text-green-300' : 'text-red-300'}`}>
+          {change}
+        </span>
+        <span className="text-sm text-white/70">vs last month</span>
       </div>
     </div>
-  </motion.div>
+    {/* Decorative elements */}
+    <div className="absolute top-0 right-0 opacity-10">
+      {isPositive ? (
+        <ArrowTrendingUpIcon className="h-32 w-32 text-white" />
+      ) : (
+        <ArrowTrendingDownIcon className="h-32 w-32 text-white" />
+      )}
+    </div>
+  </div>
 );
 
-const QuickActionCard: React.FC<{ title: string; description: string; icon: React.ElementType; color: string }> = ({ 
-  title, 
-  description, 
-  icon: Icon, 
-  color 
-}) => (
-  <motion.div
-    className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-tajilabs border border-gray-200/50 p-6 hover:shadow-tajilabs-lg transition-all duration-300 cursor-pointer"
-    whileHover={{ scale: 1.02, y: -2 }}
-    whileTap={{ scale: 0.98 }}
-    transition={{ duration: 0.2 }}
-  >
-    <div className="flex items-start space-x-4">
-      <div className={`h-12 w-12 ${color} rounded-xl flex items-center justify-center shadow-sm ${
-        title === 'New Analysis' ? 'animate-diagnostic-scan' :
-        title === 'View Reports' ? 'animate-scan-wave' :
-        title === 'Generate Quote' ? 'animate-wrench-turn' :
-        'animate-oil-drip'
-      }`}>
-        <Icon className="h-6 w-6 text-white" />
-      </div>
-      <div className="flex-1">
-        <h3 className="text-lg font-semibold text-gray-900 font-sf-pro mb-1">{title}</h3>
-        <p className="text-sm text-gray-600 font-sf-pro-text">{description}</p>
-      </div>
-    </div>
-  </motion.div>
-);
+interface ReportRow {
+  id: string;
+  uploadId: string;
+  regNo: string;
+  faultCount: number;
+  dateUploaded: string;
+  healthScore: number;
+}
+
+interface DashboardMetrics {
+  totalReports: number;
+  avgHealthScore: number;
+  totalUsers: number;
+  totalCost: number;
+  changePercentage: number;
+}
 
 const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [loading, setLoading] = useState(true);
+  const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics>({
+    totalReports: 0,
+    avgHealthScore: 0,
+    totalUsers: 0,
+    totalCost: 0,
+    changePercentage: 4.6,
+  });
+  const [recentReports, setRecentReports] = useState<ReportRow[]>([]);
 
-  const stats = [
-    {
-      name: 'Total Analyses',
-      value: '24',
-      change: '+12%',
-      changeType: 'positive' as const,
-      icon: DocumentTextIcon,
-      trend: 12,
-    },
-    {
-      name: 'Active Quotations',
-      value: '8',
-      change: '+3',
-      changeType: 'positive' as const,
-      icon: ClipboardDocumentListIcon,
-      trend: 8,
-    },
-    {
-      name: 'Success Rate',
-      value: '94%',
-      change: '+2%',
-      changeType: 'positive' as const,
-      icon: ChartBarIcon,
-      trend: 2,
-    },
-    {
-      name: 'Avg. Response Time',
-      value: '2.4m',
-      change: '-0.3m',
-      changeType: 'positive' as const,
-      icon: ClockIcon,
-      trend: -0.3,
-    },
-  ];
+  // Helper to check if user is in a specific role category
+  const isIndividual = user?.role === 'individual';
+  const isGarage = user?.role === 'garage_user' || user?.role === 'garage_admin';
+  const isInsurance = user?.role === 'insurer_user' || user?.role === 'insurer_admin';
+  const isSuperAdmin = user?.role === 'superadmin';
 
-  const quickActions = [
-    {
-      title: 'New Analysis',
-      description: 'Upload diagnostic file and get AI-powered analysis',
-      icon: PlusIcon,
-      color: 'bg-gradient-to-br from-tajilabs-primary to-tajilabs-secondary',
-    },
-    {
-      title: 'View Reports',
-      description: 'Browse through your analysis history and reports',
-      icon: EyeIcon,
-      color: 'bg-gradient-to-br from-blue-500 to-blue-600',
-    },
-    {
-      title: 'Generate Quote',
-      description: 'Create professional quotations for your clients',
-      icon: ClipboardDocumentListIcon,
-      color: 'bg-gradient-to-br from-green-500 to-green-600',
-    },
-    {
-      title: 'Manage Users',
-      description: 'Add team members and manage permissions',
-      icon: UsersIcon,
-      color: 'bg-gradient-to-br from-purple-500 to-purple-600',
-    },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'analysis',
-      title: 'New analysis completed',
-      description: 'VW Golf 2018 - P0300 error code',
-      time: '2 minutes ago',
-      status: 'completed',
-    },
-    {
-      id: 2,
-      type: 'quotation',
-      title: 'Quotation sent',
-      description: 'Customer accepted quotation #QT-001',
-      time: '15 minutes ago',
-      status: 'sent',
-    },
-    {
-      id: 3,
-      type: 'analysis',
-      title: 'Analysis in progress',
-      description: 'BMW X3 2020 - Multiple DTCs detected',
-      time: '1 hour ago',
-      status: 'processing',
-    },
-    {
-      id: 4,
-      type: 'billing',
-      title: 'Payment received',
-      description: 'Monthly subscription payment processed',
-      time: '2 hours ago',
-      status: 'paid',
-    },
-  ];
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'sent':
-        return 'bg-blue-100 text-blue-800';
-      case 'processing':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      // Fetch analyses and vehicle metrics in parallel
+      const [analysisResponse, vehicleMetricsResponse] = await Promise.all([
+        api.get('/analysis', { params: { limit: 5 } }),
+        api.get('/vehicles/metrics'),
+      ]);
+
+      // Process analysis data for reports
+      if (analysisResponse.data && analysisResponse.data.data) {
+        const analyses = analysisResponse.data.data;
+
+        const transformedReports = analyses.slice(0, 5).map((analysis: any) => {
+          const totalErrors = analysis.summary?.totalErrors || analysis.dtcs?.length || 0;
+          const criticalErrors = analysis.summary?.criticalErrors || 0;
+          const healthScore = calculateHealthScore(totalErrors, criticalErrors);
+
+          return {
+            id: analysis._id || analysis.id,
+            uploadId: analysis.uploadId?._id || analysis.uploadId,
+            regNo: analysis.vehicleId?.plate ||
+                   analysis.vehicleId?.registrationNumber ||
+                   analysis.vehicleId?.licensePlate ||
+                   `${analysis.vehicleId?.make || ''} ${analysis.vehicleId?.model || ''}`.trim() ||
+                   'N/A',
+            faultCount: totalErrors,
+            dateUploaded: analysis.createdAt,
+            healthScore,
+          };
+        });
+
+        setRecentReports(transformedReports);
+
+        // Calculate average health score
+        const avgScore = transformedReports.length > 0
+          ? transformedReports.reduce((sum, r) => sum + r.healthScore, 0) / transformedReports.length
+          : 0;
+
+        // Calculate total estimated cost
+        const totalCost = analyses.reduce((sum: number, a: any) => {
+          return sum + (a.summary?.estimatedCost || 0);
+        }, 0);
+
+        setDashboardMetrics({
+          totalReports: analyses.length,
+          avgHealthScore: Math.round(avgScore),
+          totalUsers: vehicleMetricsResponse.data?.data?.totalUsers || 0,
+          totalCost,
+          changePercentage: 4.6,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const calculateHealthScore = (totalErrors: number, criticalErrors: number): number => {
+    if (totalErrors === 0) return 100;
+    const baseScore = 100;
+    const errorPenalty = Math.min(totalErrors * 2, 50);
+    const criticalPenalty = Math.min(criticalErrors * 10, 30);
+    return Math.max(0, baseScore - errorPenalty - criticalPenalty);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const handleViewVCDSReport = (uploadId: string) => {
+    navigate(`/app/reports/${uploadId}`);
+  };
+
+  const handleViewErrolyticReport = (reportId: string) => {
+    navigate(`/app/analysis/${reportId}`);
+  };
+
+  // Define role-specific metrics
+  const getMetrics = () => {
+    if (isSuperAdmin) {
+      // Super Admin: Platform-wide metrics
+      return [
+        {
+          title: 'Total Users',
+          value: loading ? '...' : dashboardMetrics.totalUsers.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-[#EA6A47] to-[#d85a37]',
+          icon: <UsersIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Total Analyses',
+          value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-gray-400 to-gray-500',
+          icon: <DocumentTextIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Platform Health',
+          value: loading ? '...' : `${dashboardMetrics.avgHealthScore}%`,
+          change: dashboardMetrics.avgHealthScore >= 70 ? '+5.9%' : '-5.9%',
+          isPositive: dashboardMetrics.avgHealthScore >= 70,
+          bgColor: 'bg-gradient-to-br from-orange-200 to-orange-300',
+          icon: <ShieldCheckIcon className="h-6 w-6 text-orange-700" />,
+        },
+        {
+          title: 'Total Platform Revenue',
+          value: loading ? '...' : `KES ${dashboardMetrics.totalCost.toLocaleString()}`,
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-blue-200 to-blue-300',
+          icon: <CurrencyDollarIcon className="h-6 w-6 text-blue-700" />,
+        },
+      ];
+    } else if (isIndividual) {
+      // Individual: Focus on personal vehicles and diagnostics
+      return [
+        {
+          title: 'My Vehicles',
+          value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-[#EA6A47] to-[#d85a37]',
+          icon: <TruckIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Average Health Score',
+          value: loading ? '...' : `${dashboardMetrics.avgHealthScore}%`,
+          change: dashboardMetrics.avgHealthScore >= 70 ? '+5.9%' : '-5.9%',
+          isPositive: dashboardMetrics.avgHealthScore >= 70,
+          bgColor: 'bg-gradient-to-br from-gray-400 to-gray-500',
+          icon: <HeartIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Total Diagnostics',
+          value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-orange-200 to-orange-300',
+          icon: <DocumentTextIcon className="h-6 w-6 text-orange-700" />,
+        },
+        {
+          title: 'Estimated Repair Costs',
+          value: loading ? '...' : `KES ${dashboardMetrics.totalCost.toLocaleString()}`,
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-blue-200 to-blue-300',
+          icon: <CurrencyDollarIcon className="h-6 w-6 text-blue-700" />,
+        },
+      ];
+    } else if (isGarage) {
+      // Garage: Focus on clients served and garage performance
+      return [
+        {
+          title: 'Total Client Reports',
+          value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-[#EA6A47] to-[#d85a37]',
+          icon: <ChartBarIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Average Fleet Health',
+          value: loading ? '...' : `${dashboardMetrics.avgHealthScore}%`,
+          change: dashboardMetrics.avgHealthScore >= 70 ? '+5.9%' : '-5.9%',
+          isPositive: dashboardMetrics.avgHealthScore >= 70,
+          bgColor: 'bg-gradient-to-br from-gray-400 to-gray-500',
+          icon: <HeartIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Clients Served',
+          value: loading ? '...' : dashboardMetrics.totalUsers.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-orange-200 to-orange-300',
+          icon: <UsersIcon className="h-6 w-6 text-orange-700" />,
+        },
+        {
+          title: 'Total Repair Value',
+          value: loading ? '...' : `KES ${dashboardMetrics.totalCost.toLocaleString()}`,
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-blue-200 to-blue-300',
+          icon: <WrenchScrewdriverIcon className="h-6 w-6 text-blue-700" />,
+        },
+      ];
+    } else if (isInsurance) {
+      // Insurance: Focus on claims, assessments, inspections
+      return [
+        {
+          title: 'Total Claims/Assessments',
+          value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-[#EA6A47] to-[#d85a37]',
+          icon: <ShieldCheckIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Average Vehicle Condition',
+          value: loading ? '...' : `${dashboardMetrics.avgHealthScore}%`,
+          change: dashboardMetrics.avgHealthScore >= 70 ? '+5.9%' : '-5.9%',
+          isPositive: dashboardMetrics.avgHealthScore >= 70,
+          bgColor: 'bg-gradient-to-br from-gray-400 to-gray-500',
+          icon: <HeartIcon className="h-6 w-6 text-white" />,
+        },
+        {
+          title: 'Inspections Completed',
+          value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-orange-200 to-orange-300',
+          icon: <DocumentTextIcon className="h-6 w-6 text-orange-700" />,
+        },
+        {
+          title: 'Total Claims Value',
+          value: loading ? '...' : `KES ${dashboardMetrics.totalCost.toLocaleString()}`,
+          change: `+${dashboardMetrics.changePercentage}%`,
+          isPositive: true,
+          bgColor: 'bg-gradient-to-br from-blue-200 to-blue-300',
+          icon: <CurrencyDollarIcon className="h-6 w-6 text-blue-700" />,
+        },
+      ];
+    }
+
+    // Default fallback
+    return [
+      {
+        title: 'Total Reports',
+        value: loading ? '...' : dashboardMetrics.totalReports.toLocaleString(),
+        change: `+${dashboardMetrics.changePercentage}%`,
+        isPositive: true,
+        bgColor: 'bg-gradient-to-br from-[#EA6A47] to-[#d85a37]',
+        icon: <ChartBarIcon className="h-6 w-6 text-white" />,
+      },
+    ];
+  };
+
+  const metrics = getMetrics();
+
+  // Get role-specific titles
+  const getDashboardTitle = () => {
+    if (isSuperAdmin) return 'Platform Overview';
+    if (isIndividual) return 'My Dashboard';
+    if (isGarage) return 'Garage Dashboard';
+    if (isInsurance) return 'Claims & Assessments Dashboard';
+    return 'Dashboard';
+  };
+
+  const getReportsTitle = () => {
+    if (isSuperAdmin) return 'All Platform Activity';
+    if (isIndividual) return 'My Recent Diagnostics';
+    if (isGarage) return 'Recent Client Reports';
+    if (isInsurance) return 'Recent Claims & Inspections';
+    return 'Reports Summary';
+  };
+
   return (
-    <div className="relative min-h-screen">
-      <AnimatedBackground variant="particles" intensity="subtle" />
-      
-      <div className="relative z-10 space-y-8 p-6">
-      {/* Welcome Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-tajilabs-primary via-tajilabs-primary to-tajilabs-secondary rounded-3xl p-8 text-white shadow-tajilabs-lg relative overflow-hidden"
-      >
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 font-sf-pro">
-                Welcome back, {user?.profile?.name || 'User'}!
-              </h1>
-              <p className="text-xl text-white/90 font-sf-pro-text mb-4">
-                Here's what's happening with your automotive diagnostics today.
-              </p>
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center space-x-2">
-                  <div className="h-3 w-3 bg-white/30 rounded-full"></div>
-                  <span className="text-sm font-medium font-sf-pro-text">All systems operational</span>
-                </div>
-                  <div className="flex items-center space-x-2">
-                    <ArrowTrendingUpIcon className="h-4 w-4 text-white/80" />
-                    <span className="text-sm font-medium font-sf-pro-text">Performance up 12%</span>
-                  </div>
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="h-24 w-24 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <ChartBarIcon className="h-12 w-12 text-white/80" />
-              </div>
-            </div>
-          </div>
+    <div className="p-8 bg-gray-50">
+      {/* Overview Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-black mb-6">{getDashboardTitle()}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {metrics.map((metric, index) => (
+            <MetricCard key={index} {...metric} />
+          ))}
         </div>
-        
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <StatCard {...stat} />
-          </motion.div>
-        ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Activities */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="lg:col-span-2"
-        >
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-tajilabs border border-gray-200/50 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900 font-sf-pro">Recent Activities</h3>
-              <button className="text-sm font-medium text-tajilabs-primary hover:text-tajilabs-secondary transition-colors font-sf-pro-text">
-                View all
-              </button>
-            </div>
-            <div className="space-y-4">
-              {recentActivities.map((activity, index) => (
-                <motion.div
-                  key={activity.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50/50 transition-colors"
-                >
-                  <div className="h-12 w-12 bg-tajilabs-primary/10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                    {activity.type === 'analysis' ? (
-                      <DocumentTextIcon className="h-6 w-6 text-tajilabs-primary" />
-                    ) : activity.type === 'quotation' ? (
-                      <ClipboardDocumentListIcon className="h-6 w-6 text-tajilabs-primary" />
-                    ) : (
-                      <CurrencyDollarIcon className="h-6 w-6 text-tajilabs-primary" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-lg font-semibold text-gray-900 font-sf-pro">{activity.title}</h4>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full font-sf-pro-text ${getStatusColor(activity.status)}`}>
-                        {activity.status}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 font-sf-pro-text mb-1">{activity.description}</p>
-                    <p className="text-sm text-gray-500 font-sf-pro-text">{activity.time}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-tajilabs border border-gray-200/50 p-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 font-sf-pro">Quick Actions</h3>
-            <div className="space-y-4">
-              <ModernButton
-                variant="gradient"
-                size="lg"
-                fullWidth
-                icon={<PlusIcon className="h-5 w-5" />}
-                className="py-4"
-              >
-                New Analysis
-              </ModernButton>
-              <ModernButton
-                variant="secondary"
-                size="lg"
-                fullWidth
-                icon={<EyeIcon className="h-5 w-5" />}
-                className="py-4"
-              >
-                View Reports
-              </ModernButton>
-              <ModernButton
-                variant="outline"
-                size="lg"
-                fullWidth
-                icon={<CurrencyDollarIcon className="h-5 w-5" />}
-                className="py-4"
-              >
-                Manage Billing
-              </ModernButton>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Performance Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-tajilabs border border-gray-200/50 p-6"
-      >
-        <h3 className="text-2xl font-bold text-gray-900 mb-6 font-sf-pro">Performance Overview</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border border-green-200">
-            <div className="h-16 w-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-              <ArrowTrendingUpIcon className="h-8 w-8 text-white" />
-            </div>
-            <h4 className="text-lg font-semibold text-gray-900 font-sf-pro mb-2">Efficiency</h4>
-            <p className="text-3xl font-bold text-green-600 font-sf-pro">94%</p>
-            <p className="text-sm text-gray-600 font-sf-pro-text">Above industry average</p>
-          </div>
-          
-          <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200">
-            <div className="h-16 w-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-              <ClockIcon className="h-8 w-8 text-white" />
-            </div>
-            <h4 className="text-lg font-semibold text-gray-900 font-sf-pro mb-2">Response Time</h4>
-            <p className="text-3xl font-bold text-blue-600 font-sf-pro">2.4m</p>
-            <p className="text-sm text-gray-600 font-sf-pro-text">Average processing time</p>
-          </div>
-          
-          <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border border-purple-200">
-            <div className="h-16 w-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-              <UsersIcon className="h-8 w-8 text-white" />
-            </div>
-            <h4 className="text-lg font-semibold text-gray-900 font-sf-pro mb-2">Satisfaction</h4>
-            <p className="text-3xl font-bold text-purple-600 font-sf-pro">4.8/5</p>
-            <p className="text-sm text-gray-600 font-sf-pro-text">Customer rating</p>
+      {/* Reports Summary Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-black mb-6">{getReportsTitle()}</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-[#EA6A47]">Reg No</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-[#EA6A47]">Fault Count</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-[#EA6A47]">Date uploaded</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-[#EA6A47]">Health score</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-[#EA6A47]">VCDS Report</th>
+                  <th className="text-left py-4 px-4 text-sm font-semibold text-[#EA6A47]">Errolytic REPORT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EA6A47]"></div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : recentReports.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-gray-500">
+                      No reports found. Upload a VCDS report to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  recentReports.map((report, index) => (
+                    <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 rounded-full border-2 border-[#EA6A47] flex items-center justify-center">
+                            <span className="text-[#EA6A47] text-sm font-medium">→</span>
+                          </div>
+                          <span className="font-medium text-gray-900">{report.regNo}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-gray-900">{report.faultCount}</td>
+                      <td className="py-4 px-4 text-gray-600">{formatDate(report.dateUploaded)}</td>
+                      <td className="py-4 px-4">
+                        <span className="font-medium text-gray-900">{report.healthScore}%</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <button
+                          onClick={() => handleViewVCDSReport(report.uploadId)}
+                          className="px-6 py-2 border-2 border-green-500 text-green-600 rounded-full hover:bg-green-50 transition-colors font-medium text-sm"
+                        >
+                          View VCDS REPORT
+                        </button>
+                      </td>
+                      <td className="py-4 px-4">
+                        <button
+                          onClick={() => handleViewErrolyticReport(report.id)}
+                          className="px-6 py-2 border-2 border-[#EA6A47] text-[#EA6A47] rounded-full hover:bg-red-50 transition-colors font-medium text-sm"
+                        >
+                          View Errolytic REPORT
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
-      </motion.div>
       </div>
     </div>
   );
