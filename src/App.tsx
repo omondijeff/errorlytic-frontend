@@ -11,6 +11,9 @@ import AuthInitializer from './components/Auth/AuthInitializer';
 import LandingPage from './pages/Public/LandingPage';
 import HowItWorksPage from './pages/Public/HowItWorksPage';
 import WhoIsItForPage from './pages/Public/WhoIsItForPage';
+import PrivacyPolicyPage from './pages/Public/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/Public/TermsOfServicePage';
+import ContactPage from './pages/Public/ContactPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
@@ -50,6 +53,9 @@ function AnimatedRoutes() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/how-it-works" element={<HowItWorksPage />} />
               <Route path="/who-is-it-for" element={<WhoIsItForPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
