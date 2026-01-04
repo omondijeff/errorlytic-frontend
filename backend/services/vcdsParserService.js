@@ -2,6 +2,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const pdfParse = require("pdf-parse");
 const xml2js = require("xml2js");
+const axios = require("axios");
 
 /**
  * VCDS/OBD Parser Service
@@ -541,19 +542,37 @@ class VCDSParserService {
   async parseVCDSReport(filePath, fileType = "txt") {
     try {
       let fileContent;
+      const isUrl = filePath.startsWith('http://') || filePath.startsWith('https://');
 
       // Read file content based on type
       switch (fileType.toLowerCase()) {
         case "txt":
-          fileContent = await fs.readFile(filePath, "utf8");
+          if (isUrl) {
+            const response = await axios.get(filePath, { responseType: 'text' });
+            fileContent = response.data;
+          } else {
+            fileContent = await fs.readFile(filePath, "utf8");
+          }
           break;
         case "pdf":
-          const pdfBuffer = await fs.readFile(filePath);
+          let pdfBuffer;
+          if (isUrl) {
+            const response = await axios.get(filePath, { responseType: 'arraybuffer' });
+            pdfBuffer = Buffer.from(response.data);
+          } else {
+            pdfBuffer = await fs.readFile(filePath);
+          }
           const pdfData = await pdfParse(pdfBuffer);
           fileContent = pdfData.text;
           break;
         case "xml":
-          const xmlBuffer = await fs.readFile(filePath, "utf8");
+          let xmlBuffer;
+          if (isUrl) {
+            const response = await axios.get(filePath, { responseType: 'text' });
+            xmlBuffer = response.data;
+          } else {
+            xmlBuffer = await fs.readFile(filePath, "utf8");
+          }
           const xmlData = await this.parseXML(xmlBuffer);
           fileContent = this.extractTextFromXML(xmlData);
           break;

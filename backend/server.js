@@ -9,7 +9,7 @@ require("dotenv").config();
 const { swaggerUi, specs, swaggerOptions } = require("./swagger");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7337;
 
 // Import routes
 const authRoutes = require("./routes/auth");
@@ -19,6 +19,11 @@ const uploadRoutes = require("./routes/upload");
 const analysisRoutes = require("./routes/analysis");
 const walkthroughRoutes = require("./routes/walkthrough");
 const billingRoutes = require("./routes/billing");
+const superadminRoutes = require("./routes/superadmin");
+const reportsRoutes = require("./routes/reports");
+const vehiclesRoutes = require("./routes/vehicles");
+const creditsRoutes = require("./routes/credits");
+const paymentsRoutes = require("./routes/payments");
 
 // Import middleware
 const { errorHandler } = require("./middleware/errorHandler");
@@ -45,16 +50,11 @@ mongoose
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3003",
+      "http://localhost:7337",
       "http://localhost:5173", // Vite dev server
-      "http://localhost:8080",
-      "http://localhost:8081",
-      "http://localhost:8082",
-      "http://localhost:8083",
+      "http://localhost:8001", // Mongo Express
       "http://frontend:80",
-      "http://frontend:3001",
+      "http://frontend:5173",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -112,6 +112,11 @@ app.use("/api/v1/upload", authMiddleware, uploadRoutes);
 app.use("/api/v1/analysis", authMiddleware, analysisRoutes);
 app.use("/api/v1/walkthrough", authMiddleware, walkthroughRoutes);
 app.use("/api/v1/billing", billingRoutes);
+app.use("/api/v1/superadmin", superadminRoutes);
+app.use("/api/v1/reports", reportsRoutes);
+app.use("/api/v1/vehicles", authMiddleware, vehiclesRoutes);
+app.use("/api/v1/credits", creditsRoutes);
+app.use("/api/v1/payments", paymentsRoutes);
 
 // Legacy API routes (for backward compatibility)
 app.use("/api/auth", authRoutes);
@@ -139,6 +144,9 @@ app.get("/", (req, res) => {
         analysis: "/api/v1/analysis",
         walkthrough: "/api/v1/walkthrough",
         billing: "/api/v1/billing",
+        superadmin: "/api/v1/superadmin",
+        credits: "/api/v1/credits",
+        payments: "/api/v1/payments",
       },
       legacy: {
         auth: "/api/auth",

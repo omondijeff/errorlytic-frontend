@@ -21,7 +21,12 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      required: false, // Not required for Google OAuth users
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows multiple null values
     },
     role: {
       type: String,
@@ -35,6 +40,62 @@ const userSchema = new mongoose.Schema(
       ],
       default: "individual",
     },
+    accountType: {
+      type: String,
+      enum: ["individual", "organization_member"],
+      default: "individual",
+    },
+    billing: {
+      preferredCurrency: {
+        type: String,
+        enum: ["KES", "USD"],
+        default: "KES",
+      },
+      mpesaPhone: {
+        type: String,
+        trim: true,
+      },
+      paystackCustomerId: {
+        type: String,
+      },
+      paystackAuthorizationCode: {
+        type: String,
+      },
+    },
+    featureFlags: {
+      basic_analysis: {
+        type: Boolean,
+        default: true,
+      },
+      ai_insights: {
+        type: Boolean,
+        default: false,
+      },
+      pdf_export: {
+        type: Boolean,
+        default: false,
+      },
+      walkthrough: {
+        type: Boolean,
+        default: false,
+      },
+      quotations: {
+        type: Boolean,
+        default: false,
+      },
+      fraud_detection: {
+        type: Boolean,
+        default: false,
+      },
+      priority_support: {
+        type: Boolean,
+        default: false,
+      },
+      api_access: {
+        type: Boolean,
+        default: false,
+      },
+    },
     profile: {
       name: {
         type: String,
@@ -46,6 +107,10 @@ const userSchema = new mongoose.Schema(
         trim: true,
       },
       country: {
+        type: String,
+        trim: true,
+      },
+      picture: {
         type: String,
         trim: true,
       },
@@ -105,6 +170,9 @@ const userSchema = new mongoose.Schema(
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
+  // Skip if no password (Google OAuth users)
+  if (!this.passwordHash) return next();
+
   // Only hash if passwordHash is modified and it's not already hashed
   if (!this.isModified("passwordHash")) return next();
 
@@ -136,6 +204,7 @@ userSchema.methods.toJSON = function () {
 
 // Indexes for efficient queries
 userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 userSchema.index({ orgId: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ "plan.tier": 1, "plan.status": 1 });

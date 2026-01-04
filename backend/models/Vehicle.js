@@ -19,11 +19,11 @@ const vehicleSchema = new mongoose.Schema(
     plate: {
       type: String,
       trim: true,
-      uppercase: true,
+      // Keep original case as entered by user
     },
     make: {
       type: String,
-      enum: ["VW", "Audi", "Skoda", "Seat", "Porsche", "Other"],
+      trim: true,
       required: true,
     },
     model: {
@@ -44,6 +44,28 @@ const vehicleSchema = new mongoose.Schema(
       min: 0,
     },
     color: {
+      type: String,
+      trim: true,
+    },
+    ownerInfo: {
+      firstName: {
+        type: String,
+        trim: true,
+      },
+      lastName: {
+        type: String,
+        trim: true,
+      },
+      name: {
+        type: String,
+        trim: true,
+      },
+      phone: {
+        type: String,
+        trim: true,
+      },
+    },
+    imageUrl: {
       type: String,
       trim: true,
     },

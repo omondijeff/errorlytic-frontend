@@ -50,6 +50,18 @@ const analysisSchema = new mongoose.Schema(
         enum: ["critical", "recommended", "monitor"],
         required: true,
       },
+      totalErrors: {
+        type: Number,
+        default: 0,
+      },
+      criticalErrors: {
+        type: Number,
+        default: 0,
+      },
+      estimatedCost: {
+        type: Number,
+        default: 0,
+      },
     },
     causes: [
       {
@@ -65,15 +77,26 @@ const analysisSchema = new mongoose.Schema(
     ],
     module: {
       type: String,
-      enum: [
-        "Engine",
-        "Transmission",
-        "ABS",
-        "Airbag",
-        "Infotainment",
-        "Other",
-      ],
       required: true,
+    },
+    vehicleInfo: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    diagnosticInfo: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    aiInsights: {
+      assessment: {
+        type: String,
+      },
+      timestamp: {
+        type: Date,
+      },
+      model: {
+        type: String,
+      },
     },
     aiEnrichment: {
       enabled: {

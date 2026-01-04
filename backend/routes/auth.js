@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
+const { OAuth2Client } = require('google-auth-library');
 const User = require("../models/User");
 const Organization = require("../models/Organization");
 const {
@@ -10,6 +11,9 @@ const {
 } = require("../middleware/auth");
 
 const router = express.Router();
+
+// Initialize Google OAuth client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Generate JWT tokens (access + refresh)
 const generateTokens = (userId) => {
@@ -368,6 +372,296 @@ router.post(
     }
   }
 );
+
+/**
+ * @swagger
+ * /api/v1/auth/google:
+ *   post:
+ *     summary: Google OAuth Login
+ *     description: Authenticate user with Google ID token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 description: Google ID token from Google Sign-In
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid token
+ */
+router.post("/google", async (req, res) => {
+  try {
+    let email, name, picture, googleId;
+
+    // Support both ID token verification and direct user info
+    if (req.body.idToken) {
+      // Verify Google ID token (legacy method)
+      const ticket = await googleClient.verifyIdToken({
+        idToken: req.body.idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+      googleId = payload.sub;
+    } else if (req.body.email && req.body.googleId) {
+      // Direct user info from frontend (new method)
+      email = req.body.email;
+      name = req.body.name;
+      picture = req.body.picture;
+      googleId = req.body.googleId;
+    } else {
+      return res.status(400).json({
+        type: "validation_error",
+        title: "Validation Failed",
+        detail: "Either Google ID token or user info (email, googleId) is required",
+        status: 400,
+      });
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        type: "invalid_token",
+        title: "Invalid Data",
+        detail: "Email not found in Google account",
+        status: 400,
+      });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user with Google account
+      user = new User({
+        email,
+        profile: {
+          name: name || email.split('@')[0],
+          picture,
+        },
+        role: "individual",
+        googleId,
+        isActive: true,
+        // No password hash for Google OAuth users
+      });
+      await user.save();
+    } else {
+      // Update existing user with Google ID if not set
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.profile.picture = user.profile.picture || picture;
+        await user.save();
+      }
+
+      // Check if user is active
+      if (!user.isActive) {
+        return res.status(401).json({
+          type: "account_deactivated",
+          title: "Account Deactivated",
+          detail: "Your account has been deactivated",
+          status: 401,
+        });
+      }
+
+      // Update last login
+      user.lastLogin = new Date();
+      await user.save();
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user._id);
+
+    res.json({
+      success: true,
+      message: "Google login successful",
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          profile: user.profile,
+          role: user.role,
+          orgId: user.orgId,
+          plan: user.plan,
+          quotas: user.quotas,
+        },
+        accessToken,
+        refreshToken,
+      },
+    });
+  } catch (error) {
+    console.error("Google OAuth error:", error);
+
+    if (error.message && error.message.includes('Token used too late')) {
+      return res.status(401).json({
+        type: "invalid_token",
+        title: "Invalid Token",
+        detail: "Google token has expired",
+        status: 401,
+      });
+    }
+
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "An error occurred during Google authentication",
+      status: 500,
+    });
+  }
+});
+
+// @route   POST /api/v1/auth/google/callback
+// @desc    Handle Google OAuth callback (redirect flow)
+// @access  Public
+router.post("/google/callback", async (req, res) => {
+  try {
+    const { code, redirectUri } = req.body;
+
+    if (!code || !redirectUri) {
+      return res.status(400).json({
+        type: "validation_error",
+        title: "Validation Failed",
+        detail: "Authorization code and redirect URI are required",
+        status: 400,
+      });
+    }
+
+    // Exchange authorization code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokens = await tokenResponse.json();
+
+    if (!tokenResponse.ok) {
+      console.error('Token exchange error:', tokens);
+      return res.status(400).json({
+        type: "oauth_error",
+        title: "OAuth Error",
+        detail: tokens.error_description || "Failed to exchange authorization code",
+        status: 400,
+      });
+    }
+
+    // Get user info from Google
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${tokens.access_token}`,
+      },
+    });
+
+    const userInfo = await userInfoResponse.json();
+
+    if (!userInfoResponse.ok) {
+      return res.status(400).json({
+        type: "oauth_error",
+        title: "OAuth Error",
+        detail: "Failed to fetch user information from Google",
+        status: 400,
+      });
+    }
+
+    const { email, name, picture, sub: googleId } = userInfo;
+
+    if (!email) {
+      return res.status(400).json({
+        type: "invalid_data",
+        title: "Invalid Data",
+        detail: "Email not found in Google account",
+        status: 400,
+      });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user with Google account
+      user = new User({
+        email,
+        profile: {
+          name: name || email.split('@')[0],
+          picture,
+        },
+        role: "individual",
+        googleId,
+        isActive: true,
+      });
+      await user.save();
+    } else {
+      // Update existing user with Google ID if not set
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.profile.picture = user.profile.picture || picture;
+        await user.save();
+      }
+
+      // Check if user is active
+      if (!user.isActive) {
+        return res.status(401).json({
+          type: "account_deactivated",
+          title: "Account Deactivated",
+          detail: "Your account has been deactivated",
+          status: 401,
+        });
+      }
+
+      // Update last login
+      user.lastLogin = new Date();
+      await user.save();
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user._id);
+
+    res.json({
+      success: true,
+      message: "Google login successful",
+      data: {
+        user: {
+          id: user._id,
+          email: user.email,
+          profile: user.profile,
+          role: user.role,
+          orgId: user.orgId,
+          plan: user.plan,
+          quotas: user.quotas,
+        },
+        accessToken,
+        refreshToken,
+      },
+    });
+  } catch (error) {
+    console.error("Google OAuth callback error:", error);
+
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "An error occurred during Google authentication",
+      status: 500,
+    });
+  }
+});
 
 // @route   POST /api/v1/auth/refresh
 // @desc    Refresh access token

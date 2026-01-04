@@ -7,6 +7,8 @@ const Vehicle = require("../models/Vehicle");
 const Metering = require("../models/Metering");
 const AuditLog = require("../models/AuditLog");
 const redisService = require("./redisService");
+const creditService = require("./creditService");
+const featureGateService = require("./featureGateService");
 
 /**
  * Analysis Service
@@ -25,6 +27,9 @@ class AnalysisService {
    * @returns {Promise<Object>} Analysis result
    */
   async processAnalysis(uploadId, userId, orgId) {
+    let creditReservation = null;
+    const billingContext = await featureGateService.getUserBillingContext(userId);
+
     try {
       // Check cache first
       const cacheKey = `analysis:${uploadId}`;
@@ -32,6 +37,18 @@ class AnalysisService {
       if (cachedResult) {
         console.log(`Analysis cache hit for upload ${uploadId}`);
         return cachedResult;
+      }
+
+      // Step 1: Check billing permission
+      const billingCheck = await featureGateService.canPerformAnalysis(userId);
+      if (!billingCheck.allowed) {
+        throw new Error(billingCheck.reason);
+      }
+
+      // Step 2: Reserve credits for individual users
+      if (billingContext.accountType === 'individual' && !billingContext.subscription) {
+        creditReservation = await creditService.reserveCredits(userId, 1, 'analysis');
+        console.log(`Reserved 1 credit for user ${userId}, reservation: ${creditReservation.reservationId}`);
       }
 
       // Get upload record
@@ -62,7 +79,7 @@ class AnalysisService {
         throw new Error(`Parse failed: ${parseResult.error}`);
       }
 
-      // Generate AI-enhanced analysis
+      // Step 4: Always generate full AI analysis for all users
       const aiAnalysis = await this.generateAIAnalysis(
         parseResult.errorCodes,
         parseResult.vehicleInfo,
@@ -84,6 +101,17 @@ class AnalysisService {
       upload.analysisId = analysis._id;
       await upload.save();
 
+      // Step 5: Consume credits on success (for individual users)
+      if (creditReservation) {
+        await creditService.consumeCredits(userId, creditReservation.reservationId);
+        console.log(`Consumed 1 credit for user ${userId}`);
+      }
+
+      // Record organization usage (for subscription users)
+      if (orgId && billingContext.subscription) {
+        await featureGateService.recordOrganizationUsage(orgId);
+      }
+
       // Log analysis activity
       await AuditLog.create({
         actorId: userId,
@@ -98,7 +126,8 @@ class AnalysisService {
         meta: {
           source: upload.meta.source,
           format: upload.meta.format,
-          aiEnhanced: !!aiAnalysis.aiAssessment,
+          aiEnhanced: true,
+          billingType: billingContext.subscription ? 'subscription' : 'credits',
         },
       });
 
@@ -111,7 +140,7 @@ class AnalysisService {
         period: new Date().toISOString().slice(0, 7),
       });
 
-      // Generate walkthrough automatically
+      // Generate walkthrough for all users
       let walkthrough = null;
       try {
         const walkthroughResult = await walkthroughService.generateWalkthrough(
@@ -137,6 +166,12 @@ class AnalysisService {
         vehicleInfo: parseResult.vehicleInfo,
         diagnosticInfo: parseResult.diagnosticInfo,
         createdAt: analysis.createdAt,
+        billingInfo: {
+          type: billingContext.subscription ? 'subscription' : 'credits',
+          remaining: billingContext.subscription
+            ? billingContext.subscription.remainingAnalyses
+            : billingContext.credits?.available - 1,
+        },
       };
 
       // Cache the result
@@ -144,6 +179,16 @@ class AnalysisService {
 
       return result;
     } catch (error) {
+      // Release reserved credits on failure
+      if (creditReservation) {
+        try {
+          await creditService.releaseCredits(userId, creditReservation.reservationId);
+          console.log(`Released reserved credit for user ${userId} due to error`);
+        } catch (releaseError) {
+          console.error("Failed to release reserved credits:", releaseError);
+        }
+      }
+
       console.error("Analysis processing error:", error);
       throw error;
     }
@@ -346,8 +391,8 @@ class AnalysisService {
       const skip = (page - 1) * limit;
 
       const analyses = await Analysis.find(query)
-        .populate("vehicleId", "make model year vin mileage")
-        .populate("uploadId", "originalName storage status")
+        .populate("vehicleId", "make model year vin mileage plate")
+        .populate("uploadId", "meta storage status")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);

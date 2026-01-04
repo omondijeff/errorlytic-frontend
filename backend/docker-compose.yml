@@ -4,11 +4,12 @@ services:
   app:
     build: .
     ports:
-      - "3003:3000"
+      - "7337:7337"
     environment:
       - NODE_ENV=production
+      - PORT=7337
       - MONGODB_URI=mongodb://admin:password123@mongo:27017/errorlytic_saas?authSource=admin
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=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
       - JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
       - REDIS_URL=redis://redis:6379
       - MINIO_ENDPOINT=minio
@@ -30,7 +31,7 @@ services:
   mongo:
     image: mongo:6.0
     ports:
-      - "27019:27017"
+      - "13337:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password123
@@ -44,7 +45,7 @@ services:
   mongo-express:
     image: mongo-express:latest
     ports:
-      - "9092:8081"
+      - "8001:8081"
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password123
@@ -58,7 +59,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6382:6379"
+      - "6969:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -68,8 +69,8 @@ services:
   minio:
     image: minio/minio:latest
     ports:
-      - "9004:9000"
-      - "9005:9001"
+      - "8888:9000"
+      - "9999:9001"
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin123

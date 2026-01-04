@@ -3,8 +3,16 @@ const OpenAI = require("openai");
 // Initialize OpenAI client only if API key is available
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
+  // Check if this is an OpenRouter key (starts with sk-or-v1)
+  const isOpenRouter = process.env.OPENAI_API_KEY.startsWith('sk-or-v1');
+
   openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+    baseURL: isOpenRouter ? 'https://openrouter.ai/api/v1' : undefined,
+    defaultHeaders: isOpenRouter ? {
+      'HTTP-Referer': 'https://errorlytic.com',
+      'X-Title': 'Errorlytic VCDS Diagnostic System',
+    } : undefined,
   });
 }
 
@@ -485,8 +493,62 @@ function generateDefaultTroubleshootingSteps(errorCode) {
 Note: These are general steps. For specific guidance, consult your vehicle's service manual or a qualified VAG technician.`;
 }
 
+/**
+ * Generate AI vehicle image using DALL-E
+ * @param {Object} vehicleData - Vehicle details (make, model, year, color)
+ * @returns {Promise<string>} Generated image URL
+ */
+async function generateVehicleImage(vehicleData) {
+  const { make, model, year, color = "silver" } = vehicleData;
+
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OpenAI API key not configured");
+    }
+
+    const prompt = `A professional automotive photograph of a ${year} ${make} ${model} in ${color} color. Pay careful attention to the accurate ${year} model year design including the specific headlight design, grille pattern, bumper styling, and body lines for this exact year. The entire car must be visible from front three-quarter view angle, showing the full vehicle from bumper to bumper including all four wheels. The car is centered in the frame on a clean white studio floor with professional soft lighting. Clean white background, no cropping, complete vehicle visible. Accurate representation of the ${year} model year design details. Showroom quality photography, high resolution, sharp focus, automotive catalog style.`;
+
+    console.log(`Generating vehicle image for ${year} ${make} ${model}...`);
+
+    // Check if using OpenRouter (different model name format)
+    const isOpenRouter = process.env.OPENAI_API_KEY.startsWith('sk-or-v1');
+    const modelName = isOpenRouter ? "openai/dall-e-3" : "dall-e-3";
+
+    const response = await openai.images.generate({
+      model: modelName,
+      prompt: prompt,
+      n: 1,
+      size: "1792x1024",
+      quality: "standard",
+      style: "natural",
+    });
+
+    const imageUrl = response.data[0]?.url;
+
+    if (!imageUrl) {
+      throw new Error("Failed to generate image - no URL returned");
+    }
+
+    console.log(`Vehicle image generated successfully: ${imageUrl}`);
+    return imageUrl;
+  } catch (error) {
+    console.error("DALL-E image generation error:", error);
+    console.error("Error details:", error.response?.data || error.message);
+
+    // Return a placeholder image URL as fallback
+    // Using a car icon placeholder with better visual design
+    const placeholderUrl = `https://placehold.co/1792x1024/1f2937/f3f4f6?text=${encodeURIComponent(
+      `🚗 ${year} ${make} ${model}`
+    )}&font=montserrat`;
+
+    console.log(`⚠️  DALL-E unavailable (quota/billing). Using placeholder image: ${placeholderUrl}`);
+    return placeholderUrl;
+  }
+}
+
 module.exports = {
   generateAIExplanation,
   generateAIEnhancedEstimate,
   generateTroubleshootingSteps,
+  generateVehicleImage,
 };

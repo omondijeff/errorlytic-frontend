@@ -396,4 +396,116 @@ router.get("/:analysisId/export", authMiddleware, async (req, res) => {
   }
 });
 
+// @route   GET /api/v1/analysis/:analysisId/diagnostic-summary
+// @desc    Get comprehensive diagnostic summary for analysis with vehicle and reports
+// @access  Private
+router.get("/:analysisId/diagnostic-summary", authMiddleware, async (req, res) => {
+  try {
+    const { analysisId } = req.params;
+    const userId = req.user._id;
+    const orgId = req.user.orgId;
+
+    // Get the analysis
+    const Analysis = require("../models/Analysis");
+    const Vehicle = require("../models/Vehicle");
+    const Upload = require("../models/Upload");
+
+    const analysis = await Analysis.findOne({
+      _id: analysisId,
+      userId: userId,
+      orgId: orgId,
+    }).populate("vehicleId uploadId");
+
+    if (!analysis) {
+      return res.status(404).json({
+        type: "analysis_not_found",
+        title: "Analysis Not Found",
+        detail: "Analysis not found",
+        instance: "/api/v1/analysis/:analysisId/diagnostic-summary",
+      });
+    }
+
+    // Get vehicle details
+    const vehicle = analysis.vehicleId;
+    if (!vehicle) {
+      return res.status(404).json({
+        type: "vehicle_not_found",
+        title: "Vehicle Not Found",
+        detail: "Vehicle not found for this analysis",
+        instance: "/api/v1/analysis/:analysisId/diagnostic-summary",
+      });
+    }
+
+    // Get all uploads/reports for this vehicle
+    const uploads = await Upload.find({
+      vehicleId: vehicle._id,
+      userId: userId,
+      orgId: orgId,
+      status: { $in: ["uploaded", "parsed", "processed"] },
+    })
+      .sort({ createdAt: -1 })
+      .populate("analysisId")
+      .lean();
+
+    // Format reports data
+    const reports = uploads.map((upload) => ({
+      uploadId: upload._id,
+      dateUploaded: upload.createdAt,
+      filename: upload.meta?.originalName || upload.meta?.fileName || "Unknown",
+      analysisId: upload.analysisId?._id || null,
+      status: upload.status === "parsed" || upload.status === "processed" ? "completed" : upload.status,
+    }));
+
+    // Calculate estimated cost and get last maintenance cost for comparison
+    const estimatedCost = analysis.summary?.estimatedCost || 0;
+    let lastMaintenanceCost = null;
+
+    // Get previous analysis for comparison (if any)
+    const previousAnalyses = await Analysis.find({
+      vehicleId: vehicle._id,
+      userId: userId,
+      orgId: orgId,
+      _id: { $ne: analysisId },
+      "summary.estimatedCost": { $exists: true, $gt: 0 },
+    })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    if (previousAnalyses.length > 0) {
+      lastMaintenanceCost = previousAnalyses[0].summary?.estimatedCost || null;
+    }
+
+    // Format response data
+    const responseData = {
+      estimatedCost,
+      lastMaintenanceCost,
+      reports,
+      vehicle: {
+        id: vehicle._id,
+        plate: vehicle.plate,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        vin: vehicle.vin,
+        imageUrl: vehicle.imageUrl || null,
+        ownerInfo: vehicle.ownerInfo || null,
+      },
+      aiInsights: analysis.aiInsights || null,
+    };
+
+    res.json({
+      success: true,
+      data: responseData,
+    });
+  } catch (error) {
+    console.error("Get diagnostic summary error:", error);
+    res.status(500).json({
+      type: "internal_error",
+      title: "Internal Server Error",
+      detail: "Failed to retrieve diagnostic summary",
+    });
+  }
+});
+
 module.exports = router;

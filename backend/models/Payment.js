@@ -46,8 +46,14 @@ const paymentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["card", "bank_transfer", "mobile_money", "stripe"],
+      enum: ["card", "bank_transfer", "mobile_money", "mpesa", "paystack", "manual"],
       required: true,
+    },
+    reference: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
     },
     stripe: {
       paymentIntentId: {
@@ -59,6 +65,70 @@ const paymentSchema = new mongoose.Schema(
         trim: true,
       },
       customerId: {
+        type: String,
+        trim: true,
+      },
+    },
+    paystack: {
+      reference: {
+        type: String,
+        trim: true,
+      },
+      transactionId: {
+        type: String,
+        trim: true,
+      },
+      authorizationCode: {
+        type: String,
+        trim: true,
+      },
+      channel: {
+        type: String,
+        enum: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"],
+      },
+      cardType: {
+        type: String,
+        trim: true,
+      },
+      last4: {
+        type: String,
+        trim: true,
+      },
+      bank: {
+        type: String,
+        trim: true,
+      },
+      countryCode: {
+        type: String,
+        trim: true,
+      },
+      brand: {
+        type: String,
+        trim: true,
+      },
+    },
+    mpesa: {
+      checkoutRequestId: {
+        type: String,
+        trim: true,
+      },
+      merchantRequestId: {
+        type: String,
+        trim: true,
+      },
+      phoneNumber: {
+        type: String,
+        trim: true,
+      },
+      mpesaReceiptNumber: {
+        type: String,
+        trim: true,
+      },
+      transactionDate: {
+        type: String,
+        trim: true,
+      },
+      accountReference: {
         type: String,
         trim: true,
       },
@@ -111,6 +181,10 @@ paymentSchema.index({ orgId: 1 });
 paymentSchema.index({ subscriptionId: 1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
 paymentSchema.index({ "stripe.paymentIntentId": 1 });
+paymentSchema.index({ "paystack.reference": 1 });
+paymentSchema.index({ "paystack.transactionId": 1 });
+paymentSchema.index({ "mpesa.checkoutRequestId": 1 });
+paymentSchema.index({ "mpesa.mpesaReceiptNumber": 1 });
 paymentSchema.index({ type: 1, createdAt: -1 });
 
 // Pre-save middleware to set processedAt when status changes to completed

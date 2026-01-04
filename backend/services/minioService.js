@@ -175,6 +175,34 @@ class MinIOService {
   }
 
   /**
+   * Get file content from MinIO
+   * @param {string} fileKey - File key
+   * @returns {Promise<string>} File content as string
+   */
+  async getFileContent(fileKey) {
+    try {
+      const dataStream = await this.client.getObject(this.bucketName, fileKey);
+
+      return new Promise((resolve, reject) => {
+        const chunks = [];
+        dataStream.on('data', (chunk) => {
+          chunks.push(chunk);
+        });
+        dataStream.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          resolve(buffer.toString('utf-8'));
+        });
+        dataStream.on('error', (error) => {
+          reject(error);
+        });
+      });
+    } catch (error) {
+      console.error("❌ Error getting file content from MinIO:", error);
+      throw new Error(`Failed to get file content: ${error.message}`);
+    }
+  }
+
+  /**
    * Check if file exists
    * @param {string} fileKey - File key
    * @returns {Promise<boolean>} File existence
