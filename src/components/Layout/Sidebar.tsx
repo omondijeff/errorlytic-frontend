@@ -28,8 +28,8 @@ const Sidebar: React.FC = () => {
       { name: 'Dashboard', href: '/app/dashboard', icon: HomeIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
       { name: 'Reports', href: '/app/analysis', icon: DocumentTextIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
 
-      // Credits for individual users
-      { name: 'Buy Credits', href: '/app/credits', icon: BoltIcon, roles: ['individual'] },
+      // Credits for individual and garage users
+      { name: 'Buy Credits', href: '/app/credits', icon: BoltIcon, roles: ['individual', 'garage_user', 'garage_admin'] },
 
       // Regular user management (garage/insurer admins)
       { name: 'Users', href: '/app/users', icon: UsersIcon, roles: ['garage_admin', 'insurer_admin'] },
