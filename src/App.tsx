@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -49,51 +49,51 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/how-it-works" element={<HowItWorksPage />} />
-              <Route path="/who-is-it-for" element={<WhoIsItForPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/who-is-it-for" element={<WhoIsItForPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-              {/* Protected App Routes - Unified for all users including super admin */}
-              <Route path="/app" element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Navigate to="/app/dashboard" replace />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="analysis" element={<AnalysisPage />} />
-                <Route path="analysis/:id" element={<DiagnosticSummaryPage />} />
-                <Route path="diagnostic-summary" element={<DiagnosticSummaryOverviewPage />} />
-                <Route path="reports/:id" element={<VCDSReportViewerPage />} />
-                <Route path="users" element={<UsersPage />} />
+        {/* Protected App Routes - Unified for all users including super admin */}
+        <Route path="/app" element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="analysis" element={<AnalysisPage />} />
+          <Route path="analysis/:id" element={<DiagnosticSummaryPage />} />
+          <Route path="diagnostic-summary" element={<DiagnosticSummaryOverviewPage />} />
+          <Route path="reports/:id" element={<VCDSReportViewerPage />} />
+          <Route path="users" element={<UsersPage />} />
 
-                {/* Credits Routes */}
-                <Route path="credits" element={<CreditPurchasePage />} />
+          {/* Credits Routes */}
+          <Route path="credits" element={<CreditPurchasePage />} />
 
-                {/* Super Admin Routes */}
-                <Route path="user-management" element={<UserManagement />} />
-                <Route path="organizations" element={<OrganizationsPage />} />
-                <Route path="analytics" element={<SystemAnalyticsPage />} />
-                <Route path="activity-logs" element={<ActivityLogsPage />} />
-                <Route path="billing" element={<BillingPage />} />
-                <Route path="pricing" element={<PricingManagementPage />} />
-                <Route path="platform-settings" element={<PlatformSettingsPage />} />
-                <Route path="api-management" element={<APIManagementPage />} />
+          {/* Super Admin Routes */}
+          <Route path="user-management" element={<UserManagement />} />
+          <Route path="organizations" element={<OrganizationsPage />} />
+          <Route path="analytics" element={<SystemAnalyticsPage />} />
+          <Route path="activity-logs" element={<ActivityLogsPage />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="pricing" element={<PricingManagementPage />} />
+          <Route path="platform-settings" element={<PlatformSettingsPage />} />
+          <Route path="api-management" element={<APIManagementPage />} />
 
-                <Route path="profile" element={<ProfilePage />} />
-              </Route>
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
 
-              {/* Redirect old super admin routes to unified routes */}
-              <Route path="/superadmin/*" element={<Navigate to="/app/dashboard" replace />} />
+        {/* Redirect old super admin routes to unified routes */}
+        <Route path="/superadmin/*" element={<Navigate to="/app/dashboard" replace />} />
 
-              {/* 404 Route */}
-              <Route path="*" element={<NotFoundPage />} />
+        {/* 404 Route */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AnimatePresence>
   );

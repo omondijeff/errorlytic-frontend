@@ -10,7 +10,6 @@ import {
   TruckIcon,
   ClockIcon,
   ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
 } from '@heroicons/react/24/outline';
 
 interface OverallMetrics {
@@ -76,9 +75,9 @@ const DiagnosticSummaryOverviewPage: React.FC = () => {
 
         // Calculate health scores
         const healthScores = analyses.map((a: any) => calculateHealthScore(a));
-        const avgHealth = healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length || 0;
-        const needsAttention = healthScores.filter(score => score < 70).length;
-        const healthy = healthScores.filter(score => score >= 80).length;
+        const avgHealth = healthScores.reduce((sum: number, score: number) => sum + score, 0) / healthScores.length || 0;
+        const needsAttention = healthScores.filter((score: number) => score < 70).length;
+        const healthy = healthScores.filter((score: number) => score >= 80).length;
 
         setMetrics({
           totalVehicles: uniqueVehicles.size,
@@ -375,10 +374,9 @@ const DiagnosticSummaryOverviewPage: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${
-                              diagnostic.healthScore >= 80 ? 'bg-green-500' :
+                            className={`h-2 rounded-full ${diagnostic.healthScore >= 80 ? 'bg-green-500' :
                               diagnostic.healthScore >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}
+                              }`}
                             style={{ width: `${diagnostic.healthScore}%` }}
                           ></div>
                         </div>

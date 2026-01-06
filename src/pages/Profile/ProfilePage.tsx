@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store';
 import { updateUser } from '../../store/slices/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../services/apiClient';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -222,11 +221,10 @@ const ProfilePage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === tab.id
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === tab.id
                   ? 'bg-[#EA6A47] text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
+                }`}
             >
               <tab.icon className="h-5 w-5" />
               <span>{tab.label}</span>
@@ -269,11 +267,10 @@ const ProfilePage: React.FC = () => {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={!isEditing}
-                  className={`absolute -bottom-2 -right-2 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-all ${
-                    isEditing
+                  className={`absolute -bottom-2 -right-2 h-10 w-10 bg-white rounded-full shadow-lg flex items-center justify-center transition-all ${isEditing
                       ? 'hover:bg-gray-50 cursor-pointer'
                       : 'opacity-50 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   <CameraIcon className="h-5 w-5 text-gray-600" />
                 </button>

@@ -4,7 +4,6 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   PencilIcon,
-  TrashIcon,
   ArrowTrendingUpIcon,
   CheckCircleIcon,
   BuildingOfficeIcon,
@@ -83,7 +82,6 @@ const UserManagement: React.FC = () => {
   const {
     data: usersData,
     isLoading: usersLoading,
-    error: usersError,
     refetch: refetchUsers
   } = useGetUsersQuery({
     page: 1,
@@ -102,9 +100,9 @@ const UserManagement: React.FC = () => {
 
   const stats = {
     total: users.length,
-    active: users.filter(u => u.status === 'active').length,
-    garages: users.filter(u => u.role.includes('garage')).length,
-    insurers: users.filter(u => u.role.includes('insurer')).length,
+    active: users.filter((u: User) => u.status === 'active').length,
+    garages: users.filter((u: User) => u.role.includes('garage')).length,
+    insurers: users.filter((u: User) => u.role.includes('insurer')).length,
   };
 
   const metrics = [
@@ -142,7 +140,7 @@ const UserManagement: React.FC = () => {
     },
   ];
 
-  const handleCreateUser = async (userData: any) => {
+  const handleCreateUser = async (userData: Partial<User>) => {
     try {
       await createUser(userData).unwrap();
       setShowAddUser(false);
@@ -170,10 +168,10 @@ const UserManagement: React.FC = () => {
   const handleUpdateUser = async (userData: { role: string; organization?: string }) => {
     if (!editingUser) return;
     try {
-      await updateUser({ 
-        id: editingUser.id, 
+      await updateUser({
+        id: editingUser.id,
         role: userData.role,
-        organization: userData.organization 
+        organization: userData.organization
       }).unwrap();
       setShowEditUser(false);
       setEditingUser(null);
@@ -224,233 +222,233 @@ const UserManagement: React.FC = () => {
     return 'bg-gray-100 text-gray-800';
   };
 
-const getStatusBadgeColor = (status: string) => {
-  if (status === 'active') return 'bg-green-100 text-green-800';
-  if (status === 'inactive') return 'bg-yellow-100 text-yellow-800';
-  return 'bg-red-100 text-red-800';
-};
-
-interface AddCreditsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  user: User;
-  onSubmit: (credits: number, reason: string) => void;
-  isLoading: boolean;
-}
-
-const AddCreditsModal: React.FC<AddCreditsModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  user, 
-  onSubmit, 
-  isLoading 
-}) => {
-  const [credits, setCredits] = useState('');
-  const [reason, setReason] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const creditsNum = parseInt(credits, 10);
-    if (creditsNum < 1 || creditsNum > 1000) {
-      alert('Credits must be between 1 and 1000');
-      return;
-    }
-    onSubmit(creditsNum, reason || 'Admin added');
-    // Reset form
-    setCredits('');
-    setReason('');
+  const getStatusBadgeColor = (status: string) => {
+    if (status === 'active') return 'bg-green-100 text-green-800';
+    if (status === 'inactive') return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
   };
 
-  const handleClose = () => {
-    setCredits('');
-    setReason('');
-    onClose();
-  };
+  interface AddCreditsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    user: User;
+    onSubmit: (credits: number, reason: string) => void;
+    isLoading: boolean;
+  }
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Add Credits"
-      size="md"
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            User
-          </label>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="font-medium text-gray-900">{user.name}</p>
-            <p className="text-sm text-gray-500">{user.email}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Role: <span className="font-medium">{user.role.replace('_', ' ').toUpperCase()}</span>
-            </p>
-          </div>
-        </div>
+  const AddCreditsModal: React.FC<AddCreditsModalProps> = ({
+    isOpen,
+    onClose,
+    user,
+    onSubmit,
+    isLoading
+  }) => {
+    const [credits, setCredits] = useState('');
+    const [reason, setReason] = useState('');
 
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Credits to Add *
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="1000"
-            value={credits}
-            onChange={(e) => setCredits(e.target.value)}
-            placeholder="Enter number of credits (1-1000)"
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            You can add between 1 and 1000 credits at a time
-          </p>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Reason (Optional)
-          </label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="e.g., Customer support, Promotional credits, Refund"
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
-          />
-        </div>
-
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <p className="text-sm text-yellow-800">
-            <strong>Note:</strong> Credits will expire after 365 days. This action will add {credits || 0} credits to the user's account.
-          </p>
-        </div>
-
-        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isLoading}
-            className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading || !credits}
-            className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Adding...' : 'Add Credits'}
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
-};
-
-interface EditUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  user: User;
-  onSubmit: (data: { role: string; organization?: string }) => void;
-}
-
-const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, onSubmit }) => {
-  const [selectedRole, setSelectedRole] = useState(user.role);
-  const [organization, setOrganization] = useState(user.organization || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const updateData: { role: string; organization?: string } = { role: selectedRole };
-      if (selectedRole !== 'individual' && selectedRole !== 'superadmin') {
-        updateData.organization = organization;
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      const creditsNum = parseInt(credits, 10);
+      if (creditsNum < 1 || creditsNum > 1000) {
+        alert('Credits must be between 1 and 1000');
+        return;
       }
-      await onSubmit(updateData);
-    } catch (error) {
-      console.error('Failed to update user:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      onSubmit(creditsNum, reason || 'Admin added');
+      // Reset form
+      setCredits('');
+      setReason('');
+    };
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Edit User"
-      size="md"
-    >
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            User
-          </label>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="font-medium text-gray-900">{user.name}</p>
-            <p className="text-sm text-gray-500">{user.email}</p>
-          </div>
-        </div>
+    const handleClose = () => {
+      setCredits('');
+      setReason('');
+      onClose();
+    };
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Role *
-          </label>
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
-          >
-            <option value="individual">Individual</option>
-            <option value="garage_user">Garage User</option>
-            <option value="garage_admin">Garage Admin</option>
-            <option value="insurer_user">Insurer User</option>
-            <option value="insurer_admin">Insurer Admin</option>
-            <option value="superadmin">Super Admin</option>
-          </select>
-        </div>
-
-        {(selectedRole === 'garage_user' || selectedRole === 'garage_admin' || 
-          selectedRole === 'insurer_user' || selectedRole === 'insurer_admin') && (
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Add Credits"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Organization *
+              User
+            </label>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="font-medium text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Role: <span className="font-medium">{user.role.replace('_', ' ').toUpperCase()}</span>
+              </p>
+            </div>
+          </div>
+
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Credits to Add *
             </label>
             <input
-              type="text"
-              value={organization}
-              onChange={(e) => setOrganization(e.target.value)}
-              placeholder="Enter organization name"
+              type="number"
+              min="1"
+              max="1000"
+              value={credits}
+              onChange={(e) => setCredits(e.target.value)}
+              placeholder="Enter number of credits (1-1000)"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              You can add between 1 and 1000 credits at a time
+            </p>
           </div>
-        )}
 
-        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 bg-[#EA6A47] text-white rounded-full hover:bg-[#d85a37] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Updating...' : 'Update User'}
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
-};
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Reason (Optional)
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g., Customer support, Promotional credits, Refund"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+            />
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-sm text-yellow-800">
+              <strong>Note:</strong> Credits will expire after 365 days. This action will add {credits || 0} credits to the user's account.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !credits}
+              className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Adding...' : 'Add Credits'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    );
+  };
+
+  interface EditUserModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    user: User;
+    onSubmit: (data: { role: string; organization?: string }) => void;
+  }
+
+  const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, onSubmit }) => {
+    const [selectedRole, setSelectedRole] = useState(user.role);
+    const [organization, setOrganization] = useState(user.organization || '');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      try {
+        const updateData: { role: string; organization?: string } = { role: selectedRole };
+        if (selectedRole !== 'individual' && selectedRole !== 'superadmin') {
+          updateData.organization = organization;
+        }
+        await onSubmit(updateData);
+      } catch (error) {
+        console.error('Failed to update user:', error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Edit User"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              User
+            </label>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="font-medium text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Role *
+            </label>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+            >
+              <option value="individual">Individual</option>
+              <option value="garage_user">Garage User</option>
+              <option value="garage_admin">Garage Admin</option>
+              <option value="insurer_user">Insurer User</option>
+              <option value="insurer_admin">Insurer Admin</option>
+              <option value="superadmin">Super Admin</option>
+            </select>
+          </div>
+
+          {(selectedRole === 'garage_user' || selectedRole === 'garage_admin' ||
+            selectedRole === 'insurer_user' || selectedRole === 'insurer_admin') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Organization *
+                </label>
+                <input
+                  type="text"
+                  value={organization}
+                  onChange={(e) => setOrganization(e.target.value)}
+                  placeholder="Enter organization name"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+                />
+              </div>
+            )}
+
+          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-[#EA6A47] text-white rounded-full hover:bg-[#d85a37] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Updating...' : 'Update User'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    );
+  };
 
   return (
     <div className="p-8 bg-gray-50">
@@ -540,7 +538,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => (
+                  users.map((user: User) => (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">

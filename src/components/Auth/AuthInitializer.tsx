@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import { setCredentials, logout, setLoading } from '../../store/slices/authSlice';
-import { api } from '../../services/api';
+
 
 /**
  * AuthInitializer component

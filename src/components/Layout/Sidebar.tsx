@@ -62,16 +62,15 @@ const Sidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 py-8 space-y-1 overflow-y-auto">
-        {navigation.map((item, index) => (
+        {navigation.map((item) => (
           <React.Fragment key={item.name}>
             {item.divider && <div className="my-4 mx-8 border-t border-gray-200"></div>}
             <NavLink
               to={item.href}
               className={({ isActive }) =>
-                `flex items-center px-8 py-3 text-base font-medium transition-colors relative ${
-                  isActive
-                    ? 'text-[#EA6A47]'
-                    : 'text-gray-600 hover:text-gray-900'
+                `flex items-center px-8 py-3 text-base font-medium transition-colors relative ${isActive
+                  ? 'text-[#EA6A47]'
+                  : 'text-gray-600 hover:text-gray-900'
                 }`
               }
             >

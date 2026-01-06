@@ -22,7 +22,7 @@ const store = configureStore({
         ignoredActions: [api.util.resetApiState.type],
       },
     }).concat(api.middleware),
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: import.meta.env.DEV,
 });
 
 setupListeners(store.dispatch);

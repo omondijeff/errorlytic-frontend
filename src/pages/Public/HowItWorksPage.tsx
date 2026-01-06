@@ -38,7 +38,7 @@ const HowItWorksPage: React.FC = () => {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true, margin: "-100px" },
-    transition: { duration: 0.6, ease: "easeOut" }
+    transition: { duration: 0.6, ease: "easeOut" as any }
   };
 
   const staggerContainer = {
@@ -106,122 +106,121 @@ const HowItWorksPage: React.FC = () => {
       />
       <PublicLayout>
         <section className="relative min-h-screen bg-black overflow-hidden">
-        {/* Subtle background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 -left-40 w-80 h-80 bg-[#EA6A47] opacity-[0.02] rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 -right-40 w-80 h-80 bg-[#EA6A47] opacity-[0.02] rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative w-full px-8 lg:px-16 xl:px-24 py-32">
-          <div className="max-w-7xl mx-auto">
-            {/* Hero Section */}
-            <motion.div
-              className="mb-32 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <motion.div
-                className="inline-flex items-center gap-2 mb-6"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#EA6A47]"></div>
-                <span className="text-[#EA6A47] text-sm font-semibold uppercase tracking-wider">
-                  Simple Process
-                </span>
-                <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#EA6A47]"></div>
-              </motion.div>
-              <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-[1.1] text-white">
-                How It Works
-              </h1>
-              <p className="text-gray-400 text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto">
-                Get professional diagnostic analysis in four simple steps
-              </p>
-            </motion.div>
-
-            {/* Steps */}
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24 mb-40"
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="whileInView"
-              viewport={{ once: true, margin: "-100px" }}
-            >
-              {steps.map((step, index) => (
-                <motion.div
-                  key={index}
-                  className="group relative"
-                  variants={fadeInUp}
-                >
-                  {/* Hover accent line */}
-                  <div className="absolute -left-8 top-0 w-0.5 h-full bg-gradient-to-b from-[#EA6A47] via-[#EA6A47]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                  <div className="relative">
-                    <div className="flex items-start gap-8 mb-8">
-                      {/* Large outlined number */}
-                      <div className="text-8xl lg:text-9xl font-bold text-transparent leading-none select-none" style={{
-                        WebkitTextStroke: '2px rgba(234, 106, 71, 0.15)',
-                        textStroke: '2px rgba(234, 106, 71, 0.15)'
-                      }}>
-                        {step.number}
-                      </div>
-                      {/* Icon */}
-                      <div className="text-[#EA6A47] opacity-20 group-hover:opacity-70 transition-all duration-500 mt-4">
-                        {step.icon}
-                      </div>
-                    </div>
-
-                    <h3 className="text-3xl lg:text-4xl font-bold mb-5 text-white leading-tight group-hover:text-gray-100 transition-colors">
-                      {step.title}
-                    </h3>
-                    <p className="text-gray-400 text-base lg:text-lg leading-relaxed group-hover:text-gray-300 transition-colors">
-                      {step.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* CTA Section */}
-            <motion.div
-              className="relative border-t border-gray-800/50 pt-24"
-              {...fadeInUp}
-            >
-              {/* Decorative accent */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3">
-                <div className="w-12 h-px bg-gradient-to-r from-transparent to-[#EA6A47]"></div>
-                <div className="w-2 h-2 bg-[#EA6A47] rounded-full"></div>
-                <div className="w-12 h-px bg-gradient-to-l from-transparent to-[#EA6A47]"></div>
-              </div>
-
-              <div className="text-center max-w-4xl mx-auto">
-                <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-white leading-tight">
-                  Ready to Get Started?
-                </h2>
-                <p className="text-gray-400 text-lg lg:text-xl leading-relaxed mb-12 max-w-3xl mx-auto">
-                  Join hundreds of garages and insurance companies using Errorlytic to streamline their diagnostic process
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button
-                    onClick={() => navigate('/register')}
-                    className="bg-[#EA6A47] hover:bg-[#d85a37] text-white px-10 py-4 rounded-full font-medium text-lg transition-all duration-300 hover:scale-105"
-                  >
-                    Start Free Trial
-                  </button>
-                  <button
-                    onClick={() => navigate('/who-is-it-for')}
-                    className="border-2 border-gray-800 hover:border-[#EA6A47]/50 text-white px-10 py-4 rounded-full font-medium text-lg transition-all duration-300"
-                  >
-                    Learn More
-                  </button>
-                </div>
-              </div>
-            </motion.div>
+          {/* Subtle background elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-1/4 -left-40 w-80 h-80 bg-[#EA6A47] opacity-[0.02] rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 -right-40 w-80 h-80 bg-[#EA6A47] opacity-[0.02] rounded-full blur-3xl"></div>
           </div>
-        </div>
-      </section>
+
+          <div className="relative w-full px-8 lg:px-16 xl:px-24 py-32">
+            <div className="max-w-7xl mx-auto">
+              {/* Hero Section */}
+              <motion.div
+                className="mb-32 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" as any }}
+              >
+                <motion.div
+                  className="inline-flex items-center gap-2 mb-6"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <div className="w-8 h-px bg-gradient-to-r from-transparent to-[#EA6A47]"></div>
+                  <span className="text-[#EA6A47] text-sm font-semibold uppercase tracking-wider">
+                    Simple Process
+                  </span>
+                  <div className="w-8 h-px bg-gradient-to-l from-transparent to-[#EA6A47]"></div>
+                </motion.div>
+                <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-[1.1] text-white">
+                  How It Works
+                </h1>
+                <p className="text-gray-400 text-lg lg:text-xl leading-relaxed max-w-3xl mx-auto">
+                  Get professional diagnostic analysis in four simple steps
+                </p>
+              </motion.div>
+
+              {/* Steps */}
+              <motion.div
+                className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24 mb-40"
+                variants={staggerContainer}
+                initial="initial"
+                whileInView="whileInView"
+                viewport={{ once: true, margin: "-100px" }}
+              >
+                {steps.map((step, index) => (
+                  <motion.div
+                    key={index}
+                    className="group relative"
+                    variants={fadeInUp}
+                  >
+                    {/* Hover accent line */}
+                    <div className="absolute -left-8 top-0 w-0.5 h-full bg-gradient-to-b from-[#EA6A47] via-[#EA6A47]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    <div className="relative">
+                      <div className="flex items-start gap-8 mb-8">
+                        {/* Large outlined number */}
+                        <div className="text-8xl lg:text-9xl font-bold text-transparent leading-none select-none" style={{
+                          WebkitTextStroke: '2px rgba(234, 106, 71, 0.15)',
+                        }}>
+                          {step.number}
+                        </div>
+                        {/* Icon */}
+                        <div className="text-[#EA6A47] opacity-20 group-hover:opacity-70 transition-all duration-500 mt-4">
+                          {step.icon}
+                        </div>
+                      </div>
+
+                      <h3 className="text-3xl lg:text-4xl font-bold mb-5 text-white leading-tight group-hover:text-gray-100 transition-colors">
+                        {step.title}
+                      </h3>
+                      <p className="text-gray-400 text-base lg:text-lg leading-relaxed group-hover:text-gray-300 transition-colors">
+                        {step.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* CTA Section */}
+              <motion.div
+                className="relative border-t border-gray-800/50 pt-24"
+                {...fadeInUp}
+              >
+                {/* Decorative accent */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center gap-3">
+                  <div className="w-12 h-px bg-gradient-to-r from-transparent to-[#EA6A47]"></div>
+                  <div className="w-2 h-2 bg-[#EA6A47] rounded-full"></div>
+                  <div className="w-12 h-px bg-gradient-to-l from-transparent to-[#EA6A47]"></div>
+                </div>
+
+                <div className="text-center max-w-4xl mx-auto">
+                  <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 text-white leading-tight">
+                    Ready to Get Started?
+                  </h2>
+                  <p className="text-gray-400 text-lg lg:text-xl leading-relaxed mb-12 max-w-3xl mx-auto">
+                    Join hundreds of garages and insurance companies using Errorlytic to streamline their diagnostic process
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button
+                      onClick={() => navigate('/register')}
+                      className="bg-[#EA6A47] hover:bg-[#d85a37] text-white px-10 py-4 rounded-full font-medium text-lg transition-all duration-300 hover:scale-105"
+                    >
+                      Start Free Trial
+                    </button>
+                    <button
+                      onClick={() => navigate('/who-is-it-for')}
+                      className="border-2 border-gray-800 hover:border-[#EA6A47]/50 text-white px-10 py-4 rounded-full font-medium text-lg transition-all duration-300"
+                    >
+                      Learn More
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
       </PublicLayout>
     </motion.div>
   );

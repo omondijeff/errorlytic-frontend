@@ -118,10 +118,10 @@ const DashboardPage: React.FC = () => {
             id: analysis._id || analysis.id,
             uploadId: analysis.uploadId?._id || analysis.uploadId,
             regNo: analysis.vehicleId?.plate ||
-                   analysis.vehicleId?.registrationNumber ||
-                   analysis.vehicleId?.licensePlate ||
-                   `${analysis.vehicleId?.make || ''} ${analysis.vehicleId?.model || ''}`.trim() ||
-                   'N/A',
+              analysis.vehicleId?.registrationNumber ||
+              analysis.vehicleId?.licensePlate ||
+              `${analysis.vehicleId?.make || ''} ${analysis.vehicleId?.model || ''}`.trim() ||
+              'N/A',
             faultCount: totalErrors,
             dateUploaded: analysis.createdAt,
             healthScore,
@@ -132,7 +132,7 @@ const DashboardPage: React.FC = () => {
 
         // Calculate average health score
         const avgScore = transformedReports.length > 0
-          ? transformedReports.reduce((sum, r) => sum + r.healthScore, 0) / transformedReports.length
+          ? transformedReports.reduce((sum: number, r: ReportRow) => sum + r.healthScore, 0) / transformedReports.length
           : 0;
 
         // Calculate total estimated cost
@@ -406,7 +406,7 @@ const DashboardPage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  recentReports.map((report, index) => (
+                  recentReports.map((report) => (
                     <tr key={report.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">

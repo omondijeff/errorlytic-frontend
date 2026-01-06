@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   BoltIcon,
   PlusCircleIcon,
-  ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline';
 import { useGetCreditBalanceQuery } from '../../services/api';
 

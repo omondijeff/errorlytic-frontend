@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheckIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 
 const PlatformSettingsPage: React.FC = () => {
   const [platformName, setPlatformName] = useState('Errorlytic');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -30,13 +30,13 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  isLoading = false 
+const AddUserModal: React.FC<AddUserModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading = false
 }) => {
-  const [selectedRole, setSelectedRole] = useState('individual');
+
 
   const {
     register,
@@ -45,7 +45,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     reset,
     watch,
   } = useForm<FormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
     defaultValues: {
       role: 'individual',
       plan: 'starter',
@@ -76,7 +76,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <h4 className="text-md font-semibold text-gray-900 font-sf-pro">
             Basic Information
           </h4>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ModernInput
               {...register('name')}
@@ -85,7 +85,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               error={errors.name?.message}
               required
             />
-            
+
             <ModernInput
               {...register('email')}
               type="email"
@@ -95,7 +95,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               required
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ModernInput
               {...register('phone')}
@@ -103,7 +103,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               placeholder="Enter phone number"
               error={errors.phone?.message}
             />
-            
+
             <ModernInput
               {...register('country')}
               label="Country"
@@ -118,7 +118,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <h4 className="text-md font-semibold text-gray-900 font-sf-pro">
             Role & Organization
           </h4>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 font-sf-pro-text mb-2">
@@ -127,7 +127,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               <select
                 {...register('role')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent font-sf-pro-text"
-                onChange={(e) => setSelectedRole(e.target.value)}
               >
                 <option value="individual">Individual</option>
                 <option value="garage_user">Garage User</option>
@@ -142,17 +141,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
                 </p>
               )}
             </div>
-            
-            {(watchedRole === 'garage_user' || watchedRole === 'garage_admin' || 
+
+            {(watchedRole === 'garage_user' || watchedRole === 'garage_admin' ||
               watchedRole === 'insurer_user' || watchedRole === 'insurer_admin') && (
-              <ModernInput
-                {...register('organization')}
-                label="Organization"
-                placeholder="Enter organization name"
-                error={errors.organization?.message}
-                required
-              />
-            )}
+                <ModernInput
+                  {...register('organization')}
+                  label="Organization"
+                  placeholder="Enter organization name"
+                  error={errors.organization?.message}
+                  required
+                />
+              )}
           </div>
         </div>
 
@@ -161,7 +160,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <h4 className="text-md font-semibold text-gray-900 font-sf-pro">
             Subscription Plan
           </h4>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 font-sf-pro-text mb-2">
               Plan *
