@@ -457,9 +457,11 @@ interface QuotationLineItem {
   code: string;
   description: string;
   explanation: string;
+  simplifiedSummary: string;
   estimatedCost: number;
   customCost: number | null;
   loading: boolean;
+  explanationExpanded: boolean;
 }
 
 const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisId, vehicle }) => {
@@ -472,6 +474,14 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
     loadLineItems();
   }, [dtcs]);
 
+  const extractSummary = (fullExplanation: string): string => {
+    // Extract first 1-2 sentences as summary
+    const sentences = fullExplanation.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    if (sentences.length === 0) return fullExplanation.substring(0, 150) + '...';
+    if (sentences.length === 1) return sentences[0].trim();
+    return sentences.slice(0, 2).join('. ').trim() + '.';
+  };
+
   const loadLineItems = async () => {
     setLoading(true);
     const items: QuotationLineItem[] = await Promise.all(
@@ -479,32 +489,44 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
         // Estimate cost based on severity (can be enhanced with AI later)
         const baseCost = dtc.status === 'active' ? 5000 : 3000;
         
-        // Fetch AI explanation
+        // Fetch AI explanation for MECHANIC (not user)
         let explanation = '';
+        let simplifiedSummary = '';
         try {
           const response = await api.post('/error-codes/ai-explanation', {
             errorCode: dtc.code,
             description: dtc.description,
             vehicleMake: vehicle.make,
             vehicleModel: vehicle.model,
+            audience: 'mechanic', // Request mechanic-specific explanation
           });
           explanation = response.data.data?.aiExplanation || `Error ${dtc.code}: ${dtc.description}`;
+          simplifiedSummary = extractSummary(explanation);
         } catch (error) {
-          explanation = `Error ${dtc.code}: ${dtc.description}. Please consult a qualified technician for detailed explanation.`;
+          explanation = `Error ${dtc.code}: ${dtc.description}. Requires diagnostic scan and component testing.`;
+          simplifiedSummary = `Error ${dtc.code}: ${dtc.description}`;
         }
 
         return {
           code: dtc.code,
           description: dtc.description,
           explanation,
+          simplifiedSummary,
           estimatedCost: baseCost,
           customCost: null,
           loading: false,
+          explanationExpanded: false,
         };
       })
     );
     setLineItems(items);
     setLoading(false);
+  };
+
+  const toggleExplanation = (index: number) => {
+    const updated = [...lineItems];
+    updated[index].explanationExpanded = !updated[index].explanationExpanded;
+    setLineItems(updated);
   };
 
   const updateLineItemCost = (index: number, cost: number) => {
@@ -619,15 +641,40 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-2">{item.description}</h4>
                 
-                {/* AI Explanation */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-start space-x-2">
-                    <ClipboardDocumentListIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-semibold text-blue-900 mb-1">AI Explanation for Mechanic:</p>
-                      <p className="text-sm text-blue-800 whitespace-pre-wrap">{item.explanation}</p>
+                {/* AI Explanation - Collapsible */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                  <button
+                    onClick={() => toggleExplanation(index)}
+                    className="w-full flex items-start justify-between p-4 hover:bg-blue-100 transition-colors rounded-lg"
+                  >
+                    <div className="flex items-start space-x-2 flex-1 text-left">
+                      <ClipboardDocumentListIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-blue-900 mb-1">Technical Explanation:</p>
+                        <p className={`text-sm text-blue-800 ${!item.explanationExpanded ? 'line-clamp-2' : ''}`}>
+                          {item.explanationExpanded ? item.explanation : item.simplifiedSummary}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                    <div className="ml-4 flex-shrink-0">
+                      {item.explanationExpanded ? (
+                        <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                        </svg>
+                      ) : (
+                        <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                  {item.explanationExpanded && (
+                    <div className="px-4 pb-4 pt-0">
+                      <div className="pt-3 border-t border-blue-200">
+                        <p className="text-sm text-blue-800 whitespace-pre-wrap">{item.explanation}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
