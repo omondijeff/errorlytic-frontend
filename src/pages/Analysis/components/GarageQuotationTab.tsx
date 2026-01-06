@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
     DocumentTextIcon,
     ClipboardDocumentListIcon,
+    ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import api from '../../../services/apiClient';
 import type { DTC, VehicleDetails, QuotationLineItem } from '../../../types/analysis';
+import { useNotification } from '../../../context/NotificationContext';
 
 interface GarageQuotationTabProps {
     dtcs: DTC[];
@@ -12,18 +14,58 @@ interface GarageQuotationTabProps {
     vehicle: VehicleDetails;
 }
 
+interface Quotation {
+    _id: string;
+    currency: string;
+    totals: {
+        parts: number;
+        labor: number;
+        tax: number;
+        grand: number;
+    };
+    lineItems?: any[]; // For now
+    status: string;
+    createdAt: string;
+}
+
 const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisId, vehicle }) => {
+    const { addNotification } = useNotification();
     const [lineItems, setLineItems] = useState<QuotationLineItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [generatingQuotation, setGeneratingQuotation] = useState(false);
     const [currency, setCurrency] = useState<'KES' | 'USD'>('KES');
+    const [existingQuotation, setExistingQuotation] = useState<Quotation | null>(null);
 
     useEffect(() => {
-        loadLineItems();
-    }, [dtcs]);
+        loadData();
+    }, [dtcs, analysisId]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            // 1. Check for existing quotation
+            const quotationResponse = await api.get('/quotations', {
+                params: { analysisId, limit: 1 }
+            });
+
+            if (quotationResponse.data.data && quotationResponse.data.data.length > 0) {
+                setExistingQuotation(quotationResponse.data.data[0]);
+                setLoading(false);
+                return; // Stop if we have a quotation
+            }
+
+            // 2. If no quotation, load line items for builder
+            await loadLineItems();
+        } catch (error) {
+            console.error("Failed to load data", error);
+            // Fallback to loading line items
+            await loadLineItems();
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const extractSummary = (fullExplanation: string): string => {
-        // Extract first 1-2 sentences as summary
         const sentences = fullExplanation.split(/[.!?]+/).filter(s => s.trim().length > 0);
         if (sentences.length === 0) return fullExplanation.substring(0, 150) + '...';
         if (sentences.length === 1) return sentences[0].trim();
@@ -31,13 +73,9 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
     };
 
     const loadLineItems = async () => {
-        setLoading(true);
         const items: QuotationLineItem[] = await Promise.all(
             dtcs.map(async (dtc) => {
-                // Estimate cost based on severity (can be enhanced with AI later)
                 const baseCost = dtc.status === 'active' ? 5000 : 3000;
-
-                // Fetch AI explanation for MECHANIC (not user)
                 let explanation = '';
                 let simplifiedSummary = '';
                 try {
@@ -46,7 +84,7 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
                         description: dtc.description,
                         vehicleMake: vehicle.make,
                         vehicleModel: vehicle.model,
-                        audience: 'mechanic', // Request mechanic-specific explanation
+                        audience: 'mechanic',
                     });
                     explanation = response.data.data?.aiExplanation || `Error ${dtc.code}: ${dtc.description}`;
                     simplifiedSummary = extractSummary(explanation);
@@ -68,7 +106,6 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
             })
         );
         setLineItems(items);
-        setLoading(false);
     };
 
     const toggleExplanation = (index: number) => {
@@ -94,45 +131,46 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
     const handleGenerateQuotation = async () => {
         setGeneratingQuotation(true);
         try {
-            // Create quotation with line items
             const quotationData = {
-                analysisId,
-                currency,
                 lineItems: lineItems.map((item) => ({
                     code: item.code,
                     description: item.description,
                     explanation: item.explanation,
                     cost: getLineItemCost(item),
                 })),
-                totals: {
-                    subtotal: calculateTotal(),
-                    tax: calculateTotal() * 0.16, // 16% VAT
-                    grand: calculateTotal() * 1.16,
-                },
             };
 
-            // For now, we'll use the existing quotation endpoint
-            // This might need backend modification to accept line items directly
             const response = await api.post(`/quotations/generate/${analysisId}`, {
                 currency,
                 laborRate: 2500,
                 markupPct: 15,
                 taxPct: 16,
                 notes: `Quotation generated from ${lineItems.length} error codes`,
-                lineItems: quotationData.lineItems, // Send line items to backend
+                lineItems: quotationData.lineItems,
             });
 
             if (response.data.success || response.data.type === 'quotation_generated') {
-                alert('Quotation generated successfully!');
-                // Optionally navigate to quotation page
+                addNotification('Quotation generated successfully!', 'success');
+                // Reload to show the view mode
+                loadData();
             }
         } catch (error: any) {
             console.error('Failed to generate quotation:', error);
-            alert(error.response?.data?.detail || 'Failed to generate quotation');
+            addNotification(error.response?.data?.detail || 'Failed to generate quotation', 'error');
         } finally {
             setGeneratingQuotation(false);
         }
     };
+
+    const handleDownloadPDF = async () => {
+        if (!existingQuotation) return;
+        try {
+            // This would trigger the download
+            window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/quotations/${existingQuotation._id}/export`, '_blank');
+        } catch (error) {
+            addNotification('Failed to download PDF', 'error');
+        }
+    }
 
     if (loading) {
         return (
@@ -142,6 +180,48 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
         );
     }
 
+    // --- VIEW MODE ---
+    if (existingQuotation) {
+        return (
+            <div className="space-y-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <div className="bg-green-100 p-2 rounded-full">
+                                <DocumentTextIcon className="h-6 w-6 text-green-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Quotation Ready</h3>
+                                <p className="text-sm text-gray-600">Generated on {new Date(existingQuotation.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <div className="text-right mr-4">
+                                <p className="text-sm text-gray-500">Grand Total</p>
+                                <p className="text-2xl font-bold text-gray-900">
+                                    {existingQuotation.currency} {existingQuotation.totals.grand.toLocaleString()}
+                                </p>
+                            </div>
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2 font-medium"
+                            >
+                                <ArrowDownTrayIcon className="h-5 w-5" />
+                                <span>Download PDF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* We could add a simple list of items here if needed, but summary is often enough for the 'done' state */}
+                <div className="text-center py-8 text-gray-500">
+                    <p>This quotation has been saved to your account.</p>
+                </div>
+            </div>
+        );
+    }
+
+    // --- BUILDER MODE ---
     return (
         <div className="space-y-6">
             {/* Header */}

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import { store } from './store';
+import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout/Layout';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import AuthInitializer from './components/Auth/AuthInitializer';
@@ -104,12 +105,14 @@ function App() {
     <HelmetProvider>
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
-          <Router>
-            <AuthInitializer />
-            <div className="min-h-screen bg-black">
-              <AnimatedRoutes />
-            </div>
-          </Router>
+          <NotificationProvider>
+            <Router>
+              <AuthInitializer />
+              <div className="min-h-screen bg-black">
+                <AnimatedRoutes />
+              </div>
+            </Router>
+          </NotificationProvider>
         </QueryClientProvider>
       </Provider>
     </HelmetProvider>
