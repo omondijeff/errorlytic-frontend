@@ -9,12 +9,14 @@ import {
   CheckCircleIcon,
   BuildingOfficeIcon,
   ShieldCheckIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import {
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useAddCreditsMutation,
 } from '../../services/api';
 import AddUserModal from '../../components/SuperAdmin/AddUserModal';
 import Modal from '../../components/UI/Modal';
@@ -75,6 +77,8 @@ const UserManagement: React.FC = () => {
   const [showViewUser, setShowViewUser] = useState(false);
   const [showEditUser, setShowEditUser] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showAddCredits, setShowAddCredits] = useState(false);
+  const [creditsUser, setCreditsUser] = useState<User | null>(null);
 
   const {
     data: usersData,
@@ -92,6 +96,7 @@ const UserManagement: React.FC = () => {
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
+  const [addCredits, { isLoading: isAddingCredits }] = useAddCreditsMutation();
 
   const users = usersData?.data || [];
 
@@ -178,6 +183,29 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const handleAddCredits = (user: User) => {
+    setCreditsUser(user);
+    setShowAddCredits(true);
+  };
+
+  const handleSubmitAddCredits = async (credits: number, reason: string) => {
+    if (!creditsUser) return;
+    try {
+      await addCredits({
+        userId: creditsUser.id,
+        credits,
+        reason,
+      }).unwrap();
+      setShowAddCredits(false);
+      setCreditsUser(null);
+      refetchUsers();
+      alert(`Successfully added ${credits} credits to ${creditsUser.name}`);
+    } catch (error: any) {
+      console.error('Failed to add credits:', error);
+      alert(error.data?.error || 'Failed to add credits');
+    }
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
@@ -200,6 +228,125 @@ const getStatusBadgeColor = (status: string) => {
   if (status === 'active') return 'bg-green-100 text-green-800';
   if (status === 'inactive') return 'bg-yellow-100 text-yellow-800';
   return 'bg-red-100 text-red-800';
+};
+
+interface AddCreditsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: User;
+  onSubmit: (credits: number, reason: string) => void;
+  isLoading: boolean;
+}
+
+const AddCreditsModal: React.FC<AddCreditsModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  user, 
+  onSubmit, 
+  isLoading 
+}) => {
+  const [credits, setCredits] = useState('');
+  const [reason, setReason] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const creditsNum = parseInt(credits, 10);
+    if (creditsNum < 1 || creditsNum > 1000) {
+      alert('Credits must be between 1 and 1000');
+      return;
+    }
+    onSubmit(creditsNum, reason || 'Admin added');
+    // Reset form
+    setCredits('');
+    setReason('');
+  };
+
+  const handleClose = () => {
+    setCredits('');
+    setReason('');
+    onClose();
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Add Credits"
+      size="md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            User
+          </label>
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <p className="font-medium text-gray-900">{user.name}</p>
+            <p className="text-sm text-gray-500">{user.email}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              Role: <span className="font-medium">{user.role.replace('_', ' ').toUpperCase()}</span>
+            </p>
+          </div>
+        </div>
+
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Credits to Add *
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="1000"
+            value={credits}
+            onChange={(e) => setCredits(e.target.value)}
+            placeholder="Enter number of credits (1-1000)"
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            You can add between 1 and 1000 credits at a time
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Reason (Optional)
+          </label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="e.g., Customer support, Promotional credits, Refund"
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+          />
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <p className="text-sm text-yellow-800">
+            <strong>Note:</strong> Credits will expire after 365 days. This action will add {credits || 0} credits to the user's account.
+          </p>
+        </div>
+
+        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isLoading}
+            className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading || !credits}
+            className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Adding...' : 'Add Credits'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 };
 
 interface EditUserModalProps {
@@ -440,6 +587,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
                             Edit
                           </button>
                           <button
+                            onClick={() => handleAddCredits(user)}
+                            className="px-4 py-1.5 border-2 border-green-500 text-green-600 rounded-full hover:bg-green-50 transition-colors font-medium text-sm"
+                          >
+                            <CurrencyDollarIcon className="h-4 w-4 inline-block mr-1" />
+                            Add Credits
+                          </button>
+                          <button
                             onClick={() => handleDeleteUser(user.id)}
                             className="px-4 py-1.5 border-2 border-red-500 text-red-600 rounded-full hover:bg-red-50 transition-colors font-medium text-sm"
                           >
@@ -528,6 +682,20 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, on
           }}
           user={editingUser}
           onSubmit={handleUpdateUser}
+        />
+      )}
+
+      {/* Add Credits Modal */}
+      {creditsUser && (
+        <AddCreditsModal
+          isOpen={showAddCredits}
+          onClose={() => {
+            setShowAddCredits(false);
+            setCreditsUser(null);
+          }}
+          user={creditsUser}
+          onSubmit={handleSubmitAddCredits}
+          isLoading={isAddingCredits}
         />
       )}
     </div>
