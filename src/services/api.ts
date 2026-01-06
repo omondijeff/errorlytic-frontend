@@ -321,6 +321,22 @@ export const api = createApi({
       }),
       invalidatesTags: ['SuperAdmin', 'Billing'],
     }),
+
+    // Error Code endpoints
+    getErrorCodeExplanation: builder.mutation({
+      query: (data) => ({
+        url: '/error-codes/ai-explanation',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getErrorCodeEstimate: builder.mutation({
+      query: (data) => ({
+        url: '/error-codes/ai-estimate',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -372,4 +388,7 @@ export const {
   useGetPaymentHistoryQuery,
   useGetBanksQuery,
   useRequestRefundMutation,
+  // Error Code hooks
+  useGetErrorCodeExplanationMutation,
+  useGetErrorCodeEstimateMutation,
 } = api;
