@@ -12,14 +12,17 @@ interface SEOProps {
   structuredData?: object;
 }
 
+const siteUrl = (import.meta.env.VITE_SITE_URL || 'https://errorlytic.com').replace(/\/$/, '');
+const defaultOgImage = `${siteUrl}/og-image.png`;
+
 const SEO: React.FC<SEOProps> = ({
   title = 'Errorlytic - AI-Powered Automotive Diagnostics Platform',
   description = 'Transform VCDS diagnostic files into actionable insights with AI. Errorlytic helps mechanics, workshops, and automotive professionals diagnose vehicle issues faster and more accurately.',
   keywords = 'automotive diagnostics, VCDS analysis, vehicle diagnostics, AI diagnostics, car repair, automotive AI, diagnostic tool, vehicle analysis, mechanic software, auto workshop',
-  ogImage = 'https://errorlytic.com/og-image.jpg',
+  ogImage = defaultOgImage,
   ogType = 'website',
   twitterCard = 'summary_large_image',
-  canonicalUrl = 'https://errorlytic.com/',
+  canonicalUrl = `${siteUrl}/`,
   structuredData,
 }) => {
   const fullTitle = title.includes('Errorlytic') ? title : `${title} | Errorlytic`;

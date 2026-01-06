@@ -18,6 +18,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    clientEmail: '',
+    clientPhone: '',
     registrationNumber: '',
     carMake: 'Volkswagen (VW)',
     carModel: 'Golf',
@@ -234,6 +236,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
       uploadFormData.append('file', selectedFile);
       uploadFormData.append('firstName', formData.firstName);
       uploadFormData.append('lastName', formData.lastName);
+      uploadFormData.append('clientEmail', formData.clientEmail);
+      uploadFormData.append('clientPhone', formData.clientPhone);
       uploadFormData.append('registrationNumber', formData.registrationNumber);
       uploadFormData.append('carMake', formData.carMake);
       uploadFormData.append('carModel', formData.carModel);
@@ -440,7 +444,35 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Second Row - Registration and Make */}
+              {/* Second Row - Client Contact Info */}
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Client's Email
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+                    placeholder="john.doe@email.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                    Client's Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.clientPhone}
+                    onChange={(e) => handleInputChange('clientPhone', e.target.value)}
+                    placeholder="+254 712 345 678"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Third Row - Registration and Make */}
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -466,7 +498,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              {/* Third Row - Model and Year */}
+              {/* Fourth Row - Model and Year */}
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -497,7 +529,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
               {/* Left Side - Summary from Step 1 */}
               <div className="w-1/3 flex-shrink-0">
                 <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Client Information</h3>
                   <div className="space-y-4 text-sm">
                     <div>
                       <p className="text-gray-500 mb-1">First Name</p>
@@ -508,6 +540,14 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
                       <p className="font-medium text-gray-900">{formData.lastName || 'Not provided'}</p>
                     </div>
                     <div>
+                      <p className="text-gray-500 mb-1">Email</p>
+                      <p className="font-medium text-gray-900">{formData.clientEmail || 'Not provided'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 mb-1">Phone</p>
+                      <p className="font-medium text-gray-900">{formData.clientPhone || 'Not provided'}</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-200">
                       <p className="text-gray-500 mb-1">Registration Number</p>
                       <p className="font-medium text-gray-900">{formData.registrationNumber || 'Not provided'}</p>
                     </div>
@@ -830,6 +870,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose }) => {
                           setFormData({
                             firstName: '',
                             lastName: '',
+                            clientEmail: '',
+                            clientPhone: '',
                             registrationNumber: '',
                             carMake: 'Volkswagen (VW)',
                             carModel: 'Golf',
