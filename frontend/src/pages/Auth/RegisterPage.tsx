@@ -4,16 +4,23 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { EyeIcon, EyeSlashIcon, StarIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { setCredentials } from '../../store/slices/authSlice';
 import { useRegisterMutation } from '../../services/api';
 import type { RootState } from '../../store';
 import LoadingSpinner from '../../components/UI/LoadingSpinner';
+import PublicLayout from '../../components/Layout/PublicLayout';
+import axios from 'axios';
 
 const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+  password: yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .matches(/[0-9]/, 'Password must contain at least one number')
+    .required('Password is required'),
   confirmPassword: yup.string().oneOf([yup.ref('password')], 'Passwords must match').required('Confirm password is required'),
   name: yup.string().min(2, 'Name must be at least 2 characters').required('Name is required'),
   phone: yup.string().min(10, 'Phone number must be at least 10 digits').required('Phone is required'),
@@ -25,17 +32,74 @@ type FormData = yup.InferType<typeof schema>;
 const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [searchParams] = useSearchParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [registerMutation, { isLoading }] = useRegisterMutation();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (unless processing OAuth callback)
   useEffect(() => {
-    if (isAuthenticated) {
+    const code = searchParams.get('code');
+    if (isAuthenticated && !code) {
       navigate('/app/dashboard', { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, searchParams]);
+
+  // Handle OAuth callback for Google sign-up
+  useEffect(() => {
+    const handleGoogleCallback = async () => {
+      const code = searchParams.get('code');
+      if (!code) return;
+
+      try {
+        setIsGoogleLoading(true);
+
+        // Exchange authorization code for tokens via backend
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:7337';
+        const response = await axios.post(`${apiUrl}/api/v1/auth/google/callback`, {
+          code,
+          redirectUri: `${window.location.origin}/register`,
+        });
+
+        // Set credentials in Redux store
+        dispatch(setCredentials({
+          user: response.data.data.user,
+          token: response.data.data.accessToken,
+          refreshToken: response.data.data.refreshToken,
+        }));
+
+        // Redirect to dashboard
+        navigate('/app/dashboard', { replace: true });
+      } catch (error: any) {
+        console.error('Google sign up failed:', error);
+        setIsGoogleLoading(false);
+        // Remove code from URL
+        navigate('/register', { replace: true });
+      }
+    };
+
+    handleGoogleCallback();
+  }, [searchParams, dispatch, navigate]);
+
+  const handleGoogleSignUp = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/register`;
+    const scope = 'openid email profile';
+
+    // Redirect to Google OAuth
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${encodeURIComponent(scope)}&` +
+      `access_type=offline&` +
+      `prompt=select_account`;
+
+    window.location.href = googleAuthUrl;
+  };
 
   const {
     register,
@@ -47,7 +111,17 @@ const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const result = await registerMutation(data).unwrap();
+      // Restructure data to match backend API expectations
+      const registrationData = {
+        email: data.email,
+        password: data.password,
+        profile: {
+          name: data.name,
+          phone: data.phone,
+        },
+        role: data.role,
+      };
+      const result = await registerMutation(registrationData).unwrap();
       dispatch(setCredentials({
         user: result.data.user,
         token: result.data.accessToken,
@@ -68,193 +142,149 @@ const RegisterPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center p-4">
-      {isLoading && <LoadingSpinner />}
-      
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Branding & Features */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="hidden lg:block space-y-8"
-        >
-          {/* Logo & Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="h-16 w-16 bg-gradient-to-br from-tajilabs-primary to-tajilabs-secondary rounded-2xl flex items-center justify-center shadow-tajilabs-lg">
-                <span className="text-white font-bold text-2xl">E</span>
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 font-sf-pro">Errorlytic</h1>
-                <p className="text-lg text-gray-600 font-sf-pro-text">by Tajilabs</p>
-              </div>
-            </div>
-            <p className="text-xl text-gray-700 font-sf-pro-text leading-relaxed">
-              Join thousands of automotive professionals using AI-powered diagnostics
-            </p>
-          </div>
+    <PublicLayout>
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        {isLoading && <LoadingSpinner />}
 
-          {/* Features */}
-          <div className="space-y-6">
-            <div className="flex items-start space-x-4">
-              <div className="h-12 w-12 bg-tajilabs-primary/10 rounded-xl flex items-center justify-center">
-                <StarIcon className="h-6 w-6 text-tajilabs-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 font-sf-pro">AI-Powered Analysis</h3>
-                <p className="text-gray-600 font-sf-pro-text">Get instant, accurate error code interpretations</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="h-12 w-12 bg-tajilabs-primary/10 rounded-xl flex items-center justify-center">
-                <UserIcon className="h-6 w-6 text-tajilabs-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 font-sf-pro">Multi-Role Support</h3>
-                <p className="text-gray-600 font-sf-pro-text">Perfect for individuals, garages, and insurers</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="h-12 w-12 bg-tajilabs-primary/10 rounded-xl flex items-center justify-center">
-                <ShieldCheckIcon className="h-6 w-6 text-tajilabs-primary" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 font-sf-pro">Enterprise Security</h3>
-                <p className="text-gray-600 font-sf-pro-text">Bank-level security for your diagnostic data</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Benefits */}
-          <div className="bg-gradient-to-r from-tajilabs-primary/5 to-tajilabs-secondary/5 rounded-2xl p-6 border border-tajilabs-primary/10">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 font-sf-pro">Why Choose Errorlytic?</h3>
-            <ul className="space-y-2 text-gray-700 font-sf-pro-text">
-              <li className="flex items-center space-x-2">
-                <div className="h-2 w-2 bg-tajilabs-primary rounded-full"></div>
-                <span>Free trial with no credit card required</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <div className="h-2 w-2 bg-tajilabs-primary rounded-full"></div>
-                <span>24/7 customer support</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <div className="h-2 w-2 bg-tajilabs-primary rounded-full"></div>
-                <span>Multi-currency billing support</span>
-              </li>
-            </ul>
-          </div>
-        </motion.div>
-
-        {/* Right Side - Registration Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="w-full max-w-md mx-auto"
-        >
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-tajilabs-lg border border-gray-200/50 p-8">
-            {/* Mobile Logo */}
-            <div className="lg:hidden text-center mb-8">
-              <div className="inline-flex items-center space-x-3">
-                <div className="h-12 w-12 bg-gradient-to-br from-tajilabs-primary to-tajilabs-secondary rounded-xl flex items-center justify-center shadow-tajilabs">
-                  <span className="text-white font-bold text-xl">E</span>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 font-sf-pro">Errorlytic</h1>
-                  <p className="text-sm text-gray-600 font-sf-pro-text">by Tajilabs</p>
-                </div>
-              </div>
-            </div>
-
+        <div className="w-full max-w-md">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800 p-8"
+          >
+            {/* Header */}
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 font-sf-pro mb-2">Create Account</h2>
-              <p className="text-gray-600 font-sf-pro-text">Join Errorlytic and start diagnosing smarter</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
+              <p className="text-gray-400">Join Errorlytic and start diagnosing smarter</p>
             </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            {!showEmailForm ? (
+              <div className="space-y-6">
+                {/* Google Sign Up Button */}
+                <button
+                  onClick={handleGoogleSignUp}
+                  disabled={isGoogleLoading}
+                  className="w-full flex items-center justify-center space-x-3 px-6 py-3.5 bg-white hover:bg-gray-100 text-gray-800 rounded-full font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGoogleLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Creating account...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                        <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+                        <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                        <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                      </svg>
+                      <span>Continue with Google</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center">
+                  <div className="flex-1 border-t border-gray-700"></div>
+                  <span className="px-4 text-sm text-gray-500">or</span>
+                  <div className="flex-1 border-t border-gray-700"></div>
+                </div>
+
+                {/* Email Option */}
+                <button
+                  onClick={() => setShowEmailForm(true)}
+                  className="w-full px-6 py-3.5 bg-transparent border border-gray-700 hover:border-gray-600 text-white rounded-full font-medium transition-all duration-300 hover:bg-gray-800/50"
+                >
+                  Continue with Email
+                </button>
+              </div>
+            ) : (
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
               {/* Name Field */}
               <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2 font-sf-pro-text">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
                   Full Name
                 </label>
                 <input
                   {...register('name')}
                   type="text"
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-tajilabs-primary focus:border-tajilabs-primary transition-all duration-200 text-gray-900 placeholder-gray-500 font-sf-pro-text"
+                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent transition-all"
                   placeholder="Enter your full name"
                 />
                 {errors.name && (
-                  <p className="mt-2 text-sm text-red-600 font-sf-pro-text">{errors.name.message}</p>
+                  <p className="mt-1.5 text-sm text-red-400">{errors.name.message}</p>
                 )}
               </div>
 
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2 font-sf-pro-text">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                   Email Address
                 </label>
                 <input
                   {...register('email')}
                   type="email"
                   autoComplete="email"
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-tajilabs-primary focus:border-tajilabs-primary transition-all duration-200 text-gray-900 placeholder-gray-500 font-sf-pro-text"
+                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent transition-all"
                   placeholder="Enter your email"
                 />
                 {errors.email && (
-                  <p className="mt-2 text-sm text-red-600 font-sf-pro-text">{errors.email.message}</p>
+                  <p className="mt-1.5 text-sm text-red-400">{errors.email.message}</p>
                 )}
               </div>
 
               {/* Phone Field */}
               <div>
-                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2 font-sf-pro-text">
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
                   Phone Number
                 </label>
                 <input
                   {...register('phone')}
                   type="tel"
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-tajilabs-primary focus:border-tajilabs-primary transition-all duration-200 text-gray-900 placeholder-gray-500 font-sf-pro-text"
+                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent transition-all"
                   placeholder="Enter your phone number"
                 />
                 {errors.phone && (
-                  <p className="mt-2 text-sm text-red-600 font-sf-pro-text">{errors.phone.message}</p>
+                  <p className="mt-1.5 text-sm text-red-400">{errors.phone.message}</p>
                 )}
               </div>
 
               {/* Role Selection */}
               <div>
-                <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2 font-sf-pro-text">
+                <label htmlFor="role" className="block text-sm font-medium text-gray-300 mb-2">
                   Account Type
                 </label>
                 <select
                   {...register('role')}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-tajilabs-primary focus:border-tajilabs-primary transition-all duration-200 text-gray-900 font-sf-pro-text"
+                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent transition-all"
                 >
-                  <option value="">Select your role</option>
+                  <option value="" className="bg-gray-900">Select your role</option>
                   {roles.map((role) => (
-                    <option key={role.value} value={role.value}>
+                    <option key={role.value} value={role.value} className="bg-gray-900">
                       {role.label}
                     </option>
                   ))}
                 </select>
                 {errors.role && (
-                  <p className="mt-2 text-sm text-red-600 font-sf-pro-text">{errors.role.message}</p>
+                  <p className="mt-1.5 text-sm text-red-400">{errors.role.message}</p>
                 )}
               </div>
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2 font-sf-pro-text">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                   Password
                 </label>
                 <div className="relative">
                   <input
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
-                    className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-tajilabs-primary focus:border-tajilabs-primary transition-all duration-200 text-gray-900 placeholder-gray-500 font-sf-pro-text"
+                    className="w-full px-4 py-3 pr-12 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent transition-all"
                     placeholder="Create a password"
                   />
                   <button
@@ -263,27 +293,27 @@ const RegisterPage: React.FC = () => {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                      <EyeSlashIcon className="h-5 w-5 text-gray-500 hover:text-gray-300 transition-colors" />
                     ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                      <EyeIcon className="h-5 w-5 text-gray-500 hover:text-gray-300 transition-colors" />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-2 text-sm text-red-600 font-sf-pro-text">{errors.password.message}</p>
+                  <p className="mt-1.5 text-sm text-red-400">{errors.password.message}</p>
                 )}
               </div>
 
               {/* Confirm Password Field */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2 font-sf-pro-text">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                   Confirm Password
                 </label>
                 <div className="relative">
                   <input
                     {...register('confirmPassword')}
                     type={showConfirmPassword ? 'text' : 'password'}
-                    className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-tajilabs-primary focus:border-tajilabs-primary transition-all duration-200 text-gray-900 placeholder-gray-500 font-sf-pro-text"
+                    className="w-full px-4 py-3 pr-12 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent transition-all"
                     placeholder="Confirm your password"
                   />
                   <button
@@ -292,14 +322,14 @@ const RegisterPage: React.FC = () => {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                      <EyeSlashIcon className="h-5 w-5 text-gray-500 hover:text-gray-300 transition-colors" />
                     ) : (
-                      <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
+                      <EyeIcon className="h-5 w-5 text-gray-500 hover:text-gray-300 transition-colors" />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-2 text-sm text-red-600 font-sf-pro-text">{errors.confirmPassword.message}</p>
+                  <p className="mt-1.5 text-sm text-red-400">{errors.confirmPassword.message}</p>
                 )}
               </div>
 
@@ -310,17 +340,17 @@ const RegisterPage: React.FC = () => {
                   name="terms"
                   type="checkbox"
                   required
-                  className="h-4 w-4 text-tajilabs-primary focus:ring-tajilabs-primary border-gray-300 rounded mt-1"
+                  className="h-4 w-4 mt-0.5 bg-gray-800 border-gray-700 rounded text-[#EA6A47] focus:ring-[#EA6A47] focus:ring-offset-gray-900"
                 />
-                <label htmlFor="terms" className="ml-2 block text-sm text-gray-700 font-sf-pro-text">
+                <label htmlFor="terms" className="ml-2 block text-sm text-gray-400">
                   I agree to the{' '}
-                  <a href="#" className="font-semibold text-tajilabs-primary hover:text-tajilabs-secondary transition-colors">
+                  <Link to="/terms-of-service" className="text-[#EA6A47] hover:text-[#d85a37] transition-colors">
                     Terms of Service
-                  </a>{' '}
+                  </Link>{' '}
                   and{' '}
-                  <a href="#" className="font-semibold text-tajilabs-primary hover:text-tajilabs-secondary transition-colors">
+                  <Link to="/privacy-policy" className="text-[#EA6A47] hover:text-[#d85a37] transition-colors">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </label>
               </div>
 
@@ -330,7 +360,7 @@ const RegisterPage: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-tajilabs-primary to-tajilabs-secondary text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-tajilabs hover:shadow-tajilabs-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-sf-pro-text"
+                className="w-full bg-[#EA6A47] hover:bg-[#d85a37] text-white py-3.5 px-6 rounded-full font-medium text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -341,28 +371,30 @@ const RegisterPage: React.FC = () => {
                   'Create Account'
                 )}
               </motion.button>
+
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(false)}
+                className="w-full text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Back to other options
+              </button>
             </form>
+            )}
 
             {/* Sign In Link */}
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600 font-sf-pro-text">
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-400">
                 Already have an account?{' '}
-                <a href="/login" className="font-semibold text-tajilabs-primary hover:text-tajilabs-secondary transition-colors">
+                <Link to="/login" className="text-[#EA6A47] hover:text-[#d85a37] font-medium transition-colors">
                   Sign in here
-                </a>
+                </Link>
               </p>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center mt-8">
-            <p className="text-xs text-gray-500 font-sf-pro-text">
-              © 2024 Tajilabs. All rights reserved.
-            </p>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 };
 

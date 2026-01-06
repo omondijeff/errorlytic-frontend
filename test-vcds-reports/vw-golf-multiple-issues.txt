@@ -1,0 +1,145 @@
+VCDS Version: Release 22.3.0.0 (x64)
+Data version: 20220331 DS303.0
+
+VIN: WVWZZZ1KZDW123456    Mileage: 87650km-54479mi
+Vehicle: VW Golf VII (5G1) 2.0 TDI
+Engine Code: CUNA
+Transmission: 6-Speed Manual
+
+-------------------------------------------------------------------------------
+Address 01: Engine (J623)
+Control Module Part Number: 04L 906 026 KL    HW: 04L 997 026 N
+Component: R4 2.0l TDI EU6  H53 1503
+Software Coding: 070F0F0E01000160
+Shop #: WSC 00066 000 00000
+VCID: 3E4A1BD09ED6D79E1F9-806B
+
+5 Faults Found:
+000008 - Glow Plug Cylinder 1 (Q10)
+         P0381 - 001 - Upper Limit Exceeded - Intermittent
+         Freeze Frame:
+            Fault Status: 01100001
+            Fault Priority: 5
+            Fault Frequency: 12
+            Reset counter: 255
+            Mileage: 87650 km
+            Time Indication: 0
+            Date: 2026.01.02
+            Time: 08:34:12
+
+000759 - Engine Coolant Temperature Sensor (G62)
+         P018F - 002 - Implausible Signal - Confirmed
+         Freeze Frame:
+            Fault Status: 11100010
+            Fault Priority: 4
+            Fault Frequency: 45
+            Mileage: 87420 km
+            Engine Speed: 2456 /min
+            Load: 75.5 %
+            Temperature: 112.5 °C
+
+018639 - Turbocharger Boost Control Valve (N75)
+         P2563 - 004 - Open Circuit - Intermittent
+         Freeze Frame:
+            Fault Status: 01100100
+            Fault Priority: 6
+            Fault Frequency: 3
+            Reset counter: 192
+
+016489 - Mass Air Flow Sensor (G70)
+         P0102 - 001 - Signal Too Low - Confirmed
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 5
+            Fault Frequency: 28
+            Mileage: 87230 km
+            Engine Speed: 850 /min
+            Load: 15.7 %
+
+000545 - Intake Air Temperature Sensor (G42)
+         P0113 - 002 - Signal Too High - Intermittent
+         Freeze Frame:
+            Fault Status: 01100010
+            Fault Priority: 7
+            Fault Frequency: 8
+
+Readiness: 0110 0101
+
+-------------------------------------------------------------------------------
+Address 02: Transmission
+Control Module Part Number: 0AM 927 769 E
+Component: GS 62104 2015
+Software Coding: 001B0300
+VCID: 79BAE3909FE2CFD6A99-806E
+
+2 Faults Found:
+P1776 - Solenoid EPC: Signal Outside Specific Range
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 4
+            Fault Frequency: 18
+            Mileage: 86890 km
+            Gear: 3
+            Speed: 62 km/h
+
+P0841 - Transmission Fluid Pressure Sensor/Switch A - Range/Performance
+         Freeze Frame:
+            Fault Status: 01100001
+            Fault Priority: 6
+            Fault Frequency: 5
+
+-------------------------------------------------------------------------------
+Address 03: ABS Brakes (J104)
+Control Module Part Number: 5Q0 907 379 G
+Component: ESP MK60-XI  H06 0020
+Software Coding: 16911003012E1812000000
+VCID: 2D46B5CC972E97EE339-8068
+
+1 Fault Found:
+C1569 - ABS Hydraulic Pump Motor: Malfunction / Open Circuit
+         Freeze Frame:
+            Fault Status: 01100001
+            Fault Priority: 2
+            Fault Frequency: 2
+            Mileage: 87640 km
+            Speed: 0 km/h
+
+-------------------------------------------------------------------------------
+Address 15: Airbag (J234)
+Control Module Part Number: 5Q0 959 655 BM
+Component: 1T0 Airbag  H04 0410
+Software Coding: 003A1800
+VCID: 3866AD809F96FFF6E5D-8067
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 17: Instrument Cluster (J285)
+Control Module Part Number: 5G0 920 790 E
+Component: PQ-MQB-TACHO H33 0440
+Software Coding: 170F0100
+VCID: 76A6D770977A8F06B5D-8066
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 19: CAN Gateway (J533)
+Control Module Part Number: 5Q0 907 530 Q
+Component: GW MQB  H14 3107
+Software Coding: 5D034C0E021F091201
+VCID: 3652A388961EF736279-8065
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 44: Steering Assist (J500)
+Control Module Part Number: 5Q0 909 144 R
+Component: EPS_ZFLS MQB H04 2031
+Software Coding: 0D1A061904
+VCID: 264CAE5C9EA637BEC4D-8064
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+
+End of VCDS Report

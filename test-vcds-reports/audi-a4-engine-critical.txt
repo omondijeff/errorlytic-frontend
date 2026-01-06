@@ -1,0 +1,180 @@
+VCDS Version: Release 22.3.0.0 (x64)
+Data version: 20220331 DS303.0
+
+VIN: WAUZZZ8K8DA234567    Mileage: 142350km-88467mi
+Vehicle: Audi A4 B9 (8W2) 2.0 TFSI quattro
+Engine Code: DKZA
+Transmission: 7-Speed S-Tronic
+
+-------------------------------------------------------------------------------
+Address 01: Engine (J623)
+Control Module Part Number: 06L 906 026 CH    HW: 06L 997 026 K
+Component: R4 2.0L TFSI EA888  H12 2301
+Software Coding: 0B170F1E05000160
+Shop #: WSC 00187 000 12345
+VCID: 7D9E35B0A2C6EFD6B87-8071
+
+8 Faults Found:
+000772 - Engine Speed Sensor (G28)
+         P0321 - 004 - Signal Implausible - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 2
+            Fault Frequency: 156
+            Reset counter: 255
+            Mileage: 141890 km
+            Time Indication: 0
+            Date: 2026.01.01
+            Time: 14:23:45
+            Engine Speed: 3240 /min
+            Load: 89.5 %
+            Temperature: 98.5 °C
+            Speed: 105 km/h
+
+001089 - Camshaft Position Sensor Bank 1 (G40)
+         P0340 - 008 - No Signal - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 1
+            Fault Frequency: 89
+            Mileage: 142120 km
+            Engine Speed: 0 /min
+            Temperature: 92.0 °C
+
+017879 - Fuel Pressure Sensor (G247)
+         P0192 - 001 - Signal Too Low - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 3
+            Fault Frequency: 67
+            Mileage: 141950 km
+            Fuel Rail Pressure: 12.5 bar
+            Target Pressure: 120.0 bar
+            Engine Speed: 2890 /min
+
+000532 - Supply Voltage B+
+         P0562 - 001 - Voltage Too Low - Confirmed
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 4
+            Fault Frequency: 34
+            Voltage: 10.5 V
+            Battery Temperature: 28 °C
+
+018624 - Ignition Coil 1 with Power Output Stage (N70)
+         P0351 - 004 - Open Circuit - Intermittent
+         Freeze Frame:
+            Fault Status: 01100100
+            Fault Priority: 5
+            Fault Frequency: 12
+
+018625 - Ignition Coil 3 with Power Output Stage (N291)
+         P0353 - 004 - Open Circuit - Intermittent
+         Freeze Frame:
+            Fault Status: 01100100
+            Fault Priority: 5
+            Fault Frequency: 8
+
+000665 - Knock Sensor 1 (G61)
+         P0327 - 008 - Signal Too Low - Intermittent
+         Freeze Frame:
+            Fault Status: 01101000
+            Fault Priority: 6
+            Fault Frequency: 15
+            Engine Speed: 3450 /min
+            Load: 92.5 %
+
+017956 - High Pressure Fuel Pump (N276)
+         P2293 - 001 - Mechanical Malfunction - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 2
+            Fault Frequency: 78
+            Mileage: 141890 km
+            Fuel Pressure: 15.2 bar
+            Target Pressure: 120.0 bar
+
+Readiness: 0010 0101
+MIL Status: ON
+
+-------------------------------------------------------------------------------
+Address 02: Transmission
+Control Module Part Number: 0D9 927 769 BH
+Component: DQ381 7FSG  2215
+Software Coding: 002F0600
+VCID: 63AE27B49EA6DFD6B99-8072
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 03: ABS Brakes (J104)
+Control Module Part Number: 8W0 907 379 K
+Component: ESP BOSCH MK100  H12 0045
+Software Coding: 172A1D15052E2822000000
+VCID: 4B7A9DCC872A77EE449-8073
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 08: Air Conditioning (J255)
+Control Module Part Number: 8W0 907 044 AH
+Component: CLIMATRONiC  H22 0890
+Software Coding: 0000001002
+VCID: 2E8AB3889F1EF736389-8074
+
+1 Fault Found:
+B1319 - Refrigerant Pressure Sensor (G395): Signal Too High
+         Freeze Frame:
+            Fault Status: 11100010
+            Fault Priority: 7
+            Fault Frequency: 5
+            Pressure: 34.5 bar
+
+-------------------------------------------------------------------------------
+Address 15: Airbag (J234)
+Control Module Part Number: 8W0 959 655 CS
+Component: 1T0 Airbag  H18 0612
+Software Coding: 003F2400
+VCID: 5F8AAD909F96EFF6E6D-8075
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 17: Instrument Cluster (J285)
+Control Module Part Number: 8W5 920 790 G
+Component: MLBevo-VCP  H45 0890
+Software Coding: 270F0500
+VCID: 79BED790877A9F06C5D-8076
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 19: CAN Gateway (J533)
+Control Module Part Number: 8W0 907 530 BL
+Component: GW MLB  H28 4208
+Software Coding: 7E154C2F131F191401
+VCID: 4978B388A61EF736479-8077
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 42: Door Electronics Driver (J386)
+Control Module Part Number: 8W0 959 801 E
+Component: MLBevo TFS  H16 2134
+Software Coding: 000F0A0301
+VCID: 3E7CAE7C8EA647BED4D-8078
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 44: Steering Assist (J500)
+Control Module Part Number: 8W0 909 144 H
+Component: EPS_ZF MLB H12 3145
+Software Coding: 0E2B081A06
+VCID: 589EAE9C7EA657BE04D-8079
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+
+End of VCDS Report

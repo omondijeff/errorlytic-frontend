@@ -1,0 +1,250 @@
+VCDS Version: Release 22.3.0.0 (x64)
+Data version: 20220331 DS303.0
+
+VIN: VSSZZZ5FZHB456789    Mileage: 112890km-70145mi
+Vehicle: Seat Leon III (5F1) 1.4 TSI ACT
+Engine Code: CZEA
+Transmission: 7-Speed DSG
+
+-------------------------------------------------------------------------------
+Address 01: Engine (J623)
+Control Module Part Number: 04E 906 027 DM    HW: 04E 997 027 E
+Component: R4 1.4L TSI ACT  H18 2405
+Software Coding: 091A0F1D04000160
+Shop #: WSC 00456 000 23456
+VCID: 5C7E47D0A2D6EFD7B97-8093
+
+12 Faults Found:
+000768 - Random/Multiple Cylinder Misfire Detected
+         P0300 - 000 - - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 1
+            Fault Frequency: 234
+            Reset counter: 255
+            Mileage: 112340 km
+            Time Indication: 0
+            Date: 2025.12.28
+            Time: 18:45:12
+            Engine Speed: 1890 /min
+            Load: 67.5 %
+            Temperature: 95.0 °C
+            Speed: 78 km/h
+
+000769 - Cylinder 1 Misfire Detected
+         P0301 - 000 - - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 1
+            Fault Frequency: 189
+            Mileage: 112340 km
+
+000771 - Cylinder 3 Misfire Detected
+         P0303 - 000 - - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 1
+            Fault Frequency: 167
+
+018624 - Ignition Coil 1 with Power Output Stage (N70)
+         P0351 - 008 - Short to Ground - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 2
+            Fault Frequency: 156
+            Mileage: 112450 km
+            Engine Speed: 2340 /min
+            Load: 78.5 %
+
+018626 - Ignition Coil 3 with Power Output Stage (N291)
+         P0353 - 008 - Short to Ground - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 2
+            Fault Frequency: 142
+
+001089 - Camshaft Position Sensor Bank 1 (G40)
+         P0340 - 004 - Signal Implausible - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 2
+            Fault Frequency: 98
+            Mileage: 112680 km
+            Engine Speed: 2890 /min
+
+000665 - Knock Sensor 1 (G61)
+         P0327 - 008 - Signal Too Low - Confirmed
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 3
+            Fault Frequency: 87
+            Engine Speed: 3120 /min
+            Load: 91.0 %
+
+017879 - Fuel Pressure Sensor (G247)
+         P0192 - 008 - Signal Implausible - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 2
+            Fault Frequency: 123
+            Mileage: 112560 km
+            Fuel Rail Pressure: 8.2 bar
+            Target Pressure: 110.0 bar
+
+018639 - Turbocharger Boost Control Valve (N75)
+         P2563 - 008 - Short to Ground - Confirmed
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 3
+            Fault Frequency: 67
+
+000011 - Fuel Metering Control
+         P0170 - 001 - System Too Lean - Confirmed - MIL ON
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 2
+            Fault Frequency: 178
+            Mileage: 112230 km
+            Lambda: 1.45
+            Target Lambda: 1.00
+
+001090 - Crankshaft Position/Engine Speed Sensor (G28)
+         P0335 - 008 - No Signal - Intermittent
+         Freeze Frame:
+            Fault Status: 01101000
+            Fault Priority: 1
+            Fault Frequency: 34
+
+000532 - Supply Voltage B+
+         P0562 - 001 - Voltage Too Low - Confirmed
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 4
+            Fault Frequency: 45
+            Voltage: 11.2 V
+
+Readiness: 0000 0001
+MIL Status: ON
+
+-------------------------------------------------------------------------------
+Address 02: Transmission
+Control Module Part Number: 0CW 927 769 BK
+Component: DQ200 7FSG  2512
+Software Coding: 003A0800
+VCID: 7DBEF7B49EB6DFD7C99-8094
+
+4 Faults Found:
+P189C - Mechatronic Position Sensor: Signal Outside Specific Range
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 2
+            Fault Frequency: 67
+            Mileage: 112450 km
+            Gear: 5
+            Speed: 89 km/h
+            ATF Temp: 112 °C
+
+P0729 - Gear 6 Incorrect Ratio
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 3
+            Fault Frequency: 45
+            Gear: 6
+            Speed: 105 km/h
+
+P17F4 - Clutch 1 - Adaptation Limit Reached
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 2
+            Fault Frequency: 89
+
+P0711 - Transmission Fluid Temperature Sensor (G93) - Range/Performance
+         Freeze Frame:
+            Fault Status: 01100100
+            Fault Priority: 5
+            Fault Frequency: 23
+            ATF Temp: 125 °C
+
+-------------------------------------------------------------------------------
+Address 03: ABS Brakes (J104)
+Control Module Part Number: 5Q0 907 379 BM
+Component: ESP MK60-XI  H16 0067
+Software Coding: 18912D14062E3022000000
+VCID: 5C8EBDDC972E97FF559-8095
+
+2 Faults Found:
+C1569 - ABS Hydraulic Pump Motor: Malfunction
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 1
+            Fault Frequency: 34
+            Mileage: 112780 km
+            Speed: 45 km/h
+
+C1201 - ESP Control Module: Internal Malfunction
+         Freeze Frame:
+            Fault Status: 01100000
+            Fault Priority: 2
+            Fault Frequency: 12
+
+-------------------------------------------------------------------------------
+Address 08: Air Conditioning (J255)
+Control Module Part Number: 5Q0 907 044 CG
+Component: CLIMATRONiC  H19 0912
+Software Coding: 0000001202
+VCID: 6F9AB4989F3EF756489-8096
+
+1 Fault Found:
+B1318 - Refrigerant Pressure Sensor (G395): Signal Too Low
+         Freeze Frame:
+            Fault Status: 11100001
+            Fault Priority: 6
+            Fault Frequency: 8
+            Pressure: 0.8 bar
+
+-------------------------------------------------------------------------------
+Address 15: Airbag (J234)
+Control Module Part Number: 5Q0 959 655 CN
+Component: 1T0 Airbag  H12 0634
+Software Coding: 003E2200
+VCID: 7DAABE909F96FFF8F6D-8097
+
+1 Fault Found:
+01217 - Airbag Igniter 1, Driver Side (N95): Resistance Too High
+         B0013 - 004 - Open Circuit
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 1
+            Fault Frequency: 1
+            Resistance: >10 Ohm
+
+-------------------------------------------------------------------------------
+Address 17: Instrument Cluster (J285)
+Control Module Part Number: 5F0 920 790 F
+Component: PQ-MQB-TACHO H34 0678
+Software Coding: 190F0300
+VCID: 86BED990977A9F08C5D-8098
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 19: CAN Gateway (J533)
+Control Module Part Number: 5Q0 907 530 BM
+Component: GW MQB  H22 3812
+Software Coding: 7E254C2F231F191701
+VCID: 5D89B498A63EF756689-8099
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 44: Steering Assist (J500)
+Control Module Part Number: 5Q0 909 144 T
+Component: EPS_ZFLS MQB H12 2467
+Software Coding: 0F2C071B05
+VCID: 79AEBF9C8FB657DF04D-8100
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+
+End of VCDS Report

@@ -1,0 +1,142 @@
+VCDS Version: Release 22.3.0.0 (x64)
+Data version: 20220331 DS303.0
+
+VIN: TMBJJ7NE5J2345678    Mileage: 45230km-28104mi
+Vehicle: Skoda Octavia III (5E5) 1.6 TDI
+Engine Code: DDYA
+Transmission: 6-Speed Manual
+
+-------------------------------------------------------------------------------
+Address 01: Engine (J623)
+Control Module Part Number: 04L 906 026 NL    HW: 04L 997 026 Q
+Component: R4 1.6l TDI EU6  H42 1802
+Software Coding: 060D0C0D02000160
+Shop #: WSC 00234 000 67890
+VCID: 2A5E1FD08ED6F79E2F9-8081
+
+2 Faults Found:
+000545 - Intake Air Temperature Sensor (G42)
+         P0113 - 001 - Signal Too High - Intermittent
+         Freeze Frame:
+            Fault Status: 01100001
+            Fault Priority: 7
+            Fault Frequency: 2
+            Reset counter: 255
+            Mileage: 45180 km
+            Time Indication: 0
+            Date: 2026.01.03
+            Time: 06:15:22
+            Temperature: 95.5 °C
+            Ambient Temp: 25.0 °C
+
+001231 - Engine Coolant Over Temperature
+         P0217 - 000 - Warning - Intermittent
+         Freeze Frame:
+            Fault Status: 01100000
+            Fault Priority: 8
+            Fault Frequency: 1
+            Mileage: 45210 km
+            Engine Speed: 2150 /min
+            Load: 45.5 %
+            Temperature: 108.0 °C
+
+Readiness: 0111 0101
+
+-------------------------------------------------------------------------------
+Address 02: Transmission
+Control Module Part Number: 0AM 927 769 L
+Component: GS 62104 2018
+Software Coding: 001D0400
+VCID: 65BAEF909EE2DFD6C99-8082
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 03: ABS Brakes (J104)
+Control Module Part Number: 5Q0 907 379 AK
+Component: ESP MK60-XI  H12 0035
+Software Coding: 17911D04052E2012000000
+VCID: 3A5EB7CC872E87EE449-8083
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 08: Air Conditioning (J255)
+Control Module Part Number: 5Q0 907 044 BN
+Component: CLIMATRONiC  H15 0678
+Software Coding: 0000000802
+VCID: 4B8AB3989F2EF746389-8084
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 15: Airbag (J234)
+Control Module Part Number: 5Q0 959 655 BT
+Component: 1T0 Airbag  H08 0520
+Software Coding: 003C2000
+VCID: 6C9AAE909F96FFF7F6D-8085
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 17: Instrument Cluster (J285)
+Control Module Part Number: 5E0 920 790 M
+Component: PQ-MQB-TACHO H28 0560
+Software Coding: 180F0200
+VCID: 73AED890977A8F07C5D-8086
+
+1 Fault Found:
+U110600 - Local CAN Bus: Missing Message from Gateway
+         Freeze Frame:
+            Fault Status: 01100000
+            Fault Priority: 9
+            Fault Frequency: 1
+
+-------------------------------------------------------------------------------
+Address 19: CAN Gateway (J533)
+Control Module Part Number: 5Q0 907 530 AQ
+Component: GW MQB  H18 3512
+Software Coding: 6D134C1E121F091501
+VCID: 4A78B498A62EF746589-8087
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 42: Door Electronics Driver (J386)
+Control Module Part Number: 5Q0 959 801 M
+Component: MQB TFS  H10 1945
+Software Coding: 000C0801
+VCID: 2E7CAF7C9EA647CED4D-8088
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 44: Steering Assist (J500)
+Control Module Part Number: 5Q0 909 144 M
+Component: EPS_ZFLS MQB H08 2245
+Software Coding: 0E1B061A04
+VCID: 679EBE9C8EA657CE04D-8089
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 46: Central Module Comfort System (J393)
+Control Module Part Number: 5Q0 937 084 CK
+Component: KSG PQ46 MQB  H32 2512
+Software Coding: B21D090B420E1C0700000000
+VCID: 3A5E9DCC972E97FF449-8090
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 75: Telematics Communication Unit (R197)
+Control Module Part Number: 5G0 035 638 D
+Component: ONLINE  H14 1834
+Software Coding: 030100
+VCID: 5B8AB3989F2EF746389-8091
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+
+End of VCDS Report

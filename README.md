@@ -102,8 +102,8 @@ docker-compose up -d
 
 - **Backend API**: [backend/README.md](backend/README.md)
 - **Frontend User Stories**: [docs/FRONTEND_USER_STORIES.md](docs/FRONTEND_USER_STORIES.md)
-- **API Documentation**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-- **Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
+- **API Documentation**: [http://localhost:7337/api-docs](http://localhost:7337/api-docs)
+- **Health Check**: [http://localhost:7337/health](http://localhost:7337/health)
 
 ---
 
@@ -172,11 +172,11 @@ docker-compose down
 
 | Service           | Port      | Description           |
 | ----------------- | --------- | --------------------- |
-| **app**           | 3002      | Main API application  |
-| **mongo**         | 27018     | MongoDB database      |
-| **mongo-express** | 9091      | MongoDB web interface |
-| **redis**         | 6381      | Redis cache           |
-| **minio**         | 9002/9003 | S3-compatible storage |
+| **app**           | 7337      | Main API application  |
+| **mongo**         | 13337     | MongoDB database      |
+| **mongo-express** | 8001      | MongoDB web interface |
+| **redis**         | 6969      | Redis cache           |
+| **minio**         | 8888/9999 | S3-compatible storage |
 
 ---
 
@@ -193,7 +193,7 @@ npm run test:coverage
 ### **API Testing**
 
 - **Postman Collection**: Available in `backend/` directory
-- **Swagger UI**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **Swagger UI**: [http://localhost:7337/api-docs](http://localhost:7337/api-docs)
 
 ---
 
@@ -264,8 +264,8 @@ npm run test:coverage
 
 ### **Getting Help**
 
-- **Documentation**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-- **Health Check**: [http://localhost:3000/health](http://localhost:3000/health)
+- **Documentation**: [http://localhost:7337/api-docs](http://localhost:7337/api-docs)
+- **Health Check**: [http://localhost:7337/health](http://localhost:7337/health)
 - **Issues**: Create GitHub issues for bugs and feature requests
 
 ---

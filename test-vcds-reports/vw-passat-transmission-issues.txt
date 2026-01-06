@@ -1,0 +1,216 @@
+VCDS Version: Release 22.3.0.0 (x64)
+Data version: 20220331 DS303.0
+
+VIN: WVWZZZ3CZHE567890    Mileage: 95470km-59324mi
+Vehicle: VW Passat B8 (3G2) 2.0 TDI 4Motion
+Engine Code: DFHA
+Transmission: 6-Speed DSG
+
+-------------------------------------------------------------------------------
+Address 01: Engine (J623)
+Control Module Part Number: 03L 906 022 RH    HW: 03L 997 022 M
+Component: R4 2.0l TDI EA288  H28 1912
+Software Coding: 0A1C0F1F06000160
+Shop #: WSC 00789 000 34567
+VCID: 3B6E29D09FE6EFD8BA7-8102
+
+1 Fault Found:
+000008 - Glow Plug Cylinder 4 (Q14)
+         P0384 - 002 - Short to Plus - Intermittent
+         Freeze Frame:
+            Fault Status: 01100010
+            Fault Priority: 6
+            Fault Frequency: 5
+            Reset counter: 178
+            Mileage: 95380 km
+            Time Indication: 0
+            Date: 2026.01.02
+            Time: 10:12:34
+
+Readiness: 0111 0101
+
+-------------------------------------------------------------------------------
+Address 02: Transmission
+Control Module Part Number: 02E 927 770 AK
+Component: DQ250-6FEJ  H42 3215
+Software Coding: 004D0B00
+VCID: 84CEF8B4AFD6DFD8D99-8103
+
+9 Faults Found:
+P189C - Mechatronic Position Sensor: Signal Implausible
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 2
+            Fault Frequency: 234
+            Mileage: 94890 km
+            Gear: 4
+            Speed: 67 km/h
+            ATF Temp: 98 °C
+            Input RPM: 2340
+
+P0732 - Gear 2 Incorrect Ratio
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 2
+            Fault Frequency: 156
+            Mileage: 95120 km
+            Gear: 2
+            Speed: 34 km/h
+            Engine Speed: 2890 /min
+            Gear Ratio: 2.87
+            Target Ratio: 3.18
+
+P0734 - Gear 4 Incorrect Ratio
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 2
+            Fault Frequency: 189
+            Gear: 4
+            Speed: 78 km/h
+            Gear Ratio: 1.32
+            Target Ratio: 1.41
+
+P0735 - Gear 5 Incorrect Ratio
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 2
+            Fault Frequency: 167
+            Gear: 5
+            Speed: 95 km/h
+
+P17F4 - Clutch 1 - Adaptation Limit Reached
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 1
+            Fault Frequency: 278
+            Mileage: 94560 km
+            ATF Temp: 102 °C
+            Adaptation Value: -12.5 mm
+
+P17F5 - Clutch 2 - Adaptation Limit Reached
+         Freeze Frame:
+            Fault Status: 11100000
+            Fault Priority: 1
+            Fault Frequency: 245
+            Mileage: 94670 km
+            ATF Temp: 105 °C
+            Adaptation Value: -11.8 mm
+
+P0841 - Transmission Fluid Pressure Sensor/Switch A - Range/Performance
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 3
+            Fault Frequency: 98
+            Pressure: 3.2 bar
+            Target Pressure: 12.5 bar
+
+P0711 - Transmission Fluid Temperature Sensor (G93) - Signal Implausible
+         Freeze Frame:
+            Fault Status: 11100100
+            Fault Priority: 4
+            Fault Frequency: 67
+            ATF Temp: 142 °C
+            Ambient Temp: 22 °C
+
+P1778 - Solenoid EPC: Open Circuit
+         Freeze Frame:
+            Fault Status: 11101000
+            Fault Priority: 2
+            Fault Frequency: 123
+            Mileage: 95230 km
+
+Readiness: 0001 0101
+
+-------------------------------------------------------------------------------
+Address 03: ABS Brakes (J104)
+Control Module Part Number: 3Q0 907 379 BN
+Component: ESP BOSCH MK100  H18 0089
+Software Coding: 192B2E16072E4022000000
+VCID: 6D9ABDEC982E97FF669-8104
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 08: Air Conditioning (J255)
+Control Module Part Number: 3G0 907 044 BH
+Component: CLIMATRONiC  H24 1012
+Software Coding: 0000001402
+VCID: 7EAAB4A89F4EF766589-8105
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 13: Adaptive Cruise Control (J428)
+Control Module Part Number: 3Q0 907 567 T
+Component: ACA MLB  H16 1834
+Software Coding: 0002010200
+VCID: 5B8AB3A89F3EF766489-8106
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 15: Airbag (J234)
+Control Module Part Number: 3Q0 959 655 BK
+Component: 1T0 Airbag  H14 0756
+Software Coding: 00412600
+VCID: 8EBABE909FA6FFF9F7D-8107
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 17: Instrument Cluster (J285)
+Control Module Part Number: 3G0 920 790 K
+Component: MLBevo-VCP  H38 0912
+Software Coding: 290F0600
+VCID: 92BEE990A78A9F09D5D-8108
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 19: CAN Gateway (J533)
+Control Module Part Number: 3Q0 907 530 CM
+Component: GW MLB  H32 4512
+Software Coding: 8F364C3F341F291801
+VCID: 6E99B5A8B64EF766789-8109
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 42: Door Electronics Driver (J386)
+Control Module Part Number: 3Q0 959 801 H
+Component: MLBevo TFS  H20 2378
+Software Coding: 000F0C0401
+VCID: 4B8CAF8C9FB657DF14D-8110
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 44: Steering Assist (J500)
+Control Module Part Number: 3Q0 909 144 K
+Component: EPS_ZF MLB H16 3489
+Software Coding: 0F3D091C07
+VCID: 8CAEBF9C9FC667EF14D-8111
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 46: Central Module Comfort System (J393)
+Control Module Part Number: 3Q0 937 084 BK
+Component: KSG MLB  H28 2834
+Software Coding: D32E1A0C530F2E0900000000
+VCID: 6D9EBDEC982E97FF669-8112
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+Address 5F: Information Electronics Control Module 1 (J794)
+Control Module Part Number: 3G0 035 044 F
+Component: MIB2 DEV MLB  H45 2312
+Software Coding: 020F000F011F0600
+VCID: 7EAAB4A89F4EF766589-8113
+
+No Fault Codes Found.
+
+-------------------------------------------------------------------------------
+
+End of VCDS Report
