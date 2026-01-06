@@ -1,0 +1,19 @@
+# robots.txt for Errorlytic
+# Allow all crawlers
+
+User-agent: *
+Allow: /
+
+# Disallow crawling of admin and user dashboard areas
+Disallow: /app/
+Disallow: /superadmin/
+Disallow: /login
+Disallow: /register
+
+# Allow crawling of public pages
+Allow: /
+Allow: /how-it-works
+Allow: /who-is-it-for
+
+# Sitemap location
+Sitemap: https://errorlytic.com/sitemap.xml
