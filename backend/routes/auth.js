@@ -9,6 +9,7 @@ const {
   requireRole,
   superadminMiddleware,
 } = require("../middleware/auth");
+const googleCalendarService = require("../services/googleCalendarService");
 
 const router = express.Router();
 
@@ -1031,6 +1032,38 @@ router.get("/orgs/:id", authMiddleware, async (req, res) => {
       detail: "An error occurred while fetching organization",
       status: 500,
     });
+  }
+});
+
+// Google Calendar Integration
+router.get("/google/calendar/url", authMiddleware, async (req, res) => {
+  try {
+    const url = googleCalendarService.generateAuthUrl(req.user._id);
+    res.json({ success: true, url });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.get("/google/calendar/callback", async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    await googleCalendarService.handleAuthCallback(code, state);
+    
+    // Redirect back to frontend bookings page
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:7337'}/app/bookings?calendar_connected=true`);
+  } catch (error) {
+    console.error("Calendar callback error:", error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:7337'}/app/bookings?error=calendar_connection_failed`);
+  }
+});
+
+router.post("/google/calendar/disconnect", authMiddleware, async (req, res) => {
+  try {
+    const result = await googleCalendarService.disconnectCalendar(req.user._id);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

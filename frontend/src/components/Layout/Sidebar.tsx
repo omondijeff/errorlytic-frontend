@@ -15,6 +15,7 @@ import {
   KeyIcon,
   BoltIcon,
   TagIcon,
+  CalendarIcon,
 } from '@heroicons/react/24/outline';
 import type { RootState } from '../../store';
 
@@ -27,9 +28,10 @@ const Sidebar: React.FC = () => {
       // Common routes
       { name: 'Dashboard', href: '/app/dashboard', icon: HomeIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
       { name: 'Reports', href: '/app/analysis', icon: DocumentTextIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
+      { name: 'Bookings', href: '/app/bookings', icon: CalendarIcon, roles: ['individual', 'garage_user', 'garage_admin'] },
 
-      // Credits for individual users
-      { name: 'Buy Credits', href: '/app/credits', icon: BoltIcon, roles: ['individual'] },
+      // Credits for individual and garage users
+      { name: 'Buy Credits', href: '/app/credits', icon: BoltIcon, roles: ['individual', 'garage_user', 'garage_admin'] },
 
       // Regular user management (garage/insurer admins)
       { name: 'Users', href: '/app/users', icon: UsersIcon, roles: ['garage_admin', 'insurer_admin'] },
@@ -62,16 +64,15 @@ const Sidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 py-8 space-y-1 overflow-y-auto">
-        {navigation.map((item, index) => (
+        {navigation.map((item) => (
           <React.Fragment key={item.name}>
             {item.divider && <div className="my-4 mx-8 border-t border-gray-200"></div>}
             <NavLink
               to={item.href}
               className={({ isActive }) =>
-                `flex items-center px-8 py-3 text-base font-medium transition-colors relative ${
-                  isActive
-                    ? 'text-[#EA6A47]'
-                    : 'text-gray-600 hover:text-gray-900'
+                `flex items-center px-8 py-3 text-base font-medium transition-colors relative ${isActive
+                  ? 'text-[#EA6A47]'
+                  : 'text-gray-600 hover:text-gray-900'
                 }`
               }
             >
