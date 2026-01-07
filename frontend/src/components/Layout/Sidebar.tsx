@@ -15,7 +15,7 @@ import {
   KeyIcon,
   BoltIcon,
   TagIcon,
-  CalendarIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import type { RootState } from '../../store';
 
@@ -28,7 +28,7 @@ const Sidebar: React.FC = () => {
       // Common routes
       { name: 'Dashboard', href: '/app/dashboard', icon: HomeIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
       { name: 'Reports', href: '/app/analysis', icon: DocumentTextIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
-      { name: 'Bookings', href: '/app/bookings', icon: CalendarIcon, roles: ['individual', 'garage_user', 'garage_admin'] },
+      { name: 'Bookings', href: '/app/bookings', icon: CalendarDaysIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
 
       // Credits for individual and garage users
       { name: 'Buy Credits', href: '/app/credits', icon: BoltIcon, roles: ['individual', 'garage_user', 'garage_admin'] },
