@@ -1,66 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useSelector } from 'react-redux';
+import ReactMarkdown from 'react-markdown';
 import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ShieldExclamationIcon,
   ClipboardDocumentListIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import api from '../../services/apiClient';
-
-interface DTC {
-  code: string;
-  description: string;
-  status: string;
-}
-
-interface AnalysisSummary {
-  overview: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  totalErrors: number;
-  criticalErrors: number;
-  estimatedCost: number;
-}
-
-interface VehicleDetails {
-  _id?: string;
-  id?: string;
-  plate: string;
-  make: string;
-  model: string;
-  year: number;
-  ownerInfo?: {
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    phone?: string;
-  };
-}
-
-interface AnalysisData {
-  _id: string;
-  dtcs: DTC[];
-  summary: AnalysisSummary;
-  causes: string[];
-  recommendations: string[];
-  aiInsights?: {
-    assessment: string;
-    model: string;
-  };
-  vehicleId: VehicleDetails;
-  vehicleInfo?: {
-    mileage?: number;
-    mileageUnit?: string;
-  };
-}
+import type { RootState } from '../../store';
+import type { AnalysisData, VehicleDetails } from '../../types/analysis';
+import GarageQuotationTab from './components/GarageQuotationTab';
 
 const DiagnosticSummaryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
-  const [activeSection, setActiveSection] = useState<'dtcs' | 'ai' | 'recommendations'>('dtcs');
+  const [activeSection, setActiveSection] = useState<'dtcs' | 'ai' | 'recommendations' | 'garage-quotation'>('dtcs');
+  const { user } = useSelector((state: RootState) => state.auth);
+  const isGarageUser = user?.role === 'garage_user' || user?.role === 'garage_admin';
   const [vehicleImage, setVehicleImage] = useState<string | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
 
@@ -270,34 +231,43 @@ const DiagnosticSummaryPage: React.FC = () => {
           <div className="flex space-x-8">
             <button
               onClick={() => setActiveSection('dtcs')}
-              className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${
-                activeSection === 'dtcs'
-                  ? 'border-[#EA6A47] text-[#EA6A47]'
-                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-              }`}
+              className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${activeSection === 'dtcs'
+                ? 'border-[#EA6A47] text-[#EA6A47]'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
             >
               Error Codes ({dtcs.length})
             </button>
             <button
               onClick={() => setActiveSection('ai')}
-              className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${
-                activeSection === 'ai'
-                  ? 'border-[#EA6A47] text-[#EA6A47]'
-                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-              }`}
+              className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${activeSection === 'ai'
+                ? 'border-[#EA6A47] text-[#EA6A47]'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
             >
               AI Analysis
             </button>
             <button
               onClick={() => setActiveSection('recommendations')}
-              className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${
-                activeSection === 'recommendations'
-                  ? 'border-[#EA6A47] text-[#EA6A47]'
-                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-              }`}
+              className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${activeSection === 'recommendations'
+                ? 'border-[#EA6A47] text-[#EA6A47]'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
             >
               Recommendations ({recommendations.length})
             </button>
+            {isGarageUser && (
+              <button
+                onClick={() => setActiveSection('garage-quotation')}
+                className={`py-4 text-sm font-semibold border-b-2 transition-all duration-200 ${activeSection === 'garage-quotation'
+                  ? 'border-[#EA6A47] text-[#EA6A47]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                  }`}
+              >
+                <DocumentTextIcon className="h-4 w-4 inline-block mr-1" />
+                Garage Quotation ({dtcs.length})
+              </button>
+            )}
           </div>
         </div>
 
@@ -324,9 +294,8 @@ const DiagnosticSummaryPage: React.FC = () => {
                         </td>
                         <td className="py-4 px-4 text-sm text-gray-900">{dtc.description}</td>
                         <td className="py-4 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            dtc.status === 'active' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${dtc.status === 'active' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
                             {dtc.status}
                           </span>
                         </td>
@@ -350,10 +319,8 @@ const DiagnosticSummaryPage: React.FC = () => {
                   Powered by {aiInsights.model}
                 </span>
               </div>
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200 shadow-sm">
-                <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 leading-relaxed">
-                  {aiInsights.assessment}
-                </pre>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border border-gray-200 shadow-sm prose prose-sm max-w-none">
+                <ReactMarkdown>{aiInsights.assessment}</ReactMarkdown>
               </div>
             </div>
           )}
@@ -411,6 +378,15 @@ const DiagnosticSummaryPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Garage Quotation Section */}
+          {activeSection === 'garage-quotation' && isGarageUser && (
+            <GarageQuotationTab
+              dtcs={dtcs}
+              analysisId={id!}
+              vehicle={vehicle}
+            />
           )}
         </div>
       </div>

@@ -7,7 +7,6 @@ import {
   PencilIcon,
   CheckIcon,
   XMarkIcon,
-  TagIcon,
   BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -203,9 +202,8 @@ const PricingManagementPage: React.FC = () => {
           {creditPacks.map((pack) => (
             <div
               key={pack.type}
-              className={`relative border-2 rounded-xl p-5 ${
-                pack.popular ? 'border-[#EA6A47] bg-[#EA6A47]/5' : 'border-gray-200'
-              }`}
+              className={`relative border-2 rounded-xl p-5 ${pack.popular ? 'border-[#EA6A47] bg-[#EA6A47]/5' : 'border-gray-200'
+                }`}
             >
               {pack.popular && (
                 <span className="absolute -top-3 left-4 bg-[#EA6A47] text-white text-xs font-bold px-2 py-1 rounded">
@@ -330,9 +328,8 @@ const PricingManagementPage: React.FC = () => {
           {orgPlans.map((plan) => (
             <div
               key={plan.type}
-              className={`border-2 rounded-xl p-5 ${
-                plan.type === 'enterprise' ? 'border-purple-300 bg-purple-50/50' : 'border-gray-200'
-              }`}
+              className={`border-2 rounded-xl p-5 ${plan.type === 'enterprise' ? 'border-purple-300 bg-purple-50/50' : 'border-gray-200'
+                }`}
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>

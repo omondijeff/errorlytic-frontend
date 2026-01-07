@@ -1,8 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
-interface ModernButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ModernButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'gradient';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
@@ -110,9 +110,9 @@ const ModernButton: React.FC<ModernButtonProps> = ({
         {icon && iconPosition === 'left' && (
           <span className="mr-2">{icon}</span>
         )}
-        
-        {children}
-        
+
+        {children as any}
+
         {icon && iconPosition === 'right' && (
           <span className="ml-2">{icon}</span>
         )}

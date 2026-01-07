@@ -45,7 +45,7 @@ const LandingPage: React.FC = () => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: [0.6, 0.01, 0.05, 0.95],
+        ease: [0.6, 0.01, 0.05, 0.95] as const,
       },
     },
   };
@@ -65,79 +65,79 @@ const LandingPage: React.FC = () => {
         structuredData={structuredData}
       />
       <PublicLayout>
-      {/* Hero Section - Matching Figma Design Exactly */}
-      <section
-        className="relative h-screen overflow-hidden bg-black bg-fixed bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/images/bg-vag.jpg')",
-        }}
-      >
-        {/* Fallback gradient if image not loaded */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black -z-10"></div>
+        {/* Hero Section - Matching Figma Design Exactly */}
+        <section
+          className="relative h-screen overflow-hidden bg-black bg-fixed bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('/images/bg-vag.jpg')",
+          }}
+        >
+          {/* Fallback gradient if image not loaded */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black -z-10"></div>
 
-        {/* Spotlight effect from top - creates the studio lighting */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-gradient-radial from-white/15 via-transparent to-transparent blur-3xl pointer-events-none"></div>
+          {/* Spotlight effect from top - creates the studio lighting */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-gradient-radial from-white/15 via-transparent to-transparent blur-3xl pointer-events-none"></div>
 
-        {/* Ground shadow/reflection effect - darkens the bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
+          {/* Ground shadow/reflection effect - darkens the bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black via-black/30 to-transparent pointer-events-none"></div>
 
-        {/* Left side dark gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent pointer-events-none"></div>
+          {/* Left side dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent pointer-events-none"></div>
 
-        {/* Content Overlay */}
-        <div className="relative z-10 h-full flex items-center">
-          <div className="w-full px-8 lg:px-16 xl:px-24">
-            <motion.div
-              className="max-w-2xl"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {/* Badge */}
-              <motion.div className="mb-6" variants={itemVariants}>
-                <span className="text-[#EA6A47] text-sm font-semibold uppercase tracking-wide">
-                  AI Driven Software
-                </span>
-              </motion.div>
-
-              {/* Main Heading - Matching Figma exactly */}
-              <motion.h1
-                className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6"
-                variants={itemVariants}
+          {/* Content Overlay */}
+          <div className="relative z-10 h-full flex items-center">
+            <div className="w-full px-8 lg:px-16 xl:px-24">
+              <motion.div
+                className="max-w-2xl"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
               >
-                Translate VCDS Reports
-                <br />
-                into Human Language.
-              </motion.h1>
+                {/* Badge */}
+                <motion.div className="mb-6" variants={itemVariants}>
+                  <span className="text-[#EA6A47] text-sm font-semibold uppercase tracking-wide">
+                    AI Driven Software
+                  </span>
+                </motion.div>
 
-              {/* Description */}
-              <motion.p
-                className="text-gray-400 text-base lg:text-lg leading-relaxed mb-8 max-w-md"
-                variants={itemVariants}
-              >
-                Our tool helps you interpret VAG-COM Diagnostic System reports to human understandable language, making your repair and quotations seamless
-              </motion.p>
+                {/* Main Heading - Matching Figma exactly */}
+                <motion.h1
+                  className="text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] mb-6"
+                  variants={itemVariants}
+                >
+                  Translate VCDS Reports
+                  <br />
+                  into Human Language.
+                </motion.h1>
 
-              {/* CTA Buttons */}
-              <motion.div className="flex flex-wrap gap-4" variants={itemVariants}>
-                <button
-                  onClick={() => navigate('/register')}
-                  className="bg-[#EA6A47] hover:bg-[#d85a37] text-white px-8 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105"
+                {/* Description */}
+                <motion.p
+                  className="text-gray-400 text-base lg:text-lg leading-relaxed mb-8 max-w-md"
+                  variants={itemVariants}
                 >
-                  Get A Quote
-                </button>
-                <button
-                  onClick={() => navigate('/how-it-works')}
-                  className="bg-transparent hover:bg-white/10 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 border-2 border-gray-700 hover:border-gray-600 hover:scale-105"
-                >
-                  How It Works
-                </button>
+                  Our tool helps you interpret VAG-COM Diagnostic System reports to human understandable language, making your repair and quotations seamless
+                </motion.p>
+
+                {/* CTA Buttons */}
+                <motion.div className="flex flex-wrap gap-4" variants={itemVariants}>
+                  <button
+                    onClick={() => navigate('/register')}
+                    className="bg-[#EA6A47] hover:bg-[#d85a37] text-white px-8 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105"
+                  >
+                    Get A Quote
+                  </button>
+                  <button
+                    onClick={() => navigate('/how-it-works')}
+                    className="bg-transparent hover:bg-white/10 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 border-2 border-gray-700 hover:border-gray-600 hover:scale-105"
+                  >
+                    How It Works
+                  </button>
+                </motion.div>
               </motion.div>
-            </motion.div>
+            </div>
           </div>
-        </div>
-      </section>
-    </PublicLayout>
+        </section>
+      </PublicLayout>
     </motion.div>
   );
 };

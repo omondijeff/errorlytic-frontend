@@ -43,9 +43,8 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                 )}
               </button>
 
-              {/* Logo */}
               <Link to="/" className="flex items-center">
-                <img src={logo} alt="Errorlytic Logo" className="h-8 w-auto object-contain" />
+                <img src={logo} alt="Errorlytic Logo" className="h-20 w-auto object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
               </Link>
             </div>
 
@@ -122,7 +121,7 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
               {/* Brand */}
               <div className="md:col-span-2">
                 <Link to="/" className="mb-4 block">
-                  <img src={logo} alt="Errorlytic Logo" className="h-8 w-auto object-contain" />
+                  <img src={logo} alt="Errorlytic Logo" className="h-10 w-auto object-contain" />
                 </Link>
                 <p className="text-gray-400 text-sm leading-relaxed max-w-md mb-4">
                   AI-powered automotive diagnostic platform that transforms VCDS reports into actionable insights for mechanics and automotive professionals.

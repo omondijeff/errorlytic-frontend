@@ -16,7 +16,7 @@ class GoogleCalendarService {
    * @param {string} userId - User ID for state parameter
    * @returns {string} Authorization URL
    */
-  getAuthUrl(userId) {
+  generateAuthUrl(userId) {
     const scopes = [
       "https://www.googleapis.com/auth/calendar",
       "https://www.googleapis.com/auth/calendar.events",
@@ -36,7 +36,7 @@ class GoogleCalendarService {
    * @param {string} userId - User ID
    * @returns {Promise<Object>} Token data
    */
-  async handleOAuthCallback(code, userId) {
+  async handleAuthCallback(code, userId) {
     try {
       const { tokens } = await this.oauth2Client.getToken(code);
       

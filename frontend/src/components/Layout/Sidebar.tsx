@@ -59,8 +59,8 @@ const Sidebar: React.FC = () => {
   return (
     <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
       {/* Logo */}
-      <div className="flex items-center h-20 px-8 border-b border-gray-200">
-        <img src={logo} alt="Errorlytic Logo" className="h-8 w-auto object-contain" />
+      <div className="flex items-center h-24 px-8 border-b border-gray-200">
+        <img src={logo} alt="Errorlytic Logo" className="h-22 w-auto object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
       </div>
 
       {/* Navigation */}

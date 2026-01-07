@@ -126,6 +126,10 @@ router.post(
       .trim()
       .isLength({ max: 1000 })
       .withMessage("Notes must be less than 1000 characters"),
+    body("lineItems")
+      .optional()
+      .isArray()
+      .withMessage("Line items must be an array"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -141,7 +145,10 @@ router.post(
 
     try {
       const { analysisId } = req.params;
-      const options = req.body;
+      const options = {
+        ...req.body,
+        customLineItems: req.body.lineItems, // Map lineItems to customLineItems
+      };
       const userId = req.user._id;
       const orgId = req.user.orgId;
 
@@ -206,11 +213,12 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id;
     const orgId = req.user.orgId;
-    const { page = 1, limit = 10, status, currency } = req.query;
+    const { page = 1, limit = 10, status, currency, analysisId } = req.query;
 
     const filters = {};
     if (status) filters.status = status;
     if (currency) filters.currency = currency;
+    if (analysisId) filters.analysisId = analysisId;
 
     const result = await quotationService.getQuotations(
       userId,

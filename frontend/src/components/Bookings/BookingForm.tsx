@@ -10,8 +10,12 @@ import {
     ChevronRightIcon,
     ChevronLeftIcon,
     CheckIcon,
+    UserIcon,
+    MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import api from '../../services/apiClient';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 import { useBooking, type Booking } from '../../context/BookingContext';
 import { useNotification } from '../../context/NotificationContext';
 
@@ -31,14 +35,22 @@ const serviceTypes = [
 const BookingForm: React.FC<BookingFormProps> = ({ onSuccess, onCancel, initialData }) => {
     const { createBooking, updateBooking } = useBooking();
     const { addNotification } = useNotification();
+    const { user } = useSelector((state: RootState) => state.auth);
+    const isGarage = user?.role === 'garage_admin' || user?.role === 'garage_user';
+    const isIndividual = user?.role === 'individual';
+
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [vehicles, setVehicles] = useState<any[]>([]);
     const [garages, setGarages] = useState<any[]>([]);
+    const [clients, setClients] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [formData, setFormData] = useState({
         vehicleId: initialData?.vehicleId?._id || '',
-        garageId: initialData?.garageId?._id || '',
+        garageId: isGarage ? user?.orgId : (initialData?.garageId?._id || ''),
+        clientId: initialData?.clientId?._id || (isIndividual ? user?.id : ''),
+        status: initialData?.status || 'pending',
         serviceType: initialData?.serviceType || 'inspection',
         scheduledDate: initialData?.scheduledDate ? new Date(initialData.scheduledDate).toISOString().split('T')[0] : '',
         scheduledTime: initialData?.scheduledDate ? new Date(initialData.scheduledDate).toTimeString().slice(0, 5) : '09:00',
@@ -49,27 +61,51 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSuccess, onCancel, initialD
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [vehiclesRes, garagesRes] = await Promise.all([
-                    api.get('/vehicles'),
-                    api.get('/organizations/garages'),
-                ]);
-                setVehicles(vehiclesRes.data.data);
-                setGarages(garagesRes.data.data);
-
-                // If only one vehicle/garage, auto-select
-                if (vehiclesRes.data.data.length === 1 && !formData.vehicleId) {
-                    setFormData(prev => ({ ...prev, vehicleId: vehiclesRes.data.data[0].id }));
-                }
-                if (garagesRes.data.data.length === 1 && !formData.garageId) {
-                    setFormData(prev => ({ ...prev, garageId: garagesRes.data.data[0]._id }));
+                if (isIndividual) {
+                    const [vehiclesRes, garagesRes] = await Promise.all([
+                        api.get('/vehicles'),
+                        api.get('/organizations/garages'),
+                    ]);
+                    setVehicles(vehiclesRes.data.data);
+                    setGarages(garagesRes.data.data);
+                    if (vehiclesRes.data.data.length === 1 && !formData.vehicleId) {
+                        setFormData(prev => ({ ...prev, vehicleId: vehiclesRes.data.data[0].id }));
+                    }
+                    if (garagesRes.data.data.length === 1 && !formData.garageId) {
+                        setFormData(prev => ({ ...prev, garageId: garagesRes.data.data[0]._id }));
+                    }
+                } else if (isGarage) {
+                    // For garages, fetch their clients/users
+                    const response = await api.get('/auth/clients');
+                    setClients(response.data.data);
                 }
             } catch (err) {
                 console.error('Failed to fetch form data:', err);
-                addNotification('Failed to load vehicles or garages', 'error');
+                addNotification('Failed to load initial data', 'error');
             }
         };
         fetchData();
-    }, []);
+    }, [isIndividual, isGarage]);
+
+    // Update vehicles when client is selected (for garages)
+    useEffect(() => {
+        if (isGarage && formData.clientId) {
+            const fetchClientVehicles = async () => {
+                try {
+                    const response = await api.get(`/vehicles?ownerId=${formData.clientId}`);
+                    setVehicles(response.data.data);
+                    if (response.data.data.length === 1) {
+                        setFormData(prev => ({ ...prev, vehicleId: response.data.data[0].id }));
+                    } else {
+                        setFormData(prev => ({ ...prev, vehicleId: '' }));
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch client vehicles:', err);
+                }
+            };
+            fetchClientVehicles();
+        }
+    }, [formData.clientId, isGarage]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -113,77 +149,174 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSuccess, onCancel, initialD
                         exit={{ opacity: 0, x: -20 }}
                         className="space-y-6"
                     >
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Vehicle</label>
-                            <div className="grid grid-cols-1 gap-3">
-                                {vehicles.map((vehicle) => (
-                                    <label
-                                        key={vehicle.id}
-                                        className={`relative flex items-center p-4 cursor-pointer rounded-xl border-2 transition-all ${formData.vehicleId === vehicle.id
-                                                ? 'border-[#EA6A47] bg-red-50'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                            }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            className="sr-only"
-                                            name="vehicleId"
-                                            value={vehicle.id}
-                                            checked={formData.vehicleId === vehicle.id}
-                                            onChange={(e) => setFormData({ ...formData, vehicleId: e.target.value })}
-                                        />
-                                        <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                            <TruckIcon className="h-6 w-6 text-gray-600" />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900">{vehicle.carType}</p>
-                                            <p className="text-sm text-gray-500">{vehicle.registrationNo}</p>
-                                        </div>
-                                        {formData.vehicleId === vehicle.id && (
-                                            <div className="absolute top-4 right-4 text-[#EA6A47]">
-                                                <CheckIcon className="h-6 w-6" />
-                                            </div>
-                                        )}
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+                        {isIndividual ? (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Your Vehicle</label>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {vehicles.map((vehicle) => (
+                                            <label
+                                                key={vehicle.id}
+                                                className={`relative flex items-center p-4 cursor-pointer rounded-xl border-2 transition-all ${formData.vehicleId === vehicle.id
+                                                    ? 'border-[#EA6A47] bg-red-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    className="sr-only"
+                                                    name="vehicleId"
+                                                    value={vehicle.id}
+                                                    checked={formData.vehicleId === vehicle.id}
+                                                    onChange={(e) => setFormData({ ...formData, vehicleId: e.target.value })}
+                                                />
+                                                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <TruckIcon className="h-6 w-6 text-gray-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-900">{vehicle.carType}</p>
+                                                    <p className="text-sm text-gray-500">{vehicle.registrationNo}</p>
+                                                </div>
+                                                {formData.vehicleId === vehicle.id && (
+                                                    <div className="absolute top-4 right-4 text-[#EA6A47]">
+                                                        <CheckIcon className="h-6 w-6" />
+                                                    </div>
+                                                )}
+                                            </label>
+                                        ))}
+                                        {vehicles.length === 0 && <p className="text-gray-500 italic text-sm p-4">No vehicles found. Please add a vehicle first.</p>}
+                                    </div>
+                                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Garage</label>
-                            <div className="grid grid-cols-1 gap-3">
-                                {garages.map((garage) => (
-                                    <label
-                                        key={garage._id}
-                                        className={`relative flex items-center p-4 cursor-pointer rounded-xl border-2 transition-all ${formData.garageId === garage._id
-                                                ? 'border-[#EA6A47] bg-red-50'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                            }`}
-                                    >
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Garage</label>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {garages.map((garage) => (
+                                            <label
+                                                key={garage._id}
+                                                className={`relative flex items-center p-4 cursor-pointer rounded-xl border-2 transition-all ${formData.garageId === garage._id
+                                                    ? 'border-[#EA6A47] bg-red-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    className="sr-only"
+                                                    name="garageId"
+                                                    value={garage._id}
+                                                    checked={formData.garageId === garage._id}
+                                                    onChange={(e) => setFormData({ ...formData, garageId: e.target.value })}
+                                                />
+                                                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                                                    <BuildingOfficeIcon className="h-6 w-6 text-gray-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-900">{garage.name}</p>
+                                                    <p className="text-sm text-gray-500">{garage.contact?.address || garage.country}</p>
+                                                </div>
+                                                {formData.garageId === garage._id && (
+                                                    <div className="absolute top-4 right-4 text-[#EA6A47]">
+                                                        <CheckIcon className="h-6 w-6" />
+                                                    </div>
+                                                )}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Client</label>
+                                    <div className="relative mb-4">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
                                         <input
-                                            type="radio"
-                                            className="sr-only"
-                                            name="garageId"
-                                            value={garage._id}
-                                            checked={formData.garageId === garage._id}
-                                            onChange={(e) => setFormData({ ...formData, garageId: e.target.value })}
+                                            type="text"
+                                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#EA6A47] focus:border-[#EA6A47] sm:text-sm"
+                                            placeholder="Search clients by name or email..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
                                         />
-                                        <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
-                                            <BuildingOfficeIcon className="h-6 w-6 text-gray-600" />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto pr-2">
+                                        {clients.filter(c => c.profile?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || c.email?.toLowerCase().includes(searchQuery.toLowerCase())).map((client) => (
+                                            <label
+                                                key={client.id}
+                                                className={`relative flex items-center p-3 cursor-pointer rounded-xl border-2 transition-all ${formData.clientId === client.id
+                                                    ? 'border-[#EA6A47] bg-red-50'
+                                                    : 'border-gray-200 hover:border-gray-300'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="radio"
+                                                    className="sr-only"
+                                                    name="clientId"
+                                                    value={client.id}
+                                                    checked={formData.clientId === client.id}
+                                                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                                                />
+                                                <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                                                    <UserIcon className="h-5 w-5 text-gray-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-gray-900 text-sm">{client.profile?.name}</p>
+                                                    <p className="text-xs text-gray-500">{client.email}</p>
+                                                </div>
+                                                {formData.clientId === client.id && (
+                                                    <div className="absolute top-3 right-3 text-[#EA6A47]">
+                                                        <CheckIcon className="h-5 w-5" />
+                                                    </div>
+                                                )}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {formData.clientId && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                    >
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Client Vehicle</label>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {vehicles.map((vehicle) => (
+                                                <label
+                                                    key={vehicle.id}
+                                                    className={`relative flex items-center p-4 cursor-pointer rounded-xl border-2 transition-all ${formData.vehicleId === vehicle.id
+                                                        ? 'border-[#EA6A47] bg-red-50'
+                                                        : 'border-gray-200 hover:border-gray-300'
+                                                        }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        className="sr-only"
+                                                        name="vehicleId"
+                                                        value={vehicle.id}
+                                                        checked={formData.vehicleId === vehicle.id}
+                                                        onChange={(e) => setFormData({ ...formData, vehicleId: e.target.value })}
+                                                    />
+                                                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                                                        <TruckIcon className="h-6 w-6 text-gray-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{vehicle.carType}</p>
+                                                        <p className="text-sm text-gray-500">{vehicle.registrationNo}</p>
+                                                    </div>
+                                                    {formData.vehicleId === vehicle.id && (
+                                                        <div className="absolute top-4 right-4 text-[#EA6A47]">
+                                                            <CheckIcon className="h-6 w-6" />
+                                                        </div>
+                                                    )}
+                                                </label>
+                                            ))}
+                                            {vehicles.length === 0 && <p className="text-gray-500 italic text-sm">No vehicles registered for this client.</p>}
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900">{garage.name}</p>
-                                            <p className="text-sm text-gray-500">{garage.contact?.address || garage.country}</p>
-                                        </div>
-                                        {formData.garageId === garage._id && (
-                                            <div className="absolute top-4 right-4 text-[#EA6A47]">
-                                                <CheckIcon className="h-6 w-6" />
-                                            </div>
-                                        )}
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+                                    </motion.div>
+                                )}
+                            </>
+                        )}
                     </motion.div>
                 );
 
@@ -202,8 +335,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ onSuccess, onCancel, initialD
                                     <label
                                         key={type.id}
                                         className={`relative flex flex-col p-4 cursor-pointer rounded-xl border-2 transition-all h-full ${formData.serviceType === type.id
-                                                ? 'border-[#EA6A47] bg-red-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                            ? 'border-[#EA6A47] bg-red-50'
+                                            : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                     >
                                         <input

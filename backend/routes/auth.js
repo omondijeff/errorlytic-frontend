@@ -1067,4 +1067,44 @@ router.post("/google/calendar/disconnect", authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /api/v1/auth/clients
+ * @desc    Get all individual users (clients) - accessible by garage/insurer roles
+ * @access  Private
+ */
+router.get("/clients", authMiddleware, async (req, res) => {
+  try {
+    const { search } = req.query;
+    const query = { role: "individual", isActive: true };
+
+    if (search) {
+      query.$or = [
+        { "profile.name": { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const clients = await User.find(query)
+      .select("email profile.name profile.phone")
+      .limit(50);
+
+    const transformedClients = clients.map((client) => ({
+      id: client._id,
+      email: client.email,
+      profile: client.profile,
+    }));
+
+    res.json({
+      success: true,
+      data: transformedClients,
+    });
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch clients",
+    });
+  }
+});
+
 module.exports = router;

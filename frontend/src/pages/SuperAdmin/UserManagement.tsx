@@ -4,17 +4,18 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   PencilIcon,
-  TrashIcon,
   ArrowTrendingUpIcon,
   CheckCircleIcon,
   BuildingOfficeIcon,
   ShieldCheckIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import {
   useGetUsersQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useAddCreditsMutation,
 } from '../../services/api';
 import AddUserModal from '../../components/SuperAdmin/AddUserModal';
 import Modal from '../../components/UI/Modal';
@@ -73,11 +74,14 @@ const UserManagement: React.FC = () => {
   const [showAddUser, setShowAddUser] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showViewUser, setShowViewUser] = useState(false);
+  const [showEditUser, setShowEditUser] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showAddCredits, setShowAddCredits] = useState(false);
+  const [creditsUser, setCreditsUser] = useState<User | null>(null);
 
   const {
     data: usersData,
     isLoading: usersLoading,
-    error: usersError,
     refetch: refetchUsers
   } = useGetUsersQuery({
     page: 1,
@@ -90,14 +94,15 @@ const UserManagement: React.FC = () => {
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
+  const [addCredits, { isLoading: isAddingCredits }] = useAddCreditsMutation();
 
   const users = usersData?.data || [];
 
   const stats = {
     total: users.length,
-    active: users.filter(u => u.status === 'active').length,
-    garages: users.filter(u => u.role.includes('garage')).length,
-    insurers: users.filter(u => u.role.includes('insurer')).length,
+    active: users.filter((u: User) => u.status === 'active').length,
+    garages: users.filter((u: User) => u.role.includes('garage')).length,
+    insurers: users.filter((u: User) => u.role.includes('insurer')).length,
   };
 
   const metrics = [
@@ -135,7 +140,7 @@ const UserManagement: React.FC = () => {
     },
   ];
 
-  const handleCreateUser = async (userData: any) => {
+  const handleCreateUser = async (userData: Partial<User>) => {
     try {
       await createUser(userData).unwrap();
       setShowAddUser(false);
@@ -152,6 +157,50 @@ const UserManagement: React.FC = () => {
       refetchUsers();
     } catch (error) {
       console.error('Failed to update user:', error);
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setShowEditUser(true);
+  };
+
+  const handleUpdateUser = async (userData: { role: string; organization?: string }) => {
+    if (!editingUser) return;
+    try {
+      await updateUser({
+        id: editingUser.id,
+        role: userData.role,
+        organization: userData.organization
+      }).unwrap();
+      setShowEditUser(false);
+      setEditingUser(null);
+      refetchUsers();
+    } catch (error) {
+      console.error('Failed to update user:', error);
+    }
+  };
+
+  const handleAddCredits = (user: User) => {
+    setCreditsUser(user);
+    setShowAddCredits(true);
+  };
+
+  const handleSubmitAddCredits = async (credits: number, reason: string) => {
+    if (!creditsUser) return;
+    try {
+      await addCredits({
+        userId: creditsUser.id,
+        credits,
+        reason,
+      }).unwrap();
+      setShowAddCredits(false);
+      setCreditsUser(null);
+      refetchUsers();
+      alert(`Successfully added ${credits} credits to ${creditsUser.name}`);
+    } catch (error: any) {
+      console.error('Failed to add credits:', error);
+      alert(error.data?.error || 'Failed to add credits');
     }
   };
 
@@ -177,6 +226,228 @@ const UserManagement: React.FC = () => {
     if (status === 'active') return 'bg-green-100 text-green-800';
     if (status === 'inactive') return 'bg-yellow-100 text-yellow-800';
     return 'bg-red-100 text-red-800';
+  };
+
+  interface AddCreditsModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    user: User;
+    onSubmit: (credits: number, reason: string) => void;
+    isLoading: boolean;
+  }
+
+  const AddCreditsModal: React.FC<AddCreditsModalProps> = ({
+    isOpen,
+    onClose,
+    user,
+    onSubmit,
+    isLoading
+  }) => {
+    const [credits, setCredits] = useState('');
+    const [reason, setReason] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      const creditsNum = parseInt(credits, 10);
+      if (creditsNum < 1 || creditsNum > 1000) {
+        alert('Credits must be between 1 and 1000');
+        return;
+      }
+      onSubmit(creditsNum, reason || 'Admin added');
+      // Reset form
+      setCredits('');
+      setReason('');
+    };
+
+    const handleClose = () => {
+      setCredits('');
+      setReason('');
+      onClose();
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Add Credits"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              User
+            </label>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="font-medium text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Role: <span className="font-medium">{user.role.replace('_', ' ').toUpperCase()}</span>
+              </p>
+            </div>
+          </div>
+
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Credits to Add *
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="1000"
+              value={credits}
+              onChange={(e) => setCredits(e.target.value)}
+              placeholder="Enter number of credits (1-1000)"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              You can add between 1 and 1000 credits at a time
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Reason (Optional)
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g., Customer support, Promotional credits, Refund"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+            />
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-sm text-yellow-800">
+              <strong>Note:</strong> Credits will expire after 365 days. This action will add {credits || 0} credits to the user's account.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !credits}
+              className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Adding...' : 'Add Credits'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    );
+  };
+
+  interface EditUserModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    user: User;
+    onSubmit: (data: { role: string; organization?: string }) => void;
+  }
+
+  const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, user, onSubmit }) => {
+    const [selectedRole, setSelectedRole] = useState(user.role);
+    const [organization, setOrganization] = useState(user.organization || '');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      try {
+        const updateData: { role: string; organization?: string } = { role: selectedRole };
+        if (selectedRole !== 'individual' && selectedRole !== 'superadmin') {
+          updateData.organization = organization;
+        }
+        await onSubmit(updateData);
+      } catch (error) {
+        console.error('Failed to update user:', error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Edit User"
+        size="md"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              User
+            </label>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="font-medium text-gray-900">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Role *
+            </label>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+            >
+              <option value="individual">Individual</option>
+              <option value="garage_user">Garage User</option>
+              <option value="garage_admin">Garage Admin</option>
+              <option value="insurer_user">Insurer User</option>
+              <option value="insurer_admin">Insurer Admin</option>
+              <option value="superadmin">Super Admin</option>
+            </select>
+          </div>
+
+          {(selectedRole === 'garage_user' || selectedRole === 'garage_admin' ||
+            selectedRole === 'insurer_user' || selectedRole === 'insurer_admin') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Organization *
+                </label>
+                <input
+                  type="text"
+                  value={organization}
+                  onChange={(e) => setOrganization(e.target.value)}
+                  placeholder="Enter organization name"
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+                />
+              </div>
+            )}
+
+          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-[#EA6A47] text-white rounded-full hover:bg-[#d85a37] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Updating...' : 'Update User'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+    );
   };
 
   return (
@@ -267,7 +538,7 @@ const UserManagement: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => (
+                  users.map((user: User) => (
                     <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">
@@ -305,6 +576,20 @@ const UserManagement: React.FC = () => {
                             className="px-4 py-1.5 border-2 border-blue-500 text-blue-600 rounded-full hover:bg-blue-50 transition-colors font-medium text-sm"
                           >
                             View
+                          </button>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="px-4 py-1.5 border-2 border-[#EA6A47] text-[#EA6A47] rounded-full hover:bg-orange-50 transition-colors font-medium text-sm"
+                          >
+                            <PencilIcon className="h-4 w-4 inline-block mr-1" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleAddCredits(user)}
+                            className="px-4 py-1.5 border-2 border-green-500 text-green-600 rounded-full hover:bg-green-50 transition-colors font-medium text-sm"
+                          >
+                            <CurrencyDollarIcon className="h-4 w-4 inline-block mr-1" />
+                            Add Credits
                           </button>
                           <button
                             onClick={() => handleDeleteUser(user.id)}
@@ -383,6 +668,33 @@ const UserManagement: React.FC = () => {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <EditUserModal
+          isOpen={showEditUser}
+          onClose={() => {
+            setShowEditUser(false);
+            setEditingUser(null);
+          }}
+          user={editingUser}
+          onSubmit={handleUpdateUser}
+        />
+      )}
+
+      {/* Add Credits Modal */}
+      {creditsUser && (
+        <AddCreditsModal
+          isOpen={showAddCredits}
+          onClose={() => {
+            setShowAddCredits(false);
+            setCreditsUser(null);
+          }}
+          user={creditsUser}
+          onSubmit={handleSubmitAddCredits}
+          isLoading={isAddingCredits}
+        />
       )}
     </div>
   );

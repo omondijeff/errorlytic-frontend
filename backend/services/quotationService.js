@@ -58,45 +58,82 @@ class QuotationService {
         throw new Error("Analysis not found");
       }
 
-      const walkthrough = await Walkthrough.findOne({ analysisId });
 
-      if (!walkthrough) {
-        throw new Error(
-          "Walkthrough not found. Please generate walkthrough first."
-        );
+
+      // Get organization settings (optional)
+      let organization = null;
+      if (orgId) {
+        organization = await Organization.findById(orgId);
+        if (!organization) {
+          throw new Error("Organization not found");
+        }
       }
 
-      // Get organization settings
-      const organization = await Organization.findById(orgId);
-      if (!organization) {
-        throw new Error("Organization not found");
-      }
+      // Determine defaults based on organization or system defaults
+      const orgSettings = organization?.settings || {};
+      const defaultCurrency = orgSettings.currency || "KES";
+      
+      // Calculate default labor rate - ensure we have a fallback if currency lookup fails
+      const systemDefaultLaborRate = this.defaultLaborRates[defaultCurrency] || 2500; 
+      const defaultLaborRate = orgSettings.laborRate || systemDefaultLaborRate;
+      
+      const defaultMarkup = orgSettings.markupPercentage !== undefined ? orgSettings.markupPercentage : 15;
+      const defaultTax = orgSettings.taxPercentage !== undefined ? orgSettings.taxPercentage : 16;
 
       // Extract options with defaults
       const {
-        currency = organization.settings?.currency || "KES",
-        laborRate = organization.settings?.laborRate ||
-          this.defaultLaborRates[currency],
-        markupPct = organization.settings?.markupPercentage || 15,
-        taxPct = organization.settings?.taxPercentage || 16,
+        currency = defaultCurrency,
+        laborRate = defaultLaborRate,
+        markupPct = defaultMarkup,
+        taxPct = defaultTax,
         useOEMParts = false,
         notes = "",
+        customLineItems = [], // Extract custom line items
       } = options;
 
-      // Calculate labor hours from walkthrough steps
-      const totalMinutes = walkthrough.totalEstimatedTime || 0;
-      const laborHours = Math.ceil(totalMinutes / 60); // Round up to nearest hour
+      let parts = [];
+      let laborHours = 0;
 
-      // Generate parts list from walkthrough
-      const parts = await this.generatePartsList(
-        walkthrough.parts,
-        currency,
-        useOEMParts
-      );
+      if (customLineItems && customLineItems.length > 0) {
+        // Use custom line items from frontend
+        parts = customLineItems.map(item => ({
+          name: item.description,
+          unitPrice: item.cost,
+          qty: 1,
+          subtotal: item.cost,
+          partNumber: item.code, // Store error code as part number
+          isOEM: false
+        }));
+        
+        // When using custom line items derived from error codes, labor is typically included in the estimate
+        // or set to 0 to rely on the parts (service items) cost
+        laborHours = 0; 
+      } else {
+        // Fallback to auto-generation from walkthrough
+        const walkthrough = await Walkthrough.findOne({ analysisId });
+
+        if (!walkthrough) {
+          throw new Error(
+            "Walkthrough not found. Please generate walkthrough first or provide custom line items."
+          );
+        }
+
+        // Calculate labor hours from walkthrough steps
+        const totalMinutes = walkthrough.totalEstimatedTime || 0;
+        laborHours = Math.ceil(totalMinutes / 60); // Round up to nearest hour
+
+        // Generate parts list from walkthrough
+        parts = await this.generatePartsList(
+          walkthrough.parts,
+          currency,
+          useOEMParts
+        );
+      }
 
       // Create quotation
       const quotation = new Quotation({
         orgId,
+        createdBy: userId,
         analysisId,
         currency,
         labor: {
@@ -424,7 +461,16 @@ class QuotationService {
    */
   async getQuotations(userId, orgId, filters = {}, page = 1, limit = 10) {
     try {
-      const query = { orgId: orgId, isActive: true, ...filters };
+      let query = { isActive: true, ...filters };
+      
+      // If orgId is present, scope by organization
+      if (orgId) {
+        query.orgId = orgId;
+      } else {
+        // Otherwise, scope by creator (individual user)
+        query.createdBy = userId;
+      }
+
       const options = {
         skip: (page - 1) * limit,
         limit: parseInt(limit),

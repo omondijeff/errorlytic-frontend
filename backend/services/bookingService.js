@@ -52,7 +52,7 @@ class BookingService {
 
       // Create booking
       const booking = new Booking({
-        clientId: userId,
+        clientId: bookingData.clientId || userId,
         garageId,
         vehicleId,
         serviceType,
@@ -62,7 +62,7 @@ class BookingService {
         quotationId,
         analysisId,
         createdBy: userId,
-        status: "pending",
+        status: bookingData.status || "pending",
       });
 
       await booking.save();

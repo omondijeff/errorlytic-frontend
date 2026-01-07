@@ -6,7 +6,6 @@ import {
   WrenchScrewdriverIcon,
   ShieldCheckIcon,
   ArrowTrendingUpIcon,
-  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import Modal from '../../components/UI/Modal';
 import {
@@ -240,11 +239,10 @@ const OrganizationsPage: React.FC = () => {
                     <tr key={org.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">
-                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                            org.type === 'garage'
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${org.type === 'garage'
                               ? 'bg-blue-100 text-blue-600'
                               : 'bg-purple-100 text-purple-600'
-                          }`}>
+                            }`}>
                             {org.type === 'garage' ? (
                               <WrenchScrewdriverIcon className="h-5 w-5" />
                             ) : (
@@ -258,11 +256,10 @@ const OrganizationsPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          org.type === 'garage'
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${org.type === 'garage'
                             ? 'bg-blue-100 text-blue-800'
                             : 'bg-purple-100 text-purple-800'
-                        }`}>
+                          }`}>
                           {org.type === 'garage' ? 'Garage' : 'Insurance'}
                         </span>
                       </td>
@@ -278,11 +275,10 @@ const OrganizationsPage: React.FC = () => {
                       <td className="py-4 px-4">
                         <button
                           onClick={() => handleToggleStatus(org)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                            org.status === 'active'
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${org.status === 'active'
                               ? 'bg-green-100 text-green-800 hover:bg-green-200'
                               : 'bg-red-100 text-red-800 hover:bg-red-200'
-                          }`}
+                            }`}
                         >
                           {org.status === 'active' ? 'Active' : 'Inactive'}
                         </button>
@@ -443,11 +439,10 @@ const OrganizationsPage: React.FC = () => {
         >
           <div className="space-y-4">
             <div className="flex items-center space-x-4 pb-4 border-b">
-              <div className={`h-16 w-16 rounded-full flex items-center justify-center ${
-                selectedOrg.type === 'garage'
+              <div className={`h-16 w-16 rounded-full flex items-center justify-center ${selectedOrg.type === 'garage'
                   ? 'bg-blue-100 text-blue-600'
                   : 'bg-purple-100 text-purple-600'
-              }`}>
+                }`}>
                 {selectedOrg.type === 'garage' ? (
                   <WrenchScrewdriverIcon className="h-8 w-8" />
                 ) : (
@@ -485,11 +480,10 @@ const OrganizationsPage: React.FC = () => {
               <div>
                 <label className="text-sm font-medium text-gray-500">Status</label>
                 <p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    selectedOrg.status === 'active'
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedOrg.status === 'active'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
-                  }`}>
+                    }`}>
                     {selectedOrg.status}
                   </span>
                 </p>

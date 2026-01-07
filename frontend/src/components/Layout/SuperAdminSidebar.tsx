@@ -51,9 +51,9 @@ const SuperAdminSidebar: React.FC = () => {
       }`}>
       <div className="flex h-full flex-col bg-white/95 backdrop-blur-xl shadow-tajilabs-lg border-r border-tajilabs">
         {/* Logo */}
-        <div className="flex h-20 items-center justify-center px-6 border-b border-tajilabs">
+        <div className="flex h-24 items-center justify-center px-6 border-b border-tajilabs">
           <Link to="/superadmin/dashboard" className="flex items-center">
-            <img src={logo} alt="Errorlytic Logo" className={`h-10 w-auto object-contain transition-all ${sidebarOpen ? '' : 'scale-150'}`} />
+            <img src={logo} alt="Errorlytic Logo" className={`h-22 w-auto object-contain transition-all drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] ${sidebarOpen ? '' : 'scale-125'}`} />
           </Link>
         </div>
 
