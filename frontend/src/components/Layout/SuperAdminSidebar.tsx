@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
   HomeIcon,
   UsersIcon,
   BuildingOfficeIcon,
@@ -17,8 +17,9 @@ import {
   UserIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logo from '../../assets/logo-web-landscape.png';
 
 const SuperAdminSidebar: React.FC = () => {
   const dispatch = useDispatch();
@@ -46,27 +47,14 @@ const SuperAdminSidebar: React.FC = () => {
   ];
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ${
-      sidebarOpen ? 'w-72' : 'w-20'
-    }`}>
+    <div className={`fixed inset-y-0 left-0 z-50 transition-all duration-300 ${sidebarOpen ? 'w-72' : 'w-20'
+      }`}>
       <div className="flex h-full flex-col bg-white/95 backdrop-blur-xl shadow-tajilabs-lg border-r border-tajilabs">
         {/* Logo */}
         <div className="flex h-20 items-center justify-center px-6 border-b border-tajilabs">
-          <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 bg-gradient-to-br from-red-600 to-red-800 rounded-ios-lg flex items-center justify-center shadow-tajilabs">
-              <ShieldCheckIcon className="h-6 w-6 text-white" />
-            </div>
-            {sidebarOpen && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <h2 className="text-ios-title2 text-gray-900 font-sf-pro">Super Admin</h2>
-                <p className="text-ios-caption1 text-red-600 font-sf-pro-text">Errorlytic Platform</p>
-              </motion.div>
-            )}
-          </div>
+          <Link to="/superadmin/dashboard" className="flex items-center">
+            <img src={logo} alt="Errorlytic Logo" className={`h-10 w-auto object-contain transition-all ${sidebarOpen ? '' : 'scale-150'}`} />
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -81,10 +69,9 @@ const SuperAdminSidebar: React.FC = () => {
               <NavLink
                 to={item.href}
                 className={({ isActive }) =>
-                  `tajilabs-nav-item flex items-center text-ios-body font-sf-pro-text ${
-                    isActive
-                      ? 'bg-red-600 text-white shadow-tajilabs'
-                      : 'text-gray-700 hover:bg-red-50'
+                  `tajilabs-nav-item flex items-center text-ios-body font-sf-pro-text ${isActive
+                    ? 'bg-red-600 text-white shadow-tajilabs'
+                    : 'text-gray-700 hover:bg-red-50'
                   }`
                 }
               >
@@ -126,7 +113,7 @@ const SuperAdminSidebar: React.FC = () => {
               </motion.div>
             )}
           </div>
-          
+
           {sidebarOpen && (
             <motion.button
               initial={{ opacity: 0 }}

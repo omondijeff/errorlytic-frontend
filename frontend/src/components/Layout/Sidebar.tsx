@@ -18,6 +18,7 @@ import {
   CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import type { RootState } from '../../store';
+import logo from '../../assets/logo-web-landscape.png';
 
 const Sidebar: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -59,7 +60,7 @@ const Sidebar: React.FC = () => {
     <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
       {/* Logo */}
       <div className="flex items-center h-20 px-8 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-[#EA6A47]">Errorlytic</h1>
+        <img src={logo} alt="Errorlytic Logo" className="h-8 w-auto object-contain" />
       </div>
 
       {/* Navigation */}

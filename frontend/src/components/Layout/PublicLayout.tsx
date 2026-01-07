@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import logo from '../../assets/logo-web-landscape.png';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
@@ -43,8 +44,8 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
               </button>
 
               {/* Logo */}
-              <Link to="/" className="text-2xl font-bold text-white">
-                Errorlytic
+              <Link to="/" className="flex items-center">
+                <img src={logo} alt="Errorlytic Logo" className="h-8 w-auto object-contain" />
               </Link>
             </div>
 
@@ -54,11 +55,10 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`transition-colors border-b-2 pb-1 ${
-                    location.pathname === link.to
-                      ? 'text-white border-[#EA6A47]'
-                      : 'text-gray-300 border-transparent hover:text-white hover:border-[#EA6A47]'
-                  }`}
+                  className={`transition-colors border-b-2 pb-1 ${location.pathname === link.to
+                    ? 'text-white border-[#EA6A47]'
+                    : 'text-gray-300 border-transparent hover:text-white hover:border-[#EA6A47]'
+                    }`}
                 >
                   {link.label}
                 </Link>
@@ -84,11 +84,10 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-lg transition-colors ${
-                    location.pathname === link.to
-                      ? 'bg-[#EA6A47]/10 text-[#EA6A47]'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                  }`}
+                  className={`block px-4 py-3 rounded-lg transition-colors ${location.pathname === link.to
+                    ? 'bg-[#EA6A47]/10 text-[#EA6A47]'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    }`}
                 >
                   {link.label}
                 </Link>
@@ -122,8 +121,8 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
               {/* Brand */}
               <div className="md:col-span-2">
-                <Link to="/" className="text-2xl font-bold text-white mb-4 block">
-                  Errorlytic
+                <Link to="/" className="mb-4 block">
+                  <img src={logo} alt="Errorlytic Logo" className="h-8 w-auto object-contain" />
                 </Link>
                 <p className="text-gray-400 text-sm leading-relaxed max-w-md mb-4">
                   AI-powered automotive diagnostic platform that transforms VCDS reports into actionable insights for mechanics and automotive professionals.
