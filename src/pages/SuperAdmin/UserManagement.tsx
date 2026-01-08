@@ -246,9 +246,14 @@ const UserManagement: React.FC = () => {
     const [credits, setCredits] = useState('');
     const [reason, setReason] = useState('');
 
+    // Credit rates per scan
+    const isOrganizationUser = user.role.includes('garage') || user.role.includes('insurer');
+    const ratePerScan = isOrganizationUser ? 200 : 100; // KES
+    const creditsNum = parseInt(credits, 10) || 0;
+    const totalValue = creditsNum * ratePerScan;
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      const creditsNum = parseInt(credits, 10);
       if (creditsNum < 1 || creditsNum > 1000) {
         alert('Credits must be between 1 and 1000');
         return;
@@ -283,6 +288,10 @@ const UserManagement: React.FC = () => {
               <p className="text-sm text-gray-500 mt-1">
                 Role: <span className="font-medium">{user.role.replace('_', ' ').toUpperCase()}</span>
               </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Rate: <span className="font-medium text-green-600">KES {ratePerScan}/scan</span>
+                {isOrganizationUser && <span className="ml-1 text-xs">(Organization rate)</span>}
+              </p>
             </div>
           </div>
 
@@ -304,6 +313,11 @@ const UserManagement: React.FC = () => {
             <p className="mt-1 text-xs text-gray-500">
               You can add between 1 and 1000 credits at a time
             </p>
+            {creditsNum > 0 && (
+              <p className="mt-2 text-sm font-medium text-green-600">
+                Value: KES {totalValue.toLocaleString()} ({creditsNum} scans × KES {ratePerScan})
+              </p>
+            )}
           </div>
 
           <div>
@@ -321,7 +335,7 @@ const UserManagement: React.FC = () => {
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-sm text-yellow-800">
-              <strong>Note:</strong> Credits will expire after 365 days. This action will add {credits || 0} credits to the user's account.
+              <strong>Note:</strong> Credits will expire after 365 days. This action will add {creditsNum || 0} credits (worth KES {totalValue.toLocaleString()}) to the user's account.
             </p>
           </div>
 
