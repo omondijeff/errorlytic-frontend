@@ -278,6 +278,7 @@ const UserManagement: React.FC = () => {
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* User Info */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               User
@@ -288,17 +289,34 @@ const UserManagement: React.FC = () => {
               <p className="text-sm text-gray-500 mt-1">
                 Role: <span className="font-medium">{user.role.replace('_', ' ').toUpperCase()}</span>
               </p>
-              <p className="text-sm text-gray-500 mt-1">
-                Rate: <span className="font-medium text-green-600">KES {ratePerScan}/scan</span>
-                {isOrganizationUser && <span className="ml-1 text-xs">(Organization rate)</span>}
-              </p>
             </div>
           </div>
 
+          {/* Pricing Info Banner */}
+          <div className={`p-4 rounded-xl border-2 ${isOrganizationUser ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {isOrganizationUser ? 'Organization Rate' : 'Individual Rate'}
+                </p>
+                <p className={`text-2xl font-bold ${isOrganizationUser ? 'text-blue-600' : 'text-green-600'}`}>
+                  KES {ratePerScan}
+                </p>
+                <p className="text-xs text-gray-500">per scan/credit</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500">1 Credit = 1 Scan</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {isOrganizationUser ? 'Garage/Insurer pricing' : 'Standard pricing'}
+                </p>
+              </div>
+            </div>
+          </div>
 
+          {/* Credits Input */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Credits to Add *
+              Number of Credits (Scans) *
             </label>
             <input
               type="number"
@@ -308,18 +326,34 @@ const UserManagement: React.FC = () => {
               onChange={(e) => setCredits(e.target.value)}
               placeholder="Enter number of credits (1-1000)"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent text-lg"
             />
             <p className="mt-1 text-xs text-gray-500">
-              You can add between 1 and 1000 credits at a time
+              Each credit allows the user to perform 1 diagnostic scan
             </p>
-            {creditsNum > 0 && (
-              <p className="mt-2 text-sm font-medium text-green-600">
-                Value: KES {totalValue.toLocaleString()} ({creditsNum} scans × KES {ratePerScan})
-              </p>
-            )}
           </div>
 
+          {/* Value Calculation */}
+          {creditsNum > 0 && (
+            <div className="bg-gray-900 text-white p-4 rounded-xl">
+              <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Credit Value Summary</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-3xl font-bold">{creditsNum}</span>
+                  <span className="text-gray-400 ml-2">credits</span>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400">Total Value</p>
+                  <p className="text-2xl font-bold text-[#EA6A47]">KES {totalValue.toLocaleString()}</p>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-700 text-xs text-gray-400">
+                {creditsNum} scans × KES {ratePerScan}/scan = KES {totalValue.toLocaleString()}
+              </div>
+            </div>
+          )}
+
+          {/* Reason */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Reason (Optional)
@@ -328,14 +362,15 @@ const UserManagement: React.FC = () => {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="e.g., Customer support, Promotional credits, Refund"
-              rows={3}
+              rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
             />
           </div>
 
+          {/* Note */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <p className="text-sm text-yellow-800">
-              <strong>Note:</strong> Credits will expire after 365 days. This action will add {creditsNum || 0} credits (worth KES {totalValue.toLocaleString()}) to the user's account.
+              <strong>Note:</strong> Credits expire after 365 days from the date added.
             </p>
           </div>
 
