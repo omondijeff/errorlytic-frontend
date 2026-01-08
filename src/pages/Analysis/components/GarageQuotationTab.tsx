@@ -3,6 +3,9 @@ import {
     DocumentTextIcon,
     ClipboardDocumentListIcon,
     ArrowDownTrayIcon,
+    PencilSquareIcon,
+    PaperAirplaneIcon,
+    XMarkIcon,
 } from '@heroicons/react/24/outline';
 import api from '../../../services/apiClient';
 import type { DTC, VehicleDetails, QuotationLineItem } from '../../../types/analysis';
@@ -14,17 +17,35 @@ interface GarageQuotationTabProps {
     vehicle: VehicleDetails;
 }
 
+interface QuotationPart {
+    name: string;
+    unitPrice: number;
+    qty: number;
+    subtotal: number;
+    partNumber?: string;
+    isOEM: boolean;
+}
+
 interface Quotation {
     _id: string;
     currency: string;
+    labor: {
+        hours: number;
+        ratePerHour: number;
+        subtotal: number;
+    };
+    parts: QuotationPart[];
+    taxPct: number;
+    markupPct: number;
     totals: {
         parts: number;
         labor: number;
         tax: number;
         grand: number;
     };
-    lineItems?: any[]; // For now
     status: string;
+    notes?: string;
+    validUntil: string;
     createdAt: string;
 }
 
@@ -35,6 +56,10 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
     const [generatingQuotation, setGeneratingQuotation] = useState(false);
     const [currency, setCurrency] = useState<'KES' | 'USD'>('KES');
     const [existingQuotation, setExistingQuotation] = useState<Quotation | null>(null);
+    const [showSendModal, setShowSendModal] = useState(false);
+    const [sendEmail, setSendEmail] = useState('');
+    const [sending, setSending] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -165,12 +190,76 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
     const handleDownloadPDF = async () => {
         if (!existingQuotation) return;
         try {
-            // This would trigger the download
-            window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/quotations/${existingQuotation._id}/export`, '_blank');
+            const response = await api.get(`/quotations/${existingQuotation._id}/export`, {
+                responseType: 'blob'
+            });
+
+            // Create a blob URL and trigger download
+            const blob = new Blob([response.data], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quotation_${existingQuotation._id.slice(-8).toUpperCase()}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            addNotification('Quotation downloaded successfully!', 'success');
         } catch (error) {
-            addNotification('Failed to download PDF', 'error');
+            console.error('Failed to download:', error);
+            addNotification('Failed to download quotation', 'error');
         }
-    }
+    };
+
+    const handleSendToClient = async () => {
+        if (!existingQuotation) return;
+
+        setSending(true);
+        try {
+            const payload: { email?: string } = {};
+            if (sendEmail.trim()) {
+                payload.email = sendEmail.trim();
+            }
+
+            const response = await api.post(`/quotations/${existingQuotation._id}/send`, payload);
+
+            if (response.data.type === 'quotation_sent') {
+                addNotification(`Quotation sent to ${response.data.data.recipient}`, 'success');
+                setShowSendModal(false);
+                setSendEmail('');
+                // Reload to update status
+                loadData();
+            }
+        } catch (error: any) {
+            console.error('Failed to send:', error);
+            const errorMessage = error.response?.data?.detail || 'Failed to send quotation';
+            addNotification(errorMessage, 'error');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const handleEditQuotation = async () => {
+        if (!existingQuotation) return;
+
+        if (!confirm('This will delete the current quotation and allow you to create a new one. Continue?')) {
+            return;
+        }
+
+        setDeleting(true);
+        try {
+            await api.delete(`/quotations/${existingQuotation._id}`);
+            setExistingQuotation(null);
+            addNotification('Quotation deleted. You can now create a new one.', 'success');
+            await loadLineItems();
+        } catch (error: any) {
+            console.error('Failed to delete:', error);
+            addNotification('Failed to delete quotation', 'error');
+        } finally {
+            setDeleting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -182,40 +271,216 @@ const GarageQuotationTab: React.FC<GarageQuotationTabProps> = ({ dtcs, analysisI
 
     // --- VIEW MODE ---
     if (existingQuotation) {
+        const subtotalBeforeMarkup = existingQuotation.totals.parts + existingQuotation.totals.labor;
+        const markupAmount = subtotalBeforeMarkup * (existingQuotation.markupPct / 100);
+
         return (
             <div className="space-y-6">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-                    <div className="flex items-center justify-between">
+                {/* Send Email Modal */}
+                {showSendModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+                            <div className="bg-[#EA6A47] px-6 py-4 flex items-center justify-between">
+                                <h3 className="text-lg font-bold text-white">Send Quotation to Client</h3>
+                                <button
+                                    onClick={() => setShowSendModal(false)}
+                                    className="text-white/80 hover:text-white"
+                                >
+                                    <XMarkIcon className="h-6 w-6" />
+                                </button>
+                            </div>
+                            <div className="p-6">
+                                <p className="text-gray-600 mb-4">
+                                    Send this quotation directly to your client's email. They will receive a professionally formatted email with all the details.
+                                </p>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Client Email Address
+                                </label>
+                                <input
+                                    type="email"
+                                    value={sendEmail}
+                                    onChange={(e) => setSendEmail(e.target.value)}
+                                    placeholder={vehicle?.ownerInfo?.email || "Enter client email"}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EA6A47] focus:border-transparent"
+                                />
+                                {vehicle?.ownerInfo?.email && !sendEmail && (
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        Leave empty to use vehicle owner's email: <strong>{vehicle.ownerInfo.email}</strong>
+                                    </p>
+                                )}
+                                <div className="flex space-x-3 mt-6">
+                                    <button
+                                        onClick={() => setShowSendModal(false)}
+                                        className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSendToClient}
+                                        disabled={sending}
+                                        className="flex-1 px-4 py-3 bg-[#EA6A47] text-white rounded-lg hover:bg-[#d85a37] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                                    >
+                                        {sending ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                                <span>Sending...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <PaperAirplaneIcon className="h-5 w-5" />
+                                                <span>Send Quotation</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Header */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
                         <div className="flex items-center space-x-3">
                             <div className="bg-green-100 p-2 rounded-full">
                                 <DocumentTextIcon className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">Quotation Ready</h3>
-                                <p className="text-sm text-gray-600">Generated on {new Date(existingQuotation.createdAt).toLocaleDateString()}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="text-right mr-4">
-                                <p className="text-sm text-gray-500">Grand Total</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {existingQuotation.currency} {existingQuotation.totals.grand.toLocaleString()}
+                                <p className="text-sm text-gray-600">
+                                    Generated on {new Date(existingQuotation.createdAt).toLocaleDateString()} •
+                                    Valid until {new Date(existingQuotation.validUntil).toLocaleDateString()}
                                 </p>
                             </div>
+                        </div>
+                        <div className="flex items-center space-x-3 flex-wrap gap-2">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                existingQuotation.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                existingQuotation.status === 'sent' ? 'bg-blue-100 text-blue-800' :
+                                existingQuotation.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                            }`}>
+                                {existingQuotation.status.charAt(0).toUpperCase() + existingQuotation.status.slice(1)}
+                            </span>
+                            <button
+                                onClick={handleEditQuotation}
+                                disabled={deleting}
+                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2 font-medium disabled:opacity-50"
+                            >
+                                <PencilSquareIcon className="h-5 w-5" />
+                                <span>{deleting ? 'Deleting...' : 'Edit'}</span>
+                            </button>
+                            <button
+                                onClick={() => setShowSendModal(true)}
+                                className="px-4 py-2 border border-[#EA6A47] text-[#EA6A47] rounded-lg hover:bg-orange-50 transition-colors flex items-center space-x-2 font-medium"
+                            >
+                                <PaperAirplaneIcon className="h-5 w-5" />
+                                <span>Send to Client</span>
+                            </button>
                             <button
                                 onClick={handleDownloadPDF}
-                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2 font-medium"
+                                className="px-4 py-2 bg-[#EA6A47] text-white rounded-lg hover:bg-[#d85a37] transition-colors flex items-center space-x-2 font-medium"
                             >
                                 <ArrowDownTrayIcon className="h-5 w-5" />
-                                <span>Download PDF</span>
+                                <span>Download</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* We could add a simple list of items here if needed, but summary is often enough for the 'done' state */}
-                <div className="text-center py-8 text-gray-500">
-                    <p>This quotation has been saved to your account.</p>
+                {/* Parts/Services List */}
+                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h4 className="font-semibold text-gray-900">Services & Parts</h4>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                        {existingQuotation.parts.map((part, index) => (
+                            <div key={index} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                                <div className="flex-1">
+                                    <div className="flex items-center space-x-2">
+                                        {part.partNumber && (
+                                            <span className="font-mono text-sm font-bold text-[#EA6A47] bg-orange-50 px-2 py-0.5 rounded">
+                                                {part.partNumber}
+                                            </span>
+                                        )}
+                                        <span className="font-medium text-gray-900">{part.name}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {existingQuotation.currency} {part.unitPrice.toLocaleString()} × {part.qty}
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-semibold text-gray-900">
+                                        {existingQuotation.currency} {part.subtotal.toLocaleString()}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Labor Section */}
+                {existingQuotation.labor.hours > 0 && (
+                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                            <h4 className="font-semibold text-gray-900">Labor</h4>
+                        </div>
+                        <div className="px-6 py-4 flex items-center justify-between">
+                            <div>
+                                <p className="font-medium text-gray-900">Labor Charges</p>
+                                <p className="text-sm text-gray-500">
+                                    {existingQuotation.labor.hours} hour(s) @ {existingQuotation.currency} {existingQuotation.labor.ratePerHour.toLocaleString()}/hr
+                                </p>
+                            </div>
+                            <p className="font-semibold text-gray-900">
+                                {existingQuotation.currency} {existingQuotation.labor.subtotal.toLocaleString()}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Notes */}
+                {existingQuotation.notes && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm font-medium text-blue-900 mb-1">Notes</p>
+                        <p className="text-sm text-blue-800">{existingQuotation.notes}</p>
+                    </div>
+                )}
+
+                {/* Totals Summary */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <div className="space-y-3">
+                        <div className="flex justify-between text-gray-600">
+                            <span>Parts/Services Subtotal</span>
+                            <span>{existingQuotation.currency} {existingQuotation.totals.parts.toLocaleString()}</span>
+                        </div>
+                        {existingQuotation.labor.hours > 0 && (
+                            <div className="flex justify-between text-gray-600">
+                                <span>Labor Subtotal</span>
+                                <span>{existingQuotation.currency} {existingQuotation.totals.labor.toLocaleString()}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-gray-600 border-t border-gray-200 pt-3">
+                            <span>Subtotal</span>
+                            <span>{existingQuotation.currency} {subtotalBeforeMarkup.toLocaleString()}</span>
+                        </div>
+                        {existingQuotation.markupPct > 0 && (
+                            <div className="flex justify-between text-gray-600">
+                                <span>Markup ({existingQuotation.markupPct}%)</span>
+                                <span>{existingQuotation.currency} {markupAmount.toLocaleString()}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-gray-600">
+                            <span>Tax ({existingQuotation.taxPct}%)</span>
+                            <span>{existingQuotation.currency} {existingQuotation.totals.tax.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-xl font-bold text-gray-900 border-t border-gray-300 pt-3">
+                            <span>Grand Total</span>
+                            <span className="text-[#EA6A47]">
+                                {existingQuotation.currency} {existingQuotation.totals.grand.toLocaleString()}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
