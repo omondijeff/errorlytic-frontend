@@ -33,6 +33,7 @@ import PlatformSettingsPage from './pages/SuperAdmin/PlatformSettingsPage';
 import APIManagementPage from './pages/SuperAdmin/APIManagementPage';
 import PricingManagementPage from './pages/SuperAdmin/PricingManagementPage';
 import CreditPurchasePage from './pages/Credits/CreditPurchasePage';
+import BookingsPage from './pages/Bookings/BookingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const queryClient = new QueryClient({
@@ -76,6 +77,9 @@ function AnimatedRoutes() {
 
           {/* Credits Routes */}
           <Route path="credits" element={<CreditPurchasePage />} />
+
+          {/* Bookings Routes */}
+          <Route path="bookings" element={<BookingsPage />} />
 
           {/* Super Admin Routes */}
           <Route path="user-management" element={<UserManagement />} />

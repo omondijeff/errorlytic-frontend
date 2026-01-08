@@ -15,7 +15,9 @@ import {
   KeyIcon,
   BoltIcon,
   TagIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
+import logoLandscape from '../../assets/logo-web-landscape.png';
 import type { RootState } from '../../store';
 
 const Sidebar: React.FC = () => {
@@ -27,6 +29,7 @@ const Sidebar: React.FC = () => {
       // Common routes
       { name: 'Dashboard', href: '/app/dashboard', icon: HomeIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
       { name: 'Reports', href: '/app/analysis', icon: DocumentTextIcon, roles: ['individual', 'garage_user', 'garage_admin', 'insurer_user', 'insurer_admin', 'superadmin'] },
+      { name: 'Bookings', href: '/app/bookings', icon: CalendarDaysIcon, roles: ['garage_user', 'garage_admin', 'superadmin'] },
 
       // Credits for individual and garage users
       { name: 'Buy Credits', href: '/app/credits', icon: BoltIcon, roles: ['individual', 'garage_user', 'garage_admin'] },
@@ -56,8 +59,8 @@ const Sidebar: React.FC = () => {
   return (
     <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
       {/* Logo */}
-      <div className="flex items-center h-20 px-8 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-[#EA6A47]">Errorlytic</h1>
+      <div className="flex items-center h-20 px-6 border-b border-gray-200">
+        <img src={logoLandscape} alt="Errorlytic" className="h-10 w-auto" />
       </div>
 
       {/* Navigation */}
