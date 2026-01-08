@@ -15,6 +15,7 @@ import WhoIsItForPage from './pages/Public/WhoIsItForPage';
 import PrivacyPolicyPage from './pages/Public/PrivacyPolicyPage';
 import TermsOfServicePage from './pages/Public/TermsOfServicePage';
 import ContactPage from './pages/Public/ContactPage';
+import BookingPage from './pages/Public/BookingPage';
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import DashboardPage from './pages/Dashboard/DashboardPage';
@@ -59,6 +60,7 @@ function AnimatedRoutes() {
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/terms-of-service" element={<TermsOfServicePage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/book" element={<BookingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
