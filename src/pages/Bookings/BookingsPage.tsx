@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import {
     CalendarIcon,
     ListBulletIcon,
@@ -9,21 +10,41 @@ import {
     ChevronRightIcon,
     ArrowPathIcon,
     FunnelIcon,
+    TruckIcon,
 } from '@heroicons/react/24/outline';
 import type { RootState } from '../../store';
 import { useBooking, type Booking } from '../../context/BookingContext';
+import { useNotification } from '../../context/NotificationContext';
 import BookingCalendar from '../../components/Bookings/BookingCalendar';
 import BookingList from '../../components/Bookings/BookingList';
 import BookingForm from '../../components/Bookings/BookingForm';
+import GoogleCalendarConnect from '../../components/Bookings/GoogleCalendarConnect';
 import ModernButton from '../../components/UI/ModernButton';
 
 const BookingsPage: React.FC = () => {
     const { user } = useSelector((state: RootState) => state.auth);
     const { bookings, loading, fetchBookings, confirmBooking, cancelBooking } = useBooking();
+    const { addNotification } = useNotification();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
     const [showForm, setShowForm] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>('all');
+
+    // Handle OAuth callback
+    useEffect(() => {
+        const calendarConnected = searchParams.get('calendar_connected');
+        const error = searchParams.get('error');
+
+        if (calendarConnected === 'true') {
+            addNotification('Google Calendar connected successfully! Your bookings will now sync automatically.', 'success');
+            // Clear the URL params
+            setSearchParams({});
+        } else if (error === 'calendar_connection_failed') {
+            addNotification('Failed to connect Google Calendar. Please try again.', 'error');
+            setSearchParams({});
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         fetchBookings(filterStatus !== 'all' ? { status: filterStatus } : undefined);
@@ -112,18 +133,7 @@ const BookingsPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="bg-black p-6 rounded-2xl text-white relative overflow-hidden">
-                        <div className="relative z-10">
-                            <h3 className="font-bold mb-2">Connect Google Calendar</h3>
-                            <p className="text-xs text-white/70 mb-4">Sync your bookings automatically with your calendar</p>
-                            <button className="w-full py-2 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold backdrop-blur-sm transition-all">
-                                Connect Now
-                            </button>
-                        </div>
-                        <div className="absolute top-0 right-0 opacity-10 -mr-4 -mt-4">
-                            <CalendarIcon className="h-24 w-24" />
-                        </div>
-                    </div>
+                    <GoogleCalendarConnect />
                 </div>
 
                 {/* Main Content Area */}
@@ -171,7 +181,7 @@ const BookingsPage: React.FC = () => {
             {/* Booking Form Modal */}
             <AnimatePresence>
                 {showForm && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -180,10 +190,10 @@ const BookingsPage: React.FC = () => {
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         />
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative z-10 w-full max-w-2xl"
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative z-10 my-8"
                         >
                             <BookingForm
                                 onSuccess={handleCreateSuccess}

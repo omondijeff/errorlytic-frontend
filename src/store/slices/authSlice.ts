@@ -18,6 +18,10 @@ export interface User {
       quotationsPerMonth: number;
     };
   };
+  googleCalendar?: {
+    isConnected: boolean;
+    calendarId?: string;
+  };
   isActive: boolean;
 }
 
