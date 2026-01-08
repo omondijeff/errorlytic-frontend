@@ -34,6 +34,7 @@ import APIManagementPage from './pages/SuperAdmin/APIManagementPage';
 import PricingManagementPage from './pages/SuperAdmin/PricingManagementPage';
 import CreditPurchasePage from './pages/Credits/CreditPurchasePage';
 import BookingsPage from './pages/Bookings/BookingsPage';
+import { BookingProvider } from './context/BookingContext';
 import NotFoundPage from './pages/NotFoundPage';
 
 const queryClient = new QueryClient({
@@ -79,7 +80,7 @@ function AnimatedRoutes() {
           <Route path="credits" element={<CreditPurchasePage />} />
 
           {/* Bookings Routes */}
-          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="bookings" element={<BookingProvider><BookingsPage /></BookingProvider>} />
 
           {/* Super Admin Routes */}
           <Route path="user-management" element={<UserManagement />} />
