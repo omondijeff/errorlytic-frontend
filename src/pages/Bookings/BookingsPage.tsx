@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
+import { setCredentials } from '../../store/slices/authSlice';
+import api from '../../services/apiClient';
 import {
     CalendarIcon,
     ListBulletIcon,
@@ -22,7 +24,8 @@ import GoogleCalendarConnect from '../../components/Bookings/GoogleCalendarConne
 import ModernButton from '../../components/UI/ModernButton';
 
 const BookingsPage: React.FC = () => {
-    const { user } = useSelector((state: RootState) => state.auth);
+    const dispatch = useDispatch();
+    const { user, token, refreshToken } = useSelector((state: RootState) => state.auth);
     const { bookings, loading, fetchBookings, confirmBooking, cancelBooking } = useBooking();
     const { addNotification } = useNotification();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -40,6 +43,33 @@ const BookingsPage: React.FC = () => {
             addNotification('Google Calendar connected successfully! Your bookings will now sync automatically.', 'success');
             // Clear the URL params
             setSearchParams({});
+
+            // Refresh user data to update googleCalendar status
+            const refreshUserData = async () => {
+                try {
+                    const response = await api.get('/auth/profile');
+                    if (response.data?.success && response.data.data.user) {
+                        const userData = response.data.data.user;
+                        dispatch(setCredentials({
+                            user: {
+                                id: userData.id,
+                                email: userData.email,
+                                role: userData.role,
+                                orgId: userData.orgId,
+                                profile: userData.profile || { name: '' },
+                                plan: userData.plan,
+                                googleCalendar: userData.googleCalendar,
+                                isActive: userData.isActive !== undefined ? userData.isActive : true,
+                            },
+                            token: token || '',
+                            refreshToken: refreshToken || '',
+                        }));
+                    }
+                } catch (err) {
+                    console.error('Failed to refresh user data:', err);
+                }
+            };
+            refreshUserData();
         } else if (error === 'calendar_connection_failed') {
             addNotification('Failed to connect Google Calendar. Please try again.', 'error');
             setSearchParams({});

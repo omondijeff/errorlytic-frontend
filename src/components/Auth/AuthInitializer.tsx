@@ -45,6 +45,7 @@ const AuthInitializer: React.FC = () => {
                   orgId: data.data.user.orgId,
                   profile: data.data.user.profile || { name: '' },
                   plan: data.data.user.plan,
+                  googleCalendar: data.data.user.googleCalendar,
                   isActive: data.data.user.isActive !== undefined ? data.data.user.isActive : true,
                 },
                 token: token,
